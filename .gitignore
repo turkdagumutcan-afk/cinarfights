@@ -1,0 +1,12 @@
+# Yedekler (bundle'ın eski sürümleri)
+*.bak
+*.bak-*
+*.before-*
+
+# Araç/iç dosyalar
+.claude/
+.DS_Store
+Thumbs.db
+
+# Paketler
+*.zip
