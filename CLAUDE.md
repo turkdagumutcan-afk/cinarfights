@@ -7,7 +7,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 - `js/game.bundle.js` **ÜRETİLİR**. Asla elle düzenleme, asla okuma. `npm run build` yazar (ve `index.html`'e `?v=<hash>` koyar).
 - `00-vendor-*`, `30-vendor-*` üçüncü taraf kütüphane (ham minify): **okuma, düzenleme**.
 - `assets/`, `css/styles.css` ikili/derlenmiş: okuma. Görsel adları `js/assets.js`'te.
-- Dökümanlar: `docs/ANALIZ.md` (özellikle §16–17), `README.md`.
+- Dökümanlar: `docs/ANALIZ.md` (özellikle §16–17), `README.md`, kurulum ve iş akışı: `docs/KURULUM.md`.
 
 | Dosya | İçerik |
 |---|---|
@@ -21,7 +21,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 1. `git switch -c <konu>` (main'e doğrudan değişiklik yapma)
 2. Önce `Grep` ile ilgili yeri bul (`src/[1-9]*` içinde), sonra yalnızca o aralığı `Read` et (offset/limit).
 3. `src/`'de düzenle → `npm run build` → localhost:8130'da dene (`oyunu-baslat.bat` ya da `npm start`)
-4. `npm test` (30 tarayıcı testi) — geçmeyen testi "geçti" diye raporlama; test edemediğini açıkça söyle.
+4. `npm test` (30 tarayıcı testi) — geçmeyen testi "geçti" diye raporlama; test edemediğini açıkça söyle. Chromium kurulu değilse `CHROMIUM_PATH` ile Edge kullanılabilir (`docs/KURULUM.md` §4). "Zıplama geçemez: W+D basılı tutarak" kararsızdır; tek seferlik kalırsa bir kez daha çalıştır.
 5. Commit → push → Pull Request. Birleştirmeyi kullanıcı yapar.
 - Görsel/sürüm değiştiğinde tarayıcı için `Ctrl+F5` hatırlat.
 - Kullanıcının daha yeni/pushlanmamış yerel dosyalarını silme/ezme; önce yedek al.
