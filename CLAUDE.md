@@ -30,7 +30,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 `Ky` Fighter · `Xy` maç/motor (`updateFighter`, `separateBodies`, `onLand`, `resolveAttacks`, `applyHit`) · `Hy` bot · `By` girdi sınıfı (`Fy` tuş haritası) · `xy()` dövüşçü çizimi · `Cg` sprite yükleyici · `X` ses · `pg` clamp · `$h`=1376 arena genişliği · `eg`=2900 yerçekimi · `rg`=−1300 zıplama hızı · `Uy` saldırı tablosu · `AF_*` bu projede eklenen yardımcılar (`AF_S` ayarlar, `AF_DEFKEYS` varsayılan tuşlar, `AF_tryAirFlip` takla).
 
 ## Oyun sabitleri
-Zemin y=704 · masa (orta platform) x 387–990, y≈429 · zıplama yayı ≈281 px · idle boyu ≈250 px · rakip üzerinden geçiş eşiği 0,35 (`separateBodies`) · giriş tamponu `AF_FLIP_BUFFER`=130 ms, `AF_JUMP_DIR_GRACE`=90 ms.
+Zemin y=704 · masa (orta platform) x 387–990, y≈429 · zıplama yayı ≈281 px · idle boyu ≈250 px · rakibin üzerinden **yalnız takla** geçer (`separateBodies`, eşik 0,34; normal zıplama için `AF_JUMP_CROSS=false`) · takla çizim ölçeği `AF_BACK_SIZE`=0,62 · giriş tamponu `AF_FLIP_BUFFER`=130 ms, `AF_JUMP_DIR_GRACE`=90 ms.
 Kontroller: P1 A/D/W/S, Z X, Shift/Ctrl, V koruma, C ulti, F flaş, G süpürme, Space dash, **E+yön takla**; P2 oklar + Numpad (takla Num6/N). Hepsi Ayarlar'dan değişir.
 
 ## Token tasarrufu

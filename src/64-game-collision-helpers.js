@@ -29,6 +29,9 @@ function Yy(e, t, n, r) {
   return o * o + s * s > n * n ? null : { x: i, y: a };
 }
 
+// Normal zıplama (W / W+yön) rakibin üzerinden geçebilsin mi? false = yalnız takla geçer (varsayılan).
+var AF_JUMP_CROSS = false;
+
 // Zıplama kalkışında yön yoksa, yön tuşuna bu süre (ms) içinde basılırsa zıplama o yöne kilitlenir.
 var AF_JUMP_DIR_GRACE = 90;
 

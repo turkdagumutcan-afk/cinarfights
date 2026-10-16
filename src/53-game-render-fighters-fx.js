@@ -148,10 +148,10 @@ function xy(e, t) {
       img = frames[Math.min(frames.length - 1, Math.floor(p * frames.length))],
       scale = t.spr.backScale,
       w = img.width * scale,
-      h = img.height * scale,
-      bodyH = t.spr.frames.jump.visibleH;
+      h = img.height * scale;
     t.hitFlash > 0 && (e.filter = `brightness(2.4) saturate(0.5)`);
-    e.drawImage(img, -w / 2, -h / 2 - bodyH * 0.45, w, h);
+    // Karenin en alt noktası (ayak) dövüşçünün y'sinde; yükseklik zaten gerçek yerçekimi yayından gelir.
+    e.drawImage(img, -w / 2, -h, w, h);
     ((e.filter = `none`), e.restore());
     return;
   }

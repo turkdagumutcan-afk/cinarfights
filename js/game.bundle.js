@@ -908,6 +908,9 @@ function Sg(e, t) {
   );
 }
 
+// Takla kareleri (back0-15) idle'dan daha iri çizilmişti (kafa ~1,65×). Çizim ölçeği bu çarpanla kafa boyunda eşitlenir.
+var AF_BACK_SIZE = 0.62;
+
 async function Cg(e, t, n, r2, same) {
   let r = await Promise.all(
       mg.map((t) =>
@@ -957,7 +960,7 @@ async function Cg(e, t, n, r2, same) {
     );
     if (rb[0] && rb.every(Boolean)) {
       ((backFrames = rb),
-        (backScale = i.idle.visibleH / 286),
+        (backScale = (i.idle.visibleH / 286) * AF_BACK_SIZE),
         (backJumpH = i.idle.visibleH * 0.82));
     }
     let sw = await Promise.all(
@@ -4031,10 +4034,10 @@ function xy(e, t) {
       img = frames[Math.min(frames.length - 1, Math.floor(p * frames.length))],
       scale = t.spr.backScale,
       w = img.width * scale,
-      h = img.height * scale,
-      bodyH = t.spr.frames.jump.visibleH;
+      h = img.height * scale;
     t.hitFlash > 0 && (e.filter = `brightness(2.4) saturate(0.5)`);
-    e.drawImage(img, -w / 2, -h / 2 - bodyH * 0.45, w, h);
+    // Karenin en alt noktası (ayak) dövüşçünün y'sinde; yükseklik zaten gerçek yerçekimi yayından gelir.
+    e.drawImage(img, -w / 2, -h, w, h);
     ((e.filter = `none`), e.restore());
     return;
   }
@@ -5148,6 +5151,9 @@ function Yy(e, t, n, r) {
   return o * o + s * s > n * n ? null : { x: i, y: a };
 }
 
+// Normal zıplama (W / W+yön) rakibin üzerinden geçebilsin mi? false = yalnız takla geçer (varsayılan).
+var AF_JUMP_CROSS = false;
+
 // Zıplama kalkışında yön yoksa, yön tuşuna bu süre (ms) içinde basılırsa zıplama o yöne kilitlenir.
 var AF_JUMP_DIR_GRACE = 90;
 
@@ -5628,12 +5634,29 @@ var Xy = class {
     if (e.state === `ko` || t.state === `ko`) return;
     let a = e.hurtbox(),
       b = t.hurtbox();
-    if (a.y >= b.y + b.h || b.y >= a.y + a.h) return;
-    const cleared = (upper, lower) =>
+    // Rakibin üzerinden YALNIZCA takla (airFlip) geçebilir. Normal zıplama (W, W+yön) rakibi aşamaz:
+    // yan yana ya da baş hizasında bile görünmez bir duvar gibi durur (AF_JUMP_CROSS ile eski davranış açılır).
+    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : f.y < 430 ? 429 : 704);
+    const flipClear = (upper, lower) =>
+      upper.airFlip &&
+      upper.ground === null &&
+      upper.state === `air` &&
+      lower.y - upper.y >= lower.spr.frames.idle.visibleH * 0.34;
+    const jumpClear = (upper, lower) =>
+      AF_JUMP_CROSS &&
       upper.ground === null &&
       (upper.state === `air` || upper.state === `attack`) &&
-      lower.y - upper.y >= lower.spr.frames.idle.visibleH * (upper.airFlip ? 0.34 : 0.35);
-    if (cleared(e, t) || cleared(t, e)) return;
+      lower.y - upper.y >= lower.spr.frames.idle.visibleH * 0.35;
+    const airBlock = (upper, lower) =>
+      !AF_JUMP_CROSS &&
+      upper.ground === null &&
+      !upper.airFlip &&
+      (upper.state === `air` || upper.state === `attack`) &&
+      lower.ground !== null &&
+      level(upper) === level(lower);
+    if (flipClear(e, t) || flipClear(t, e) || jumpClear(e, t) || jumpClear(t, e)) return;
+    const apart = a.y >= b.y + b.h || b.y >= a.y + a.h;
+    if (apart && !(airBlock(e, t) || airBlock(t, e))) return;
     const overlap = (e.halfW + t.halfW) * 0.9 - Math.abs(e.x - t.x);
     if (overlap <= 0) return;
     const bounds = (f) => (f.ground === `table` ? [387 + f.halfW, 990 - f.halfW] : [40, $h - 40]);

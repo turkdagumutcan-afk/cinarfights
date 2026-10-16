@@ -412,12 +412,29 @@ var Xy = class {
     if (e.state === `ko` || t.state === `ko`) return;
     let a = e.hurtbox(),
       b = t.hurtbox();
-    if (a.y >= b.y + b.h || b.y >= a.y + a.h) return;
-    const cleared = (upper, lower) =>
+    // Rakibin üzerinden YALNIZCA takla (airFlip) geçebilir. Normal zıplama (W, W+yön) rakibi aşamaz:
+    // yan yana ya da baş hizasında bile görünmez bir duvar gibi durur (AF_JUMP_CROSS ile eski davranış açılır).
+    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : f.y < 430 ? 429 : 704);
+    const flipClear = (upper, lower) =>
+      upper.airFlip &&
+      upper.ground === null &&
+      upper.state === `air` &&
+      lower.y - upper.y >= lower.spr.frames.idle.visibleH * 0.34;
+    const jumpClear = (upper, lower) =>
+      AF_JUMP_CROSS &&
       upper.ground === null &&
       (upper.state === `air` || upper.state === `attack`) &&
-      lower.y - upper.y >= lower.spr.frames.idle.visibleH * (upper.airFlip ? 0.34 : 0.35);
-    if (cleared(e, t) || cleared(t, e)) return;
+      lower.y - upper.y >= lower.spr.frames.idle.visibleH * 0.35;
+    const airBlock = (upper, lower) =>
+      !AF_JUMP_CROSS &&
+      upper.ground === null &&
+      !upper.airFlip &&
+      (upper.state === `air` || upper.state === `attack`) &&
+      lower.ground !== null &&
+      level(upper) === level(lower);
+    if (flipClear(e, t) || flipClear(t, e) || jumpClear(e, t) || jumpClear(t, e)) return;
+    const apart = a.y >= b.y + b.h || b.y >= a.y + a.h;
+    if (apart && !(airBlock(e, t) || airBlock(t, e))) return;
     const overlap = (e.halfW + t.halfW) * 0.9 - Math.abs(e.x - t.x);
     if (overlap <= 0) return;
     const bounds = (f) => (f.ground === `table` ? [387 + f.halfW, 990 - f.halfW] : [40, $h - 40]);

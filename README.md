@@ -87,6 +87,7 @@ Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü
 
 **Takla (rakibin üzerinden akrobatik atlayış):** `E` ile yön tuşu **hangi sırayla basılırsa basılsın** (130 ms içinde) çalışır.
 **W + yön** ile zıplarken yön, kalkış anında kilitlenir — önce W sonra D, önce D sonra W ya da aynı anda; hepsi aynı.
+Rakibin üzerinden **yalnızca takla** geçer; normal zıplama (W, W+yön) rakibi aşamaz.
 
 > Bu tuşlar **varsayılandır**. Başlık ekranındaki **AYARLAR** (ya da duraklatma menüsü) → **KONTROLLER** sekmesinden istediğin tuşu atayabilirsin.
 
@@ -124,7 +125,8 @@ Başlık ekranında **AYARLAR** (veya **3** tuşu) ve maç sırasında **ESC →
 ## Sürüm
 
 - **16 Ekim 2026 — Açık kaynak yapı:** oyun kodu `src/` altında okunabilir parçalara bölündü (davranış birebir aynı, AST ile doğrulandı); `npm run build/test/start`; otomatik önbellek etiketi; 26 tarayıcı testi.
-  Takla tuşu **R → E** (P2: Num 6 / N); takla ve W+yön için sıra-bağımsız giriş tamponu; rakibin üzerinden geçiş eşiği 0,55 → 0,35.
+  Takla tuşu **R → E** (P2: Num 6 / N); takla ve W+yön için sıra-bağımsız giriş tamponu.
+- **16 Ekim (öğleden sonra):** rakibin üzerinden yalnız takla geçer, normal zıplama geçemez; takla sırasında karakterin iri çizilmesi düzeltildi.
 - **15 Ekim 2026 — ÇINAR FIGHTS:** yeni ad ve başlık ekranı, METEHAN, koruma, flaş dalgası, süpürme tekme, ileri/geri yer taklası, havadan takla.
 
 - **v3.1 + METEHAN (13 Ekim 2026)** — Yeni karakter: Samsunlu müzisyen METEHAN (165 cm, 90 kg). Yavaş ama hasarı yüksek. Ulti: **YILDIRIM NOTALARI** (gitardan 3 yıldırımlı nota). Öncesi `js/game.bundle.js.bak-metehan-oncesi`.
