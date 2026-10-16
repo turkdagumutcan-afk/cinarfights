@@ -262,6 +262,9 @@ function Sg(e, t) {
   );
 }
 
+// Takla kareleri (back0-15) idle'dan daha iri çizilmişti (kafa ~1,65×). Çizim ölçeği bu çarpanla kafa boyunda eşitlenir.
+var AF_BACK_SIZE = 0.62;
+
 async function Cg(e, t, n, r2, same) {
   let r = await Promise.all(
       mg.map((t) =>
@@ -311,7 +314,7 @@ async function Cg(e, t, n, r2, same) {
     );
     if (rb[0] && rb.every(Boolean)) {
       ((backFrames = rb),
-        (backScale = i.idle.visibleH / 286),
+        (backScale = (i.idle.visibleH / 286) * AF_BACK_SIZE),
         (backJumpH = i.idle.visibleH * 0.82));
     }
     let sw = await Promise.all(

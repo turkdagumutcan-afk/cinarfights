@@ -62,22 +62,25 @@ await test('W: yerinde zıplama (yatay kayma yok, ~280px, iniyor)', async (o) =>
   const h = 704 - Math.min(...t.map((s) => s.y)); return { ok: Math.abs(b.p1.x - a.p1.x) < 1 && h > 250 && b.p1.s === 'idle', note: `yükseklik ${h.toFixed(0)}` };
 });
 
-// ---- Zıplayarak rakibin üstünden geçme (W+D / W+A) ----
-for (const [name, steps] of [
-  ['W+D basılı tutarak (90px)', async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(1400); await p.up('d'); }],
-  ['W+D tek dokunuş, D hemen bırakılır (90px)', async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(100); await p.up('d'); await wait(1400); }],
-  ['ÖNCE W sonra D (40ms gecikmeli) (90px)', async (p) => { await p.down('w'); await wait(40); await p.down('d'); await wait(40); await p.up('w'); await wait(1400); await p.up('d'); }],
-]) await test(`Zıpla-geç: ${name}`, async (o) => {
-  const p = await o(); await p.approach(90); await p.clr(); await steps(p); const t = await p.tr(); const b = await p.st();
-  return { ok: crossed(t) && b.p1.s === 'idle', note: `bitiş dx=${(b.p1.x - b.p2.x).toFixed(0)}` };
+// ---- Normal zıplama (W / W+yön) rakibin üstünden GEÇEMEZ; yalnız takla geçer ----
+const noCross = (tr, b) => !crossed(tr) && b.p1.x < b.p2.x && Math.min(...tr.map((s) => s.x2 - s.x)) > 0;
+for (const [name, gap, steps] of [
+  ['yalnız W, rakibin dibinde (60px)', 60, async (p) => { await p.tap('w', 55); await wait(1500); }],
+  ['W+D basılı tutarak (90px)', 90, async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(1500); await p.up('d'); }],
+  ['W+D tek dokunuş, D hemen bırakılır (90px)', 90, async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(100); await p.up('d'); await wait(1500); }],
+  ['ÖNCE W sonra D (40ms gecikmeli) (90px)', 90, async (p) => { await p.down('w'); await wait(40); await p.down('d'); await wait(40); await p.up('w'); await wait(1500); await p.up('d'); }],
+  ['D basılı, W vur: yakın (40px)', 40, async (p) => { await p.down('d'); await p.tap('w', 55); await wait(1500); await p.up('d'); }],
+  ['W+D uzaktan (220px), tepe noktasında rakibin üstüne varır', 220, async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(1500); await p.up('d'); }],
+]) await test(`Zıplama geçemez: ${name}`, async (o) => {
+  const p = await o(); await p.approach(gap); await p.clr(); await steps(p); const t = await p.tr(); const b = await p.st();
+  return { ok: noCross(t, b) && b.p1.s === 'idle', note: `bitiş dx=${(b.p1.x - b.p2.x).toFixed(0)} en yakın=${Math.min(...t.map((s) => s.x2 - s.x)).toFixed(0)}` };
 });
-await test('Zıpla-geç: W+A sola (rakibin sağından)', async (o) => {
-  const p = await o({ p1: 'sudem', p2: 'umut' }); // p1 solda başlar; önce sağa geç
-  await p.approach(90); await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(1500); await p.up('d'); await wait(300);
-  let s = await p.st(); if (s.p1.x < s.p2.x) return { ok: false, note: 'hazırlık geçişi olmadı' };
-  while (s.p1.x - s.p2.x > 100) { await p.tap('a', 40); s = await p.st(); }
-  await p.clr(); await p.down('a'); await p.down('w'); await wait(55); await p.up('w'); await wait(1400); await p.up('a');
-  const t = await p.tr(); const b = await p.st(); return { ok: crossed(t) && b.p1.x < b.p2.x, note: `bitiş dx=${(b.p1.x - b.p2.x).toFixed(0)}` };
+await test('Zıplama geçemez: P2 ▲+◄ ile de geçemez (masa dışında, sol köşede)', async (o) => {
+  const p = await o(); // p1'i sol kenara yasla, p2'yi masanın dışına (x<387) yanına getir
+  await p.down('a'); const t0 = Date.now(); while (Date.now() - t0 < 6000 && (await p.st()).p1.x > 120) await wait(20); await p.up('a');
+  await p.down('ArrowLeft'); const t1 = Date.now(); while (Date.now() - t1 < 8000) { const s = await p.st(); if (s.p2.x - s.p1.x <= 90) break; await wait(15); } await p.up('ArrowLeft'); await wait(150); await p.clr();
+  await p.down('ArrowLeft'); await p.down('ArrowUp'); await wait(55); await p.up('ArrowUp'); await wait(1500); await p.up('ArrowLeft');
+  const t = await p.tr(); const b = await p.st(); return { ok: noCross(t, b), note: `bitiş dx=${(b.p1.x - b.p2.x).toFixed(0)}` };
 });
 
 // ---- Havada takla (E + yön, sıra fark etmez) ----
@@ -95,6 +98,11 @@ await flipTest('W+D normal zıplama: takla YOK', async (p) => { await p.down('d'
 await flipTest('Eski tuş R+D artık takla YAPMAZ', async (p) => { await p.down('r'); await p.down('d'); await wait(200); await p.up('d'); await p.up('r'); }, false);
 await flipTest('E+D basılı tutmak art arda takla atmaz (1 takla)', async (p) => { await p.down('e'); await p.down('d'); await wait(2200); await p.up('d'); await p.up('e'); });
 
+await test('Takla boyutu: kafa boyu idle ile aynı (±%10)', async (o) => {
+  const p = await o(); // kaynak karelerde kafa genişliği: idle ≈103 px, back0-15 ≈70 px (ölçülmüş); çizimde eşit olmalı
+  const r = await p.evaluate(() => { const f = window.__AF_match.p1.spr; return { idle: 103 * f.frames.idle.scale, back: 70 * f.backScale }; });
+  return { ok: Math.abs(r.back / r.idle - 1) <= 0.1, note: `kafa idle ${r.idle.toFixed(1)}px takla ${r.back.toFixed(1)}px` };
+});
 await test('Takla: rakibin üstünden geçip karşıya iniyor, ışınlanma yok', async (o) => {
   const p = await o(); await p.approach(110); await p.clr(); await p.down('d'); await p.down('e'); await wait(120); await p.up('e'); await wait(1300); await p.up('d'); await wait(300);
   const t = await p.tr(); const b = await p.st(); let jump = 0; for (let i = 1; i < t.length; i++) jump = Math.max(jump, Math.abs(t[i].x - t[i - 1].x));
