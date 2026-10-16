@@ -664,7 +664,7 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Sıra fark etmez:** takla + yön, 130 ms içinde hangi sırayla basılırsa basılsın tetiklenir (`AF_FLIP_BUFFER`). İki tuşu basılı tutmak tekrar tekrar takla atmaz.
 - Takla, o an yapılamıyorsa (iniş toparlanması, saldırı bitişi) 130 ms boyunca beklemeye alınır.
 - **W + yön:** zıplama kalkış anındaki yönle "kilitlenir" (`vx` baştan tam hız). Yön tuşu zıplamadan hemen sonraya (≤ 90 ms, `AF_JUMP_DIR_GRACE`) kalırsa yine kilitlenir. Böylece W→D, D→W ve aynı anda basış aynı sonucu verir.
-- ~~Rakibin üzerinden geçiş eşiği 0,35~~ → **17 Ekim güncellemesi (bkz. 17.8):** rakibin üzerinden yalnızca takla geçer.
+- ~~Rakibin üzerinden geçiş eşiği 0,35~~ → **16 Ekim güncellemesi (bkz. 17.8):** rakibin üzerinden yalnızca takla geçer.
 - Sınır: gamepad desteklenmiyor; klavye "ghosting" (aynı anda 3+ tuşta bazı klavyeler basışı yutar) donanıma bağlıdır, kodla çözülmez.
 
 ### 17.6 Sembol sözlüğü (minify adlar)
@@ -673,7 +673,8 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 ### 17.7 Bilinen sınırlar / açık işler
 - Orijinal TS/JSX kaynağı yok; vendor dosyaları (00, 30) ham minify kalır. Oyun kodu sembollerinin anlamlı adlarla değiştirilmesi isteğe bağlı, kademeli iş.
 - Gamepad yok; mobil kontrol yok.
-- `assets/` dosyaları bu yeniden yapılandırmada **değiştirilmedi**. GitHub'daki görsellerle bu bilgisayardaki bazı görseller (örn. `umut_back*`, `metehan_*`) aynı adda ama farklı boyutta; hangisinin esas olduğuna sahibi karar verecek.
+- `assets/` dosyaları bu yeniden yapılandırmada **değiştirilmedi**. ~~GitHub'daki görsellerle bu bilgisayardaki bazı görseller aynı adda ama farklı boyutta~~ → **16 Ekim akşamı çözüldü:** fark yalnızca görsellere sonradan eklenmiş C2PA (içerik kimliği) etiketiydi, piksel verisi aynı. Esas olan GitHub'daki sürüm.
+- **Kararsız test:** "Zıplama geçemez: W+D basılı tutarak (90px)" bazı çalıştırmalarda `KALDI` verip sonraki çalıştırmada aynı ölçümlerle (`dx=-62`, en yakın 26) geçiyor. Zamanlamaya bağlı; test sağlamlaştırılmalı (ayrı PR).
 
 ### 17.8 Takla düzeltmeleri (16 Ekim, öğleden sonra)
 - **Geçiş kuralı:** `separateBodies` artık yalnızca `airFlip` (E + yön) olan oyuncunun rakibin üzerinden geçmesine izin verir (eşik 0,34 × idle boyu). Normal zıplama (W, W+yön, yönü basılı tutarak W) rakibi aşamaz: baş hizasında bile görünmez bir duvar gibi durur, iter ve yanına iner. Kural aynı zemin seviyesindeki (yer–yer, masa–masa) dövüşçüler için geçerlidir; masadaki biri yerdeki rakibin üstünde yürüyebilir. Eski davranış için `AF_JUMP_CROSS = true` (`src/64-game-collision-helpers.js`).

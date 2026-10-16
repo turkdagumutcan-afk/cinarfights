@@ -24,6 +24,9 @@ Değişiklikten sonra `Ctrl+F5` ile yenile.
 
 ## Geliştirme (arkadaşlarla birlikte)
 
+> **İlk kez mi kuruyorsun?** Adım adım Windows rehberi: [`docs/KURULUM.md`](docs/KURULUM.md)
+> (Git/Node kurulumu, C: doluysa D: diskine kurma, testler, günlük iş akışı, çakışma çözme).
+
 Oyun kodu `src/` altında **okunabilir parçalar** halinde durur; `js/game.bundle.js` onlardan **üretilir**
 (elle düzenleme — bir sonraki build ezer).
 
@@ -34,6 +37,8 @@ npm install            # yalnızca testler için (Playwright); oyunu çalıştı
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
 npm test               # build + 30 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
+
+Test tarayıcısını indirecek yer yoksa Edge ile: `$env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test`
 
 İş akışı: **yeni dal aç → `src/`'de düzenle → `npm run build` → oyunda dene → `npm test` → push → Pull Request.**
 Dosya adı öneki (`10-`, `63-`…) çalışma sırasıdır; numaraları değiştirme. Ayrıntı: `docs/ANALIZ.md` Bölüm 17, Claude Code için `CLAUDE.md`.
