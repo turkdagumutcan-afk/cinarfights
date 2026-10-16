@@ -25,6 +25,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 5. Commit → push → Pull Request. Birleştirmeyi kullanıcı yapar.
 - Görsel/sürüm değiştiğinde tarayıcı için `Ctrl+F5` hatırlat.
 - Kullanıcının daha yeni/pushlanmamış yerel dosyalarını silme/ezme; önce yedek al.
+- Yeni ekran/arayüz öğesi: renk, yazı tipi ve bileşenleri `docs/TASARIM.html`'den al (P1 pembe-kırmızı `#ff2a5f`, P2 camgöbeği `#00c8ff`, yüzeyler lacivert).
 
 ## Kısaltılmış semboller (minify kalıntısı)
 `Ky` Fighter · `Xy` maç/motor (`updateFighter`, `separateBodies`, `onLand`, `resolveAttacks`, `applyHit`) · `Hy` bot · `By` girdi sınıfı (`Fy` tuş haritası) · `xy()` dövüşçü çizimi · `Cg` sprite yükleyici · `X` ses · `pg` clamp · `$h`=1376 arena genişliği · `eg`=2900 yerçekimi · `rg`=−1300 zıplama hızı · `Uy` saldırı tablosu · `AF_*` bu projede eklenen yardımcılar (`AF_S` ayarlar, `AF_DEFKEYS` varsayılan tuşlar, `AF_tryAirFlip` takla).

@@ -1,0 +1,435 @@
+<title>Çınar Fights Arcade UI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700;800&display=swap">
+<style>
+/* Layout: a single arcade cabinet screen. Left rail index, right column of "screens" in game order (title, select, battle). Dark only, by design: this mirrors the game's html.dark. */
+:root{
+  color-scheme:dark;
+  /* surfaces (from css/styles.css theme) */
+  --background:#06070f; --arena:#05060f; --card:#121124; --popover:#18162e;
+  --secondary:#1c1c34; --muted:#16162a; --accent:#1c2440; --border:#272744;
+  /* ink */
+  --foreground:#f8fafc; --card-foreground:#f1f5f9; --muted-foreground:#94a3b8;
+  --slate-300:#cbd5e1; --slate-500:#64748b;
+  /* signal */
+  --primary:#00f0ff; --primary-foreground:#04121a; --destructive:#ff2a5f;
+  --p1:#ff2a5f; --p2:#00c8ff; --p2-tag:#00a8d8; --gold:#ffd700; --amber:#fcd34d;
+  --orange:#ff7700; --violet:#c084fc;
+  --easy:#3ddc84; --normal:#ffd24a; --hard:#ff2a5f;
+  --guard-ok:#7cc8ff; --guard-low:#ff5a5a; --hit-block:#9fd8ff;
+  /* type */
+  --font-heading:"Outfit","Outfit Variable",system-ui,sans-serif;
+  --font-sans:"Plus Jakarta Sans","Plus Jakarta Sans Variable",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono","JetBrains Mono Variable",ui-monospace,Consolas,monospace;
+  --radius:.625rem;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.scanlines{position:relative}
+.scanlines::after{content:"";pointer-events:none;z-index:30;position:fixed;inset:0;background:repeating-linear-gradient(0deg,#00000029 0 1px,#0000 1px 3px)}
+a{color:var(--primary)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.font-display{font-family:var(--font-heading)}
+.mono{font-family:var(--font-mono)}
+.neon-cyan{text-shadow:0 0 6px #00f0ffe6,0 0 24px #00f0ff80,0 0 70px #00f0ff4d}
+.neon-red{text-shadow:0 0 6px #ff2a5fe6,0 0 24px #ff2a5f80,0 0 70px #ff770059}
+@keyframes blink{0%,55%{opacity:1}56%,to{opacity:.15}}
+@keyframes bob{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes flicker{0%,91%,94%,98%,to{opacity:1}92%{opacity:.4}96%{opacity:.65}}
+@keyframes grid-scroll{to{background-position:0 44px}}
+.anim-blink{animation:1.1s step-end infinite blink}
+.anim-bob{animation:2.6s ease-in-out infinite bob}
+.anim-flicker{animation:4s linear infinite flicker}
+@media (prefers-reduced-motion:reduce){.anim-blink,.anim-bob,.anim-flicker,.grid-floor{animation:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 80px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-top:40px;display:flex;flex-direction:column;gap:4px}
+nav.rail .lbl{font:400 10px/1 var(--font-mono);letter-spacing:.3em;color:var(--slate-500);margin-bottom:10px}
+nav.rail a{font:700 14px/1 var(--font-heading);letter-spacing:.08em;color:var(--slate-300);text-decoration:none;padding:9px 10px;border-radius:6px;border:1px solid transparent}
+nav.rail a:hover{color:var(--foreground);border-color:var(--border);background:#ffffff08}
+main{min-width:0}
+
+/* hero */
+.hero{position:relative;overflow:hidden;border:1px solid var(--border);border-top:0;border-radius:0 0 14px 14px;padding:64px 24px 0;text-align:center;background:radial-gradient(ellipse at 50% 30%,rgba(0,240,255,.08),transparent 60%),var(--background)}
+.hero h1{margin:0;font:900 clamp(56px,11vw,112px)/.92 var(--font-heading);letter-spacing:-.025em;color:#fff}
+.hero h1+h1{font-style:italic;margin-top:-4px}
+.hero .rule{width:16rem;max-width:70%;height:1px;margin:24px auto 0;background:linear-gradient(to right,transparent,var(--primary),transparent)}
+.hero p{max-width:56ch;margin:18px auto 0;color:var(--slate-300)}
+.hero .meta{margin-top:10px;font:400 11px var(--font-mono);letter-spacing:.25em;color:#fcd34de6}
+.floor{position:relative;height:150px;margin-top:36px;overflow:hidden;-webkit-mask:linear-gradient(transparent,#000 40%);mask:linear-gradient(transparent,#000 40%)}
+.grid-floor{position:absolute;inset:0 -40% -40%;transform-origin:bottom;background-image:linear-gradient(#00f0ff29 1px,#0000 1px),linear-gradient(90deg,#00f0ff29 1px,#0000 1px);background-size:44px 44px;animation:2.4s linear infinite grid-scroll;transform:perspective(620px) rotateX(58deg) scale(1.7)}
+
+section{padding-top:72px;scroll-margin-top:16px}
+.eyebrow{font:400 11px var(--font-mono);letter-spacing:.3em;color:var(--slate-500);text-transform:uppercase}
+h2{margin:6px 0 8px;font:900 34px/1.1 var(--font-heading);letter-spacing:.02em;text-wrap:balance}
+h3{margin:0 0 12px;font:700 15px var(--font-heading);letter-spacing:.12em;color:var(--slate-300);text-transform:uppercase}
+.lead{max-width:66ch;color:var(--muted-foreground);margin:0 0 28px}
+.block{margin-top:36px}
+code,.code{font-family:var(--font-mono);font-size:12px}
+p code{color:var(--amber);background:#ffffff0a;padding:1px 5px;border-radius:4px}
+
+/* swatches */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{appearance:none;text-align:left;cursor:pointer;color:inherit;font:inherit;padding:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden;transition:border-color .15s var(--ease),transform .15s var(--ease)}
+.sw:hover{border-color:var(--slate-500);transform:translateY(-2px)}
+.sw .chip{height:64px;border-bottom:1px solid #ffffff10}
+.sw .t{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px}
+.sw b{font:700 13px var(--font-heading);letter-spacing:.04em}
+.sw span{font:400 11px var(--font-mono);color:var(--muted-foreground)}
+.sw .use{font:400 11px var(--font-sans);color:var(--slate-500)}
+
+/* type */
+.type-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--border)}
+.type-row:first-child{border-top:1px solid var(--border)}
+.type-row .k{font:400 11px/1.5 var(--font-mono);color:var(--muted-foreground)}
+.type-row .k b{display:block;color:var(--slate-300);font-weight:700}
+.type-row .s{min-width:0;overflow-wrap:anywhere}
+
+/* screens / components */
+.stage{border:1px solid var(--border);border-radius:var(--radius);background:#00000055;padding:28px;display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.stage.center{justify-content:center}
+.cap{font:400 10px var(--font-mono);letter-spacing:.2em;color:var(--slate-500);margin-top:10px}
+
+.menu{width:360px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+.mbtn{font-family:var(--font-heading);position:relative;text-align:left;border-radius:.5rem;border:2px solid var(--border);background:#0000008c;color:#e2e8f0;padding:14px 24px;font-size:20px;font-weight:900;letter-spacing:.05em;cursor:pointer;transition:background-color .2s,border-color .2s,box-shadow .2s,transform .2s}
+.mbtn .arr{display:inline-block;margin-right:8px;color:var(--amber);opacity:0;transition:opacity .2s}
+.mbtn .hint{display:block;padding-left:24px;margin-top:2px;font:400 10px var(--font-mono);letter-spacing:.1em;color:var(--muted-foreground)}
+.mbtn:hover{color:#fff}
+.mbtn[aria-current="true"]{transform:scale(1.03);border-color:#67e8f9;background:#00f0ff26;color:#fff;box-shadow:0 0 28px rgba(0,240,255,.45)}
+.mbtn[aria-current="true"] .arr{opacity:1;animation:1.1s step-end infinite blink}
+
+.modal{width:320px;max-width:100%;border-radius:.75rem;border:1px solid #00f0ff80;background:#121124f2;padding:24px;text-align:center;box-shadow:0 0 40px rgba(0,240,255,.25)}
+.modal .ttl{font:900 30px var(--font-heading);letter-spacing:.1em}
+.modal .stack{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.sbtn{font:700 15px var(--font-heading);letter-spacing:.1em;padding:11px 16px;border-radius:.5rem;border:1px solid var(--border);background:var(--secondary);color:var(--card-foreground);cursor:pointer}
+.sbtn.primary{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.sbtn.danger{background:transparent;border-color:#ff2a5f80;color:var(--destructive)}
+.sbtn:hover{filter:brightness(1.12)}
+
+.portraits{display:flex;gap:18px;flex-wrap:wrap}
+.pt{position:relative;width:104px;height:120px;border-radius:8px;background:linear-gradient(160deg,#1c2440,#0b0b18);border:1px solid var(--border);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font:900 14px var(--font-heading);letter-spacing:.08em}
+.pt .fig{position:absolute;top:14px;left:50%;width:34px;height:70px;margin-left:-17px;border-radius:17px 17px 6px 6px;background:#ffffff14}
+.pt .ring{position:absolute;inset:-5px;border-radius:8px;pointer-events:none;animation:1.1s step-end infinite blink}
+.pt .ring.p1{border:4px solid var(--p1);box-shadow:0 0 14px var(--p1)}
+.pt .ring.p2{border:4px solid var(--p2);box-shadow:0 0 14px var(--p2)}
+.pt .ring.p2.dashed{inset:-1px;border-style:dashed}
+.tag{position:absolute;top:-12px;padding:2px 7px;border-radius:4px;font:800 11px var(--font-mono);color:#fff;z-index:3}
+.tag.l{left:-6px;background:var(--p1)} .tag.r{right:-6px;background:var(--p2-tag)}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.dchip{font:400 10px var(--font-mono);letter-spacing:.1em;padding:3px 9px;border-radius:4px;border:1px solid currentColor;background:transparent;cursor:pointer}
+.dchip[aria-pressed="true"]{background:color-mix(in srgb,currentColor 18%,transparent);box-shadow:0 0 12px color-mix(in srgb,currentColor 40%,transparent)}
+
+.stats{width:300px;max-width:100%;border:1px solid var(--border);border-radius:.75rem;background:#121124e6;padding:16px}
+.stat{display:flex;align-items:center;gap:8px;font:400 10px var(--font-mono);margin-top:6px}
+.stat span:first-child{width:52px;color:var(--muted-foreground)}
+.stat .bar{flex:1;height:6px;border-radius:3px;background:#00000099;overflow:hidden}
+.stat .bar i{display:block;height:100%;background:var(--primary)}
+
+/* HUD canvas preview */
+.hud-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--arena)}
+canvas.hud{display:block;width:100%;min-width:640px;height:auto}
+.hud-ctl{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:14px;font:400 11px var(--font-mono);color:var(--muted-foreground)}
+.hud-ctl input{accent-color:var(--primary);width:150px}
+
+.keys{display:flex;flex-wrap:wrap;gap:8px 24px;font:400 10px var(--font-mono);letter-spacing:.05em;color:var(--slate-500)}
+kbd{font:700 11px var(--font-mono);color:var(--card-foreground);background:var(--secondary);border:1px solid var(--border);border-bottom-width:3px;border-radius:5px;padding:2px 7px;margin-right:4px}
+
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.fx{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.fx .demo{height:90px;border-radius:8px;background:var(--background);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.fx b{font:700 14px var(--font-heading);letter-spacing:.05em}
+.fx p{margin:0;font-size:13px;color:var(--muted-foreground)}
+.fx code{color:var(--amber)}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.rule-c{border:1px solid var(--border);border-radius:var(--radius);padding:18px;background:var(--card)}
+.rule-c.do{border-left:3px solid var(--easy)} .rule-c.dont{border-left:3px solid var(--hard)}
+.rule-c h4{margin:0 0 8px;font:900 13px var(--font-heading);letter-spacing:.15em}
+.rule-c.do h4{color:var(--easy)} .rule-c.dont h4{color:var(--hard)}
+.rule-c ul{margin:0;padding-left:18px;color:var(--slate-300);font-size:14px;display:flex;flex-direction:column;gap:6px}
+
+pre.tokens{margin:0;padding:20px;max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);background:#00000080;color:var(--slate-300);font:400 12px/1.65 var(--font-mono)}
+.copybar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);border:1px solid var(--primary);color:var(--foreground);font:700 12px var(--font-mono);letter-spacing:.15em;padding:10px 16px;border-radius:8px;box-shadow:0 0 28px rgba(0,240,255,.35);z-index:40}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+  nav.rail{position:static;flex-direction:row;flex-wrap:wrap;padding-top:20px}
+  nav.rail .lbl{width:100%}
+  .type-row{grid-template-columns:minmax(0,1fr);gap:6px}
+  .stage{padding:18px}
+}
+</style>
+
+<div class="scanlines">
+<div class="wrap">
+  <nav class="rail" aria-label="Sections">
+    <div class="lbl">DESIGN SYSTEM · v1</div>
+    <a href="#color">Color</a>
+    <a href="#type">Type</a>
+    <a href="#effects">Glow &amp; motion</a>
+    <a href="#menus">Menus</a>
+    <a href="#select">Character select</a>
+    <a href="#hud">Battle HUD</a>
+    <a href="#rules">Rules</a>
+    <a href="#tokens">Tokens</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <h1 class="anim-flicker neon-cyan">ÇINAR</h1>
+      <h1 class="anim-flicker neon-red">FIGHTS</h1>
+      <div class="rule"></div>
+      <p>The visual language of a two-player retro fighting game: deep navy screens, neon cyan and hot pink, CRT scanlines and a scrolling grid floor. Extracted from <code>css/styles.css</code> and the screens in <code>src/</code>.</p>
+      <div class="meta">1376 × 768 ARENA · 99 SN · REACT 19 + CANVAS 2D</div>
+      <div class="floor" aria-hidden="true"><div class="grid-floor"></div></div>
+    </header>
+
+    <section id="color">
+      <div class="eyebrow">01 · Palette</div>
+      <h2>Color</h2>
+      <p class="lead">Two signals carry the game: cyan for the interface and focus, pink-red for danger and Player 1. Every surface is a blue-violet navy, never a neutral grey. Click a swatch to copy its hex.</p>
+
+      <div class="block"><h3>Surfaces</h3><div class="swatches" id="sw-surface"></div></div>
+      <div class="block"><h3>Ink</h3><div class="swatches" id="sw-ink"></div></div>
+      <div class="block"><h3>Signal &amp; players</h3><div class="swatches" id="sw-signal"></div></div>
+      <div class="block"><h3>Game state</h3><div class="swatches" id="sw-state"></div></div>
+    </section>
+
+    <section id="type">
+      <div class="eyebrow">02 · Typography</div>
+      <h2>Three faces, three jobs</h2>
+      <p class="lead">Outfit shouts, always Black (900) and usually tracked wide. JetBrains Mono whispers hints, key prompts and every canvas number. Plus Jakarta Sans handles the rare sentence of body copy.</p>
+      <div>
+        <div class="type-row"><div class="k"><b>Logo</b>Outfit 900 · 96 / 1.0 · −0.025em</div><div class="s font-display neon-cyan" style="font-size:clamp(48px,8vw,96px);font-weight:900;line-height:1;letter-spacing:-.025em">ÇINAR</div></div>
+        <div class="type-row"><div class="k"><b>Screen title</b>Outfit 900 · 36 · 0.025em</div><div class="s font-display neon-cyan" style="font-size:36px;font-weight:900;letter-spacing:.025em">KARAKTER SEÇ</div></div>
+        <div class="type-row"><div class="k"><b>Result</b>Outfit 900 · 36</div><div class="s font-display" style="font-size:36px;font-weight:900">UMUT KAZANDI!</div></div>
+        <div class="type-row"><div class="k"><b>Menu item</b>Outfit 900 · 20 · 0.05em</div><div class="s font-display" style="font-size:20px;font-weight:900;letter-spacing:.05em">TEK KİŞİ · BOTA KARŞI</div></div>
+        <div class="type-row"><div class="k"><b>Body</b>Plus Jakarta Sans 400 · 15</div><div class="s">Kutuya tıkla: P1 · sağ tık veya Shift+tık: P2 · ? = rastgele.</div></div>
+        <div class="type-row"><div class="k"><b>Prompt</b>JetBrains Mono 400 · 11 · 0.25em</div><div class="s mono" style="font-size:11px;letter-spacing:.25em;color:#fcd34de6">W/S veya ▲/▼ SEÇ · ENTER BAŞLA</div></div>
+        <div class="type-row"><div class="k"><b>Hint</b>JetBrains Mono 400 · 10 · 0.3em</div><div class="s mono" style="font-size:10px;letter-spacing:.3em;color:var(--slate-500)">RAKİBİNİ SEÇ</div></div>
+        <div class="type-row"><div class="k"><b>HUD (canvas)</b>JetBrains Mono 800 · 16</div><div class="s mono" style="font-size:16px;font-weight:800;color:#ff7aa0">P1 · UMUT</div></div>
+      </div>
+    </section>
+
+    <section id="effects">
+      <div class="eyebrow">03 · Atmosphere</div>
+      <h2>Glow &amp; motion</h2>
+      <p class="lead">Effects are the brand. Each has one job, and the timings below are the ones the game ships with.</p>
+      <div class="fx-grid">
+        <div class="fx"><div class="demo"><span class="font-display neon-cyan" style="font-size:34px;font-weight:900">NEON</span></div><b>neon-cyan</b><p>Three stacked shadows: 6, 24, 70px. Titles and the active screen header.</p></div>
+        <div class="fx"><div class="demo"><span class="font-display neon-red" style="font-size:34px;font-weight:900;font-style:italic">NEON</span></div><b>neon-red</b><p>Same stack in pink, with an orange outer halo for heat. Only on the second logo word.</p></div>
+        <div class="fx"><div class="demo"><span class="font-display anim-flicker" style="font-size:28px;font-weight:900">FLICKER</span></div><b>anim-flicker · 4s</b><p>Two short dips per cycle, like a tired tube. Logo only.</p></div>
+        <div class="fx"><div class="demo"><span class="anim-blink" style="color:var(--amber);font-size:26px">▶</span></div><b>anim-blink · 1.1s step-end</b><p>Hard on/off to 15%. Cursor arrows and selection rings.</p></div>
+        <div class="fx"><div class="demo"><span class="anim-bob" style="width:34px;height:52px;border-radius:17px 17px 6px 6px;background:#ffffff1f;display:block"></span></div><b>anim-bob · 2.6s</b><p>10px float. Fighter previews on the select screen.</p></div>
+        <div class="fx"><div class="demo"><div class="grid-floor" style="inset:-20% -40% -60%"></div></div><b>grid-floor · 2.4s</b><p>44px cyan grid, 58° tilt, scrolls toward the player.</p></div>
+        <div class="fx"><div class="demo" style="background:repeating-linear-gradient(0deg,#00000066 0 1px,#0000 1px 3px),linear-gradient(135deg,#1c2440,#121124)"></div><b>scanlines</b><p>1px dark line every 3px, laid over every full screen (z 30).</p></div>
+        <div class="fx"><div class="demo"><div style="width:120px;height:44px;border-radius:8px;border:2px solid #67e8f9;background:#00f0ff26;box-shadow:0 0 28px rgba(0,240,255,.45)"></div></div><b>Focus glow</b><p><code>0 0 28px rgba(0,240,255,.45)</code> for selection; 40px at .25 for modals.</p></div>
+      </div>
+    </section>
+
+    <section id="menus">
+      <div class="eyebrow">04 · Components</div>
+      <h2>Menus &amp; dialogs</h2>
+      <p class="lead">Menus are keyboard-first: W/S or arrows move, Enter confirms, digits jump. The selected item scales to 103%, gains the cyan glow and shows a blinking amber arrow. Hover the items or use the arrow keys while the menu has focus.</p>
+      <div class="stage">
+        <div>
+          <div class="menu" role="menu" id="demo-menu" tabindex="0" aria-label="Title menu demo">
+            <button class="mbtn" role="menuitem" aria-current="true"><span class="arr">▶</span>TEK KİŞİ<span class="hint">1 · BOTA KARŞI</span></button>
+            <button class="mbtn" role="menuitem"><span class="arr">▶</span>İKİ KİŞİ<span class="hint">2 · TEK KLAVYE</span></button>
+            <button class="mbtn" role="menuitem"><span class="arr">▶</span>AYARLAR<span class="hint">3 · TUŞLAR · SES</span></button>
+            <button class="mbtn" role="menuitem"><span class="arr">▶</span>ÇIKIŞ<span class="hint">4</span></button>
+          </div>
+          <div class="cap">TITLE MENU · font-display 20/900 · border-2 · rounded-lg</div>
+        </div>
+        <div>
+          <div class="modal">
+            <div class="ttl">DURAKLATILDI</div>
+            <div class="stack">
+              <button class="sbtn primary">DEVAM ET</button>
+              <button class="sbtn">YENİDEN BAŞLA</button>
+              <button class="sbtn danger">ANA MENÜ</button>
+            </div>
+          </div>
+          <div class="cap">PAUSE MODAL · card/95 · cyan/50 border · 40px glow</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="select">
+      <div class="eyebrow">05 · Components</div>
+      <h2>Character select</h2>
+      <p class="lead">Player identity is color: P1 is pink-red <code>#ff2a5f</code>, P2 is cyan <code>#00c8ff</code>. Selection rings blink; when both players pick the same fighter, P2's ring goes dashed and sits inside P1's.</p>
+      <div class="stage">
+        <div>
+          <div class="portraits">
+            <div class="pt"><div class="fig"></div>UMUT<div class="ring p1"></div><span class="tag l">1P</span></div>
+            <div class="pt"><div class="fig"></div>SUDEM<div class="ring p2"></div><span class="tag r">2P ✓</span></div>
+            <div class="pt"><div class="fig"></div>METEHAN<div class="ring p1"></div><div class="ring p2 dashed"></div><span class="tag l">1P ✓</span><span class="tag r">BOT</span></div>
+            <div class="pt" style="color:var(--muted-foreground)"><div class="fig" style="background:#ffffff0a"></div>?</div>
+          </div>
+          <div class="cap">PORTRAIT · ring 4px · inset −5 · glow 14px · tag mono 800/11</div>
+        </div>
+        <div class="stats">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="mono" style="font-size:12px;letter-spacing:.1em;color:var(--p1)">P1</span>
+            <span class="mono" style="font-size:10px;letter-spacing:.1em;border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--muted-foreground)">HIZLI</span>
+          </div>
+          <div class="font-display" style="font-size:20px;font-weight:900;margin-top:10px">UMUT</div>
+          <div class="stat"><span>GÜÇ</span><div class="bar"><i style="width:72%"></i></div></div>
+          <div class="stat"><span>HIZ</span><div class="bar"><i style="width:88%"></i></div></div>
+          <div class="stat"><span>SAVUNMA</span><div class="bar"><i style="width:54%"></i></div></div>
+          <div style="margin-top:14px" class="mono"><div style="font-size:10px;letter-spacing:.3em;color:var(--slate-500);margin-bottom:8px">BOT ZORLUĞU</div>
+            <div class="chips" id="diff">
+              <button class="dchip" style="color:var(--easy)" aria-pressed="false">KOLAY</button>
+              <button class="dchip" style="color:var(--normal)" aria-pressed="true">NORMAL</button>
+              <button class="dchip" style="color:var(--hard)" aria-pressed="false">ZOR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hud">
+      <div class="eyebrow">06 · Canvas</div>
+      <h2>Battle HUD</h2>
+      <p class="lead">Drawn on canvas with the game's own geometry: slanted bars (14px cut for health, 6px for the ultimate meter), a white ghost bar that trails damage, a gloss gradient and a 2px white edge. A full meter glows in the fighter's accent and pulses "ULTİ HAZIR!". Drag the sliders to see each state.</p>
+      <div class="hud-wrap"><canvas class="hud" id="hud" width="1376" height="190" aria-label="Battle HUD preview with health and ultimate bars"></canvas></div>
+      <div class="hud-ctl">
+        <label for="hp1">P1 HP <input id="hp1" type="range" min="0" max="100" value="68"></label>
+        <label for="hp2">P2 HP <input id="hp2" type="range" min="0" max="100" value="41"></label>
+        <label for="ul1">P1 ULTİ <input id="ul1" type="range" min="0" max="100" value="100"></label>
+        <label for="ul2">P2 ULTİ <input id="ul2" type="range" min="0" max="100" value="55"></label>
+      </div>
+      <div class="block">
+        <h3>Key hints footer</h3>
+        <div class="keys">
+          <span><kbd>A</kbd><kbd>D</kbd>YÜRÜ</span><span><kbd>W</kbd>ZIPLA</span><span><kbd>Z</kbd><kbd>X</kbd>VURUŞ</span><span><kbd>V</kbd>KORUMA</span><span><kbd>C</kbd>ULTİ</span><span><kbd>E</kbd>+YÖN TAKLA</span><span><kbd>ESC</kbd>DURAKLAT</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="rules">
+      <div class="eyebrow">07 · Usage</div>
+      <h2>Rules for new screens</h2>
+      <div class="rules">
+        <div class="rule-c do"><h4>DO</h4><ul>
+          <li>Wrap every full screen in <code>scanlines</code> on <code>--background</code>.</li>
+          <li>Set titles, buttons and results in Outfit 900, uppercase Turkish.</li>
+          <li>Use mono 10–11px with 0.1–0.4em tracking for every hint and key prompt.</li>
+          <li>Keep P1 pink-red and P2 cyan in every screen, tag and HUD element.</li>
+          <li>Make each menu work by keyboard first: arrows, Enter, digit shortcuts.</li>
+        </ul></div>
+        <div class="rule-c dont"><h4>DON'T</h4><ul>
+          <li>Use neutral greys. Borders are <code>#272744</code>, panels <code>#121124</code>.</li>
+          <li>Put neon text-shadow on body copy or more than one element per screen.</li>
+          <li>Use pink-red for anything friendly. It means danger, low guard or P1.</li>
+          <li>Round corners past <code>0.75rem</code>. HUD bars are slanted, never pills.</li>
+          <li>Add new animations before reusing blink, bob, flicker or grid-scroll.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="tokens">
+      <div class="eyebrow">08 · Export</div>
+      <h2>Tokens</h2>
+      <div class="copybar"><p class="lead" style="margin:0">Drop-in CSS variables, matching the names already in the Tailwind theme.</p><button class="sbtn primary" id="copy-tokens">KOPYALA</button></div>
+      <pre class="tokens" id="tokens-src"></pre>
+    </section>
+  </main>
+</div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const SW = {
+  surface:[["background","#06070f","Every screen"],["arena","#05060f","Canvas clear"],["card","#121124","Panels, modals"],["popover","#18162e","Dropdowns"],["secondary","#1c1c34","Secondary buttons"],["muted","#16162a","Quiet fills"],["accent","#1c2440","Hover fills"],["border","#272744","All borders, inputs"]],
+  ink:[["foreground","#f8fafc","Primary text"],["card-foreground","#f1f5f9","Text on panels"],["slate-300","#cbd5e1","Secondary text"],["muted-foreground","#94a3b8","Hints"],["slate-500","#64748b","Footers, labels"],["primary-foreground","#04121a","Text on cyan"]],
+  signal:[["primary","#00f0ff","UI, focus, ring"],["destructive","#ff2a5f","Danger, final round"],["p1","#ff2a5f","Player 1"],["p2","#00c8ff","Player 2"],["amber","#fcd34d","Cursor, prompts"],["gold","#ffd700","Hit labels, chart-3"],["orange","#ff7700","Neon halo, chart-4"],["violet","#c084fc","chart-5"]],
+  state:[["easy","#3ddc84","KOLAY"],["normal","#ffd24a","NORMAL"],["hard","#ff2a5f","ZOR"],["guard-ok","#7cc8ff","Guard > 35%"],["guard-low","#ff5a5a","Guard broken"],["hit-block","#9fd8ff","Blocked hit spark"]]
+};
+const toast = document.getElementById("toast");
+let tT;
+function say(m){toast.textContent=m;toast.hidden=false;clearTimeout(tT);tT=setTimeout(()=>toast.hidden=true,1400)}
+async function copy(text,label,el){
+  try{await navigator.clipboard.writeText(text);say(label+" KOPYALANDI")}
+  catch(e){ if(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)} say("SEÇİLDİ · CTRL+C") }
+}
+for(const [k,list] of Object.entries(SW)){
+  const box=document.getElementById("sw-"+k);
+  for(const [n,hex,use] of list){
+    const b=document.createElement("button");b.className="sw";b.type="button";
+    b.innerHTML=`<div class="chip" style="background:${hex}"></div><div class="t"><b>--${n}</b><span>${hex}</span><span class="use">${use}</span></div>`;
+    b.onclick=()=>copy(hex,hex.toUpperCase(),b.querySelector("span"));
+    box.appendChild(b);
+  }
+}
+const tok=[":root{"];
+for(const list of Object.values(SW)) for(const [n,h] of list) tok.push(`  --${n}: ${h};`);
+tok.push(`  --font-heading: "Outfit Variable", sans-serif;`,`  --font-sans: "Plus Jakarta Sans Variable", sans-serif;`,`  --font-mono: "JetBrains Mono Variable", monospace;`,`  --radius: .625rem;`,`  --glow-select: 0 0 28px rgba(0,240,255,.45);`,`  --glow-modal: 0 0 40px rgba(0,240,255,.25);`,"}","",
+`.neon-cyan{text-shadow:0 0 6px #00f0ffe6,0 0 24px #00f0ff80,0 0 70px #00f0ff4d}`,
+`.neon-red{text-shadow:0 0 6px #ff2a5fe6,0 0 24px #ff2a5f80,0 0 70px #ff770059}`,
+`.scanlines:after{content:"";pointer-events:none;z-index:30;position:absolute;inset:0;`,`  background:repeating-linear-gradient(0deg,#00000029 0 1px,#0000 1px 3px)}`,
+`@keyframes blink{0%,55%{opacity:1}56%,to{opacity:.15}}   /* 1.1s step-end */`,
+`@keyframes bob{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}   /* 2.6s */`,
+`@keyframes flicker{0%,91%,94%,98%,to{opacity:1}92%{opacity:.4}96%{opacity:.65}}   /* 4s */`,
+`@keyframes grid-scroll{to{background-position:0 44px}}   /* 2.4s linear */`);
+const pre=document.getElementById("tokens-src");pre.textContent=tok.join("\n");
+document.getElementById("copy-tokens").onclick=()=>copy(pre.textContent,"TOKENLAR",pre);
+
+// menu demo
+const menu=document.getElementById("demo-menu"), items=[...menu.querySelectorAll(".mbtn")];
+const setSel=i=>items.forEach((b,j)=>b.setAttribute("aria-current",j===i?"true":"false"));
+items.forEach((b,i)=>{b.onmouseenter=()=>setSel(i);b.onfocus=()=>setSel(i)});
+menu.addEventListener("keydown",e=>{
+  let i=items.findIndex(b=>b.getAttribute("aria-current")==="true");
+  if(["ArrowDown","KeyS"].includes(e.code)){e.preventDefault();setSel((i+1)%items.length)}
+  if(["ArrowUp","KeyW"].includes(e.code)){e.preventDefault();setSel((i+items.length-1)%items.length)}
+});
+document.querySelectorAll("#diff .dchip").forEach(c=>c.onclick=()=>document.querySelectorAll("#diff .dchip").forEach(x=>x.setAttribute("aria-pressed",x===c?"true":"false")));
+
+// HUD — ported from src/53-game-render-fighters-fx.js (ky, Ay, jy, My)
+const cv=document.getElementById("hud"),g=cv.getContext("2d"),W=1376;
+const MONO='"JetBrains Mono", monospace';
+const P1={name:"UMUT",accent:"#ff2a5f",accent2:"#ff7aa0",ghost:0},P2={name:"SUDEM",accent:"#00c8ff",accent2:"#7fe6ff",ghost:0};
+function ky(t,n,r,i,a,o){g.beginPath();o?(g.moveTo(t,n),g.lineTo(t+r-a,n),g.lineTo(t+r,n+i),g.lineTo(t+a,n+i)):(g.moveTo(t+a,n),g.lineTo(t+r,n),g.lineTo(t+r-a,n+i),g.lineTo(t,n+i));g.closePath()}
+function Ay(t,n,r,i,a,o,s,c,l){ky(t,n,r,i,14,s);g.fillStyle="rgba(10,10,20,0.85)";g.fill();g.save();g.clip();
+  let u=r*Math.max(a,o);g.fillStyle="rgba(255,255,255,0.75)";g.fillRect(s?t+r-u:t,n,u,i);
+  let d=r*a,f=g.createLinearGradient(t,0,t+r,0);f.addColorStop(0,s?l:c);f.addColorStop(1,s?c:l);g.fillStyle=f;g.fillRect(s?t+r-d:t,n,d,i);
+  let p=g.createLinearGradient(0,n,0,n+i);p.addColorStop(0,"rgba(255,255,255,0.3)");p.addColorStop(.5,"rgba(255,255,255,0.04)");p.addColorStop(1,"rgba(0,0,0,0.25)");g.fillStyle=p;g.fillRect(t,n,r,i);g.restore();
+  ky(t,n,r,i,14,s);g.strokeStyle="rgba(255,255,255,0.75)";g.lineWidth=2;g.stroke()}
+function hexA(h,a){h=h.slice(1);return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`}
+function jy(t,n,r,i,a,o,s,c,l,key){ky(t,n,r,i,6,o);g.fillStyle="rgba(10,10,20,0.85)";g.fill();let d=a>=1;g.save();g.clip();
+  g.shadowColor=d?c:"transparent";g.shadowBlur=d?14:0;g.fillStyle=d?c:s;let f=r*Math.min(1,a);g.fillRect(o?t+r-f:t,n,f,i);g.shadowBlur=0;g.fillStyle="rgba(5,6,15,0.8)";
+  for(const q of [.25,.5,.75])g.fillRect(t+r*q-1,n,2,i);g.restore();ky(t,n,r,i,6,o);g.strokeStyle=d?c:"rgba(255,255,255,0.45)";g.lineWidth=d?2:1.5;g.stroke();
+  if(d){let al=.65+Math.sin(l*.012)*.35;g.font=`800 13px ${MONO}`;g.fillStyle=hexA(c,al);g.textAlign=o?"right":"left";g.fillText(`ULTİ HAZIR! (${key})`,o?t+r:t,n+i+16)}}
+const val=id=>document.getElementById(id).value/100;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function draw(time){
+  g.setTransform(1,0,0,1,0,0);g.fillStyle="#05060f";g.fillRect(0,0,W,190);
+  const h1=val("hp1"),h2=val("hp2");
+  P1.ghost=Math.max(h1,P1.ghost-0.004);P2.ghost=Math.max(h2,P2.ghost-0.004);
+  g.font=`800 16px ${MONO}`;g.textAlign="left";g.fillStyle=P1.accent2;g.fillText(`P1 · ${P1.name}`,34,22);
+  g.textAlign="right";g.fillStyle=P2.accent2;g.fillText(`${P2.name} · BOT · NORMAL`,W-34,22);
+  Ay(30,30,540,26,h1,P1.ghost,false,P1.accent,P1.accent2);
+  Ay(W-30-540,30,540,26,h2,P2.ghost,true,P2.accent,P2.accent2);
+  jy(30,66,300,12,val("ul1"),false,"rgba(255,255,255,0.55)",P1.accent,reduce?0:time,"C");
+  jy(W-30-300,66,300,12,val("ul2"),true,"rgba(255,255,255,0.55)",P2.accent,reduce?0:time,"NUM 3");
+  // timer + round pips
+  g.textAlign="center";g.font=`900 54px "Outfit", sans-serif`;g.fillStyle="#ffffff";g.fillText("62",W/2,74);
+  g.font=`800 13px ${MONO}`;g.fillStyle="rgba(255,255,255,.8)";g.fillText("RAUNT 2",W/2,100);
+  [[W/2-40,P1.accent,true],[W/2-22,P1.accent,false],[W/2+22,P2.accent,true],[W/2+40,P2.accent,false]].forEach(([x,c,w])=>{g.beginPath();g.arc(x,120,6,0,7);g.fillStyle=w?c:"rgba(4,5,12,.8)";g.fill();g.strokeStyle=w?"#ffffff":"rgba(255,255,255,.45)";g.lineWidth=1.5;g.stroke()});
+  // guard bars
+  [[30,.72],[W-30-160,.28]].forEach(([x,gp])=>{g.fillStyle="rgba(4,5,12,.85)";g.fillRect(x,150,160,7);g.fillStyle=gp>.35?"#7cc8ff":"#ff5a5a";g.fillRect(x,150,160*gp,7);g.strokeStyle="rgba(255,255,255,.55)";g.lineWidth=1;g.strokeRect(x+.5,150.5,159,6)});
+  g.font=`700 11px ${MONO}`;g.textAlign="left";g.fillStyle="rgba(255,255,255,.6)";g.fillText("KORUMA",30,176);g.textAlign="right";g.fillText("KORUMA KIRIK",W-30,176);
+  if(!reduce)requestAnimationFrame(draw);
+}
+P1.ghost=val("hp1")+.12;P2.ghost=val("hp2")+.2;
+["hp1","hp2","ul1","ul2"].forEach(id=>document.getElementById(id).addEventListener("input",()=>{if(reduce)draw(0)}));
+document.fonts&&document.fonts.ready.then(()=>reduce&&draw(0));
+reduce?draw(0):requestAnimationFrame(draw);
+</script>

@@ -234,6 +234,8 @@ Kod minify edilmiş olsa da yapı net biçimde ayrışıyor:
 
 ## 12. Değişiklik Günlüğü
 
+> Bu bölümde adı geçen `.bak-*` yedekleri ve eski arena görseli (`ankara_map.eski.webp`) 16 Ekim temizliğinde kaldırıldı. 16 Ekim'den sonraki sürümler git geçmişinde (`git log`).
+
 ### 13 Ekim 2026
 
 | Yapılan | Dosya | Ayrıntı |
@@ -261,7 +263,7 @@ Kod minify edilmiş olsa da yapı net biçimde ayrışıyor:
 | Yedek 9 | `js/game.bundle.js.bak-secim-oncesi` | Ayarlar menüsü **var**, yeni seçim ekranı **yok**. |
 | **Yeni karakter: METEHAN** | `js/game.bundle.js`, `js/assets.js`, `assets/metehan.webp`, `assets/frames/metehan_*.webp` | Müzisyen, hantal ve sert vuran karakter, yıldırımlı nota ultisi. Aşağıdaki "Yeni karakter: METEHAN" bölümüne bakın. |
 | Yedek 10 | `js/game.bundle.js.bak-metehan-oncesi` | SF2 tarzı seçim ekranı **var**, Metehan **yok**. |
-| **Arena arka planı değişti** | `assets/ankara_map.webp` | Kullanıcının verdiği yeni görsel (hilal ay, **Atakule** sağda görünür) eski görselin (dolunay, Atakule yok) yerine kondu. Boyut aynı (1376×768), kod değişmedi. Eski görsel `assets/ankara_map.eski.webp` olarak duruyor. Geri dönmek için iki dosyanın adını değiştirmek yeterli. |
+| **Arena arka planı değişti** | `assets/ankara_map.webp` | Kullanıcının verdiği yeni görsel (hilal ay, **Atakule** sağda görünür) eski görselin (dolunay, Atakule yok) yerine kondu. Boyut aynı (1376×768), kod değişmedi. Eski görsel 16 Ekim temizliğinde kaldırıldı. |
 
 #### Eğilme düzeltmesi (ayrıntı)
 
