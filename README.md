@@ -46,6 +46,7 @@ Dosya adı öneki (`10-`, `63-`…) çalışma sırasıdır; numaraları değiş
 ├── package.json            build / check / start / test komutları
 ├── CLAUDE.md               Claude Code proje kuralları ve token tasarrufu
 ├── docs/ANALIZ.md          Ayrıntılı teknik analiz, değişiklik günlüğü, güncel durum
+├── docs/TASARIM.html       Arayüz tasarım sistemi: renkler, yazı tipleri, efektler, bileşenler (tarayıcıda aç)
 ├── src/                    ← DÜZENLENEN KAYNAK (20 dosya; 00/30 = üçüncü taraf, ham minify)
 ├── tools/
 │   ├── build.mjs           src → js/game.bundle.js
@@ -123,6 +124,8 @@ Başlık ekranında **AYARLAR** (veya **3** tuşu) ve maç sırasında **ESC →
   renk tonuyla ("SUDEM II" / "UMUT II") dövüşür.
 
 ## Sürüm
+
+> Aşağıda adı geçen `.bak-*-oncesi` yedekleri ve eski arena görseli (`ankara_map.eski.webp`) 16 Ekim temizliğinde kaldırıldı. 16 Ekim'den sonraki sürümler GitHub'daki git geçmişinde.
 
 - **16 Ekim 2026 — Açık kaynak yapı:** oyun kodu `src/` altında okunabilir parçalara bölündü (davranış birebir aynı, AST ile doğrulandı); `npm run build/test/start`; otomatik önbellek etiketi; 26 tarayıcı testi.
   Takla tuşu **R → E** (P2: Num 6 / N); takla ve W+yön için sıra-bağımsız giriş tamponu.
