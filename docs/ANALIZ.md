@@ -651,7 +651,7 @@ Bölme **AST eşdeğerlik testiyle** doğrulandı: GitHub `main` (8bb94c5) ile 1
 | `npm run build` | `src/` → `js/game.bundle.js`, `index.html`'e `?v=<hash>` yazar (elle `?v=tN` gerekmez) |
 | `npm run check` | build edilmiş dosya `src/` ile uyumlu mu (değiştirmeden) |
 | `npm start` | önbelleksiz sunucu, `localhost:8130` (`oyunu-baslat.bat` aynen çalışır) |
-| `npm test` | build + 26 gerçek tarayıcı testi (Playwright, headless Chromium) |
+| `npm test` | build + 30 gerçek tarayıcı testi (Playwright, headless Chromium) |
 
 Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/hata ayıklama için).
 

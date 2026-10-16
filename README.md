@@ -32,7 +32,7 @@ git clone https://github.com/turkdagumutcan-afk/cinarfights.git
 cd cinarfights
 npm install            # yalnızca testler için (Playwright); oyunu çalıştırmak için gerekmez
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
-npm test               # build + 26 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
+npm test               # build + 30 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
 
 İş akışı: **yeni dal aç → `src/`'de düzenle → `npm run build` → oyunda dene → `npm test` → push → Pull Request.**
