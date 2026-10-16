@@ -2,11 +2,14 @@
 *.bak
 *.bak-*
 *.before-*
+_yedekler/
 
-# Araç/iç dosyalar
-.claude/
+# Araç/iç dosyalar (.claude/settings.json takip edilir, kişisel ayarlar değil)
+.claude/*
+!.claude/settings.json
 .DS_Store
 Thumbs.db
 
 # Paketler
+node_modules/
 *.zip

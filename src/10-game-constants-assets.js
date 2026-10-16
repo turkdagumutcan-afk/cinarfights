@@ -1,0 +1,427 @@
+// 10-game-constants-assets.js — Ses motoru (X), fizik sabitleri, renkler, poz listesi, sprite/asset yükleyiciler, karakter tanımları.
+// Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
+
+var X = new (class {
+  ctx = null;
+  master = null;
+  noiseBuf = null;
+  ensure() {
+    try {
+      if (!this.ctx) {
+        let e = window.AudioContext ?? window.webkitAudioContext;
+        ((this.ctx = new e()),
+          (this.master = this.ctx.createGain()),
+          (this.master.gain.value = (0.4 * AF_S.vol) / 100),
+          this.master.connect(this.ctx.destination));
+        let t = Math.floor(this.ctx.sampleRate * 0.6);
+        this.noiseBuf = this.ctx.createBuffer(1, t, this.ctx.sampleRate);
+        let n = this.noiseBuf.getChannelData(0);
+        for (let e = 0; e < t; e++) n[e] = Math.random() * 2 - 1;
+      }
+      this.ctx.state === `suspended` && this.ctx.resume();
+    } catch {}
+  }
+  tone(e, t, n, r, i, a = 0) {
+    try {
+      if (!this.ctx || !this.master) return;
+      let o = this.ctx.currentTime + a,
+        s = this.ctx.createOscillator(),
+        c = this.ctx.createGain();
+      ((s.type = e),
+        s.frequency.setValueAtTime(Math.max(1, t), o),
+        s.frequency.exponentialRampToValueAtTime(Math.max(1, n), o + r),
+        c.gain.setValueAtTime(i, o),
+        c.gain.exponentialRampToValueAtTime(1e-4, o + r),
+        s.connect(c).connect(this.master),
+        s.start(o),
+        s.stop(o + r + 0.02));
+    } catch {}
+  }
+  noise(e, t, n = 0, r = 2e4, i = 0) {
+    try {
+      if (!this.ctx || !this.master || !this.noiseBuf) return;
+      let a = this.ctx.currentTime + i,
+        o = this.ctx.createBufferSource();
+      o.buffer = this.noiseBuf;
+      let s = this.ctx.createGain();
+      (s.gain.setValueAtTime(t, a), s.gain.exponentialRampToValueAtTime(1e-4, a + e));
+      let c = o;
+      if (n > 0) {
+        let e = this.ctx.createBiquadFilter();
+        ((e.type = `highpass`), (e.frequency.value = n), c.connect(e), (c = e));
+      }
+      if (r < 2e4) {
+        let e = this.ctx.createBiquadFilter();
+        ((e.type = `lowpass`), (e.frequency.value = r), c.connect(e), (c = e));
+      }
+      (c.connect(s).connect(this.master), o.start(a), o.stop(a + e + 0.02));
+    } catch {}
+  }
+  uiClick() {
+    this.tone(`square`, 880, 660, 0.06, 0.12);
+  }
+  jump() {
+    this.tone(`sine`, 180, 430, 0.16, 0.16);
+  }
+  land() {
+    (this.tone(`sine`, 95, 55, 0.09, 0.2), this.noise(0.05, 0.06, 0, 900));
+  }
+  swing() {
+    this.noise(0.06, 0.1, 1400);
+  }
+  hitLight() {
+    (this.tone(`square`, 240, 70, 0.09, 0.22), this.noise(0.07, 0.16, 0, 5e3));
+  }
+  hitHeavy() {
+    (this.tone(`square`, 130, 45, 0.2, 0.3), this.noise(0.16, 0.26, 0, 3200));
+  }
+  meterFull() {
+    (this.tone(`square`, 880, 880, 0.07, 0.12), this.tone(`square`, 1320, 1320, 0.09, 0.12, 0.08));
+  }
+  fireball() {
+    (this.tone(`sawtooth`, 95, 40, 0.55, 0.3),
+      this.noise(0.45, 0.22, 0, 1800),
+      this.tone(`square`, 55, 30, 0.4, 0.18, 0.05));
+  }
+  flashWave() {
+    (this.noise(0.04, 0.3, 3500),
+      this.tone(`sine`, 2600, 1700, 0.5, 0.14, 0.02),
+      this.tone(`sine`, 120, 60, 0.4, 0.22, 0.02));
+  }
+  shutter(e = 0) {
+    (this.noise(0.03, 0.22, 4e3, 2e4, e), this.tone(`square`, 1800, 900, 0.04, 0.08, e));
+  }
+  carRev() {
+    (this.tone(`sawtooth`, 70, 260, 0.45, 0.2), this.tone(`square`, 140, 420, 0.35, 0.08, 0.05));
+  }
+  ringChime() {
+    [988, 1319, 1568, 1976].forEach((e, t) => this.tone(`sine`, e, e, 0.25, 0.1, 0.15 + t * 0.06));
+  }
+  ko() {
+    (this.tone(`sawtooth`, 220, 55, 1.1, 0.3),
+      this.tone(`sawtooth`, 165, 40, 1.2, 0.24, 0.05),
+      this.noise(0.5, 0.3, 0, 1400));
+  }
+  roundStart() {
+    (this.tone(`sine`, 330, 330, 0.5, 0.2), this.tone(`sine`, 495, 495, 0.55, 0.16, 0.02));
+  }
+})();
+
+var $h = 1376;
+
+var eg = 2900;
+
+var tg = 1.85;
+
+var ng = 0.82;
+
+var rg = -1300;
+
+var ig = 1e3 / 60;
+
+var ag = `UMUT`;
+
+var og = `SUDEM`;
+
+var sg = 250 * 0.91;
+
+var cg = `#ff2a5f`;
+
+var lg = `#ffffff`;
+
+var ug = `#00f0ff`;
+
+var dg = `#ffd24a`;
+
+var fg = `#ffd700`;
+
+var pg = (e, t, n) => Math.max(t, Math.min(n, e));
+
+var mg = [
+  `idle`,
+  `crouch`,
+  `punch`,
+  `kick`,
+  `hurt`,
+  `jump`,
+  `ult`,
+  `run`,
+  `guard`,
+  `guardlow`,
+  `cast`,
+];
+
+var hg = {
+  idle: 1,
+  punch: 0.97,
+  kick: 0.98,
+  hurt: 0.95,
+  jump: 0.84,
+  ult: 0.95,
+  crouch: 0.71,
+  run: 1,
+  guard: 0.98,
+  guardlow: 0.78,
+  cast: 0.97,
+};
+
+function gg(e) {
+  return window.__ANKARA_ASSETS__?.[e] ?? e;
+}
+
+var _g = { p1: `/assets/fotograf_canavari.png`, p2: `/assets/mcqueen.png` },
+  vg = `/assets/ankara_map.png`,
+  yg = (e, t) => `/assets/frames/${e}_${t}.png`;
+
+function bg(e) {
+  return new Promise((t, n) => {
+    let r = new Image();
+    ((r.onload = () => t(r)), (r.onerror = () => n(Error(`missing asset: ${e}`))), (r.src = gg(e)));
+  });
+}
+
+function xg(e, t, n, r, r2) {
+  let i = document.createElement(`canvas`);
+  ((i.width = t), (i.height = n));
+  let a = i.getContext(`2d`, { willReadFrequently: !0 });
+  a.drawImage(e, 0, 0);
+  let o = a.getImageData(0, 0, t, n).data,
+    s = (e, n) => o[(n * t + e) * 4 + 3] > 60,
+    c = t,
+    l = n,
+    u = -1,
+    d = -1;
+  for (let e = 0; e < n; e++)
+    for (let n = 0; n < t; n++)
+      s(n, e) && (n < c && (c = n), n > u && (u = n), e < l && (l = e), e > d && (d = e));
+  u < 0 && ((c = 0), (l = 0), (u = t - 1), (d = n - 1));
+  let f = d - l + 1,
+    p = Array(t).fill(0),
+    m = 0,
+    h = l + Math.floor(f * 0.45);
+  for (let e = l; e <= h; e++) for (let t = c; t <= u; t++) s(t, e) && (p[t]++, m++);
+  let g = 0,
+    _ = (c + u) / 2;
+  for (let e = c; e <= u; e++)
+    if (((g += p[e]), g >= m / 2)) {
+      _ = e;
+      break;
+    }
+  let v = 0,
+    y = 0;
+  for (let e = Math.max(c, u - 8); e <= u; e++)
+    for (let t = l; t <= d; t++) s(e, t) && ((v += t), y++);
+  let b = y ? v / y : l + f * 0.3,
+    x = r / f;
+  if (r2) {
+    let e2 = document.createElement(`canvas`);
+    ((e2.width = t), (e2.height = n));
+    let t2 = e2.getContext(`2d`);
+    ((t2.filter = `hue-rotate(165deg) saturate(1.15)`), t2.drawImage(e, 0, 0), (e = e2));
+  }
+  return {
+    img: e,
+    w: t,
+    h: n,
+    bx: c,
+    by: l,
+    bw: u - c + 1,
+    bh: f,
+    ax: _,
+    scale: x,
+    visibleH: f * x,
+    tipX: (u - _) * x,
+    tipY: (d - b) * x,
+  };
+}
+
+function Sg(e, t) {
+  let n = document.createElement(`canvas`);
+  ((n.width = 240), (n.height = 320));
+  let r = n.getContext(`2d`);
+  ((r.strokeStyle = e), (r.lineWidth = 10), (r.lineCap = `round`));
+  let i = t === `crouch` ? 110 : 0,
+    a = (e) => {
+      (r.beginPath(), r.moveTo(e[0], e[1]));
+      for (let t = 2; t < e.length; t += 2) r.lineTo(e[t], e[t + 1]);
+      r.stroke();
+    };
+  return (
+    r.beginPath(),
+    r.arc(110, 50 + i, 24, 0, Math.PI * 2),
+    r.stroke(),
+    a([110, 76 + i, 106, 180]),
+    a(
+      t === `punch` || t === `ult`
+        ? [108, 110 + i, 230, 110 + i]
+        : [108, 104 + i, 150, 130 + i, 168, 106 + i],
+    ),
+    a(t === `kick` ? [106, 180, 230, 180] : [106, 180, 150, 240 + i * 0.2, 140, 310]),
+    a([106, 180, 70, 240 + i * 0.2, 78, 310]),
+    n
+  );
+}
+
+async function Cg(e, t, n, r2, same) {
+  let r = await Promise.all(
+      mg.map((t) =>
+        (t === `run` && !AF_char(e).run) ||
+        ((t === `guard` || t === `guardlow`) && !AF_char(e).guard) ||
+        (t === `cast` && !AF_char(e).proj)
+          ? Promise.resolve(null)
+          : bg(yg(e, t)).catch(() => null),
+      ),
+    ),
+    i = {},
+    idleBh = 0;
+  mg.forEach((e, a) => {
+    let o = r[a];
+    if ((e === `run` || e === `guard` || e === `guardlow` || e === `cast`) && !o) return;
+    let s = o ?? Sg(n, e),
+      c = o ? o.naturalWidth : 240,
+      l = o ? o.naturalHeight : 320,
+      rr = t * (hg[e] || 1);
+    if (same && o) {
+      let q = xg(s, c, l, 1, !1);
+      e === `idle` && (idleBh = q.bh);
+      rr = (t * q.bh) / idleBh;
+    }
+    i[e] = xg(s, c, l, rr, r2);
+  });
+  let rollFrames = null,
+    rollScale = 1,
+    rollPad = 0,
+    backFrames = null,
+    backScale = 1,
+    backJumpH = 0,
+    sweepFrames = null,
+    sweepScale = 1,
+    sweepAnchorX = 0;
+  if (AF_char(e).roll) {
+    let ri = await Promise.all(
+      [0, 1, 2, 3, 4, 5, 6, 7].map((k) => bg(`/assets/frames/${e}_roll${k}.png`).catch(() => null)),
+    );
+    if (ri[0]) {
+      ((rollFrames = ri), (rollScale = i.idle.visibleH / 310), (rollPad = 2));
+    }
+    let rb = await Promise.all(
+      Array.from({ length: 16 }).map((_, k) =>
+        bg(`/assets/frames/${e}_back${k}.png`).catch(() => null),
+      ),
+    );
+    if (rb[0] && rb.every(Boolean)) {
+      ((backFrames = rb),
+        (backScale = i.idle.visibleH / 286),
+        (backJumpH = i.idle.visibleH * 0.82));
+    }
+    let sw = await Promise.all(
+      Array.from({ length: 12 }).map((_, k) =>
+        bg(`/assets/frames/${e}_sweep${k}.png`).catch(() => null),
+      ),
+    );
+    if (sw[0] && sw.every(Boolean)) {
+      ((sweepFrames = sw), (sweepScale = i.idle.scale * 1.75), (sweepAnchorX = 190));
+    }
+  }
+  let a = i.idle;
+  return {
+    frames: i,
+    halfW: Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
+    hasRun: !!r[mg.indexOf(`run`)],
+    rollFrames,
+    rollScale,
+    rollPad,
+    backFrames,
+    backScale,
+    backJumpH,
+    sweepFrames,
+    sweepScale,
+    sweepAnchorX,
+  };
+}
+
+function wg() {
+  let e = document.createElement(`canvas`);
+  ((e.width = $h), (e.height = 768));
+  let t = e.getContext(`2d`),
+    n = t.createLinearGradient(0, 0, 0, 768);
+  return (
+    n.addColorStop(0, `#05060f`),
+    n.addColorStop(1, `#1a2140`),
+    (t.fillStyle = n),
+    t.fillRect(0, 0, $h, 768),
+    e
+  );
+}
+
+var AF_CHARS = {
+  umut: {
+    id: `umut`,
+    name: `UMUT`,
+    color: `#ff2a5f`,
+    color2: `#ff7aa8`,
+    scale: 250,
+    guard: !0,
+    proj: !0,
+    roll: !0,
+    tag: `Fotoğrafçı · Hızlı yumruklar, kör edici flaş`,
+    ultName: `FLAŞ PATLAMASI`,
+    ultHint: `flaş + uçan fotoğraflar`,
+    img: () => gg(_g.p1),
+    stats: [
+      [`HIZ`, 0.75],
+      [`GÜÇ`, 0.8],
+      [`MENZİL`, 0.85],
+    ],
+  },
+  sudem: {
+    id: `sudem`,
+    name: `SUDEM`,
+    color: `#00f0ff`,
+    color2: `#2dd4bf`,
+    scale: sg,
+    tag: `McQueen hayranı · Çevik tekmeler, oyuncak araba`,
+    ultName: `KA-ÇOV!`,
+    ultHint: `oyuncak araba + sihirli yüzük`,
+    img: () => gg(_g.p2),
+    stats: [
+      [`HIZ`, 0.9],
+      [`GÜÇ`, 0.65],
+      [`MENZİL`, 0.8],
+    ],
+  },
+  metehan: {
+    id: `metehan`,
+    name: `METEHAN`,
+    color: `#ffd21f`,
+    color2: `#fff08a`,
+    scale: 232,
+    same: !0,
+    run: !0,
+    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175 },
+    tag: `Müzisyen · Hantal ama çok sert vuruyor`,
+    ultName: `YILDIRIM NOTALARI`,
+    ultHint: `gitardan 3 yıldırımlı nota`,
+    img: () => gg(`/assets/metehan.png`),
+    stats: [
+      [`HIZ`, 0.45],
+      [`GÜÇ`, 1],
+      [`MENZİL`, 0.7],
+    ],
+  },
+};
+
+function AF_char(e) {
+  return AF_CHARS[e] ?? AF_CHARS.umut;
+}
+
+function AF_def(e, d) {
+  const m = e.mod;
+  return m && m.sup !== 1
+    ? { ...d, startup: Math.round(d.startup * m.sup), recovery: Math.round(d.recovery * m.sup) }
+    : d;
+}
+
+function AF_spd(e) {
+  return e.mod ? e.mod.spd : 1;
+}
