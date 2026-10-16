@@ -163,8 +163,9 @@ var Xy = class {
       e.blockT > 0 && (e.blockT = Math.max(0, e.blockT - r)),
       e.dashCd > 0 && (e.dashCd = Math.max(0, e.dashCd - r)),
       e.projCd > 0 && (e.projCd = Math.max(0, e.projCd - r)),
+      e.dashChainT > 0 && (e.dashChainT = Math.max(0, e.dashChainT - r)),
       e.dashT > 0 &&
-        ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = 850), (e.armor = 0))),
+        ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = AF_DASH_CD), (e.armor = 0))),
       e.state !== `guard` && e.gp < 100 && (e.gp = Math.min(100, e.gp + r * 0.012)),
       e.jumpT > 0 && (e.jumpT = Math.max(0, e.jumpT - r)),
       e.jumpGraceT > 0 && (e.jumpGraceT = Math.max(0, e.jumpGraceT - r)),
@@ -193,7 +194,7 @@ var Xy = class {
     if (
       t &&
       t.rollEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).roll &&
       a &&
       e.grounded &&
       e.rollCd <= 0 &&
@@ -248,22 +249,23 @@ var Xy = class {
       e.grounded &&
       e.dashCd <= 0 &&
       e.dashT <= 0 &&
-      e.meter >= 25 &&
       this.phase === `fight` &&
       e.state !== `attack` &&
       e.state !== `hitstun` &&
       e.state !== `guard`
     ) {
-      ((e.dashT = 420),
-        (e.armor = 1),
+      // Koşu çarpması ulti barı harcamaz; 3 sn içindeki tekrarlar zayıflar ve zırhsızdır (köşe döngüsü olmasın).
+      ((e.dashChain = e.dashChainT > 0 ? (e.dashChain || 0) + 1 : 0),
+        (e.dashChainT = 3000),
+        (e.dashT = 420),
+        (e.armor = e.dashChain ? 0 : 1),
         (e.dashHit = !1),
-        (e.meter = Math.max(0, e.meter - 25)),
         X.jump());
     }
     if (
       t &&
       t.projEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).proj &&
       a &&
       e.grounded &&
       e.projCd <= 0 &&
@@ -276,7 +278,7 @@ var Xy = class {
     if (
       t &&
       t.sweepEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).roll &&
       a &&
       e.grounded &&
       this.phase === `fight` &&
@@ -387,13 +389,7 @@ var Xy = class {
         n.state !== `ko` &&
         Math.abs(e.x - n.x) < e.halfW + n.halfW + 14 &&
         Math.abs(e.y - n.y) < 135 &&
-        ((e.dashHit = !0),
-        (e.dashT = 0),
-        (e.dashCd = 850),
-        (e.armor = 0),
-        (e.vx *= 0.2),
-        this.shake(12, 180),
-        this.applyHit(e, n, AF_dashHit, (e.x + n.x) / 2, e.y - 90)),
+        AF_dashImpact(this, e, n),
       e.ghostHp > e.hp ? (e.ghostHp = Math.max(e.hp, e.ghostHp - r * 0.055)) : (e.ghostHp = e.hp));
   }
   onLand(e) {
@@ -500,7 +496,7 @@ var Xy = class {
     n = AF_scaleHit(n);
     if (t.dashT > 0 && t.armor > 0) {
       t.armor = 0;
-      let ad = Math.max(1, Math.round(n.damage * 0.4));
+      let ad = Math.max(1, Math.round(n.damage * 0.3));
       ((t.hp = Math.max(1, t.hp - ad)),
         (e.damageDealt += ad),
         this.addMeter(e, n.meter),
@@ -512,7 +508,7 @@ var Xy = class {
       return;
     }
     if (t.dashT > 0) {
-      ((t.dashT = 0), (t.dashCd = 850), (t.armor = 0));
+      ((t.dashT = 0), (t.dashCd = AF_DASH_CD), (t.armor = 0));
     }
     ((t.hp = Math.max(0, t.hp - n.damage)),
       (e.damageDealt += n.damage),
@@ -557,13 +553,34 @@ var Xy = class {
       this.phase !== `fight`
     )
       return !1;
-    ((e.projCd = 620),
+    // SUDEM: sihirli yüzük (F). Eski UMUT flaşı (kind "flash") kod olarak duruyor ama kimseye atanmadı.
+    const yuzuk = e.charId === `sudem`;
+    ((e.projCd = yuzuk ? 900 : 620),
       (e.attack = { def: AF_projCast, t: 0, hit: !0 }),
       (e.state = `attack`),
       (e.vx = 0));
     let t = e.spr.frames.cast || e.spr.frames.idle,
       n = e.x + e.facing * ((t.tipX || 40) + 10),
       r = e.y - (t.tipY || e.spr.frames.idle.visibleH * 0.52);
+    if (yuzuk) {
+      this.projectiles.push({
+        kind: `ringshot`,
+        owner: e.idx,
+        x: n,
+        y: r,
+        vx: 660 * e.facing,
+        vy: 0,
+        r: 26,
+        rot: 0,
+        vr: 0,
+        t: 0,
+        delay: 80,
+        baseY: r,
+        dead: !1,
+      });
+      X.ringChime();
+      return !0;
+    }
     this.projectiles.push({
       kind: `flash`,
       owner: e.idx,
@@ -633,7 +650,7 @@ var Xy = class {
                 k * 32,
                 0,
               );
-            ((p.rot = k % 2), (p.col = k % 3), this.projectiles.push(p));
+            ((p.rot = k % 2), (p.col = k % 4), this.projectiles.push(p));
           }),
           this.lensFlashes.push({ x: n, y: r, t: 0 }),
           (this.announce = {
@@ -647,19 +664,26 @@ var Xy = class {
         : e.charId === `umut`
           ? (this.lensFlashes.push({ x: n, y: r, t: 0 }),
             (this.flashA = 0.78),
-            this.projectiles.push(i(`photo`, r, 860, -110, 30, 60, 9)),
-            this.projectiles.push(i(`photo`, r, 900, 0, 30, 150, -8)),
-            this.projectiles.push(i(`photo`, r, 860, 110, 30, 240, 10)),
+            this.projectiles.push({ ...i(`photo`, r, 860, -110, 30, 60, 9), fi: 0 }),
+            this.projectiles.push({ ...i(`photo`, r, 900, 0, 30, 150, -8), fi: 1 }),
+            this.projectiles.push({ ...i(`photo`, r, 860, 110, 30, 240, 10), fi: 2 }),
             (this.announce = { text: `FLAŞ PATLAMASI!`, t: 0, dur: 900, size: 54, color: lg }),
             X.flashWave(),
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
-          : (this.projectiles.push(i(`car`, e.y - 2, 920, 0, 30, 40, 0)),
-            this.projectiles.push(i(`ring`, r, 700, 0, 34, 200, 0)),
-            (this.announce = { text: `KA-ÇOV!`, t: 0, dur: 900, size: 64, color: dg }),
-            X.carRev(),
-            X.ringChime()),
+          : e.charId === `ahmet`
+            ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
+              (this.projectiles.push({
+                ...i(`motor`, e.y - 2, 1150, 0, 52, 380, 0),
+                x: e.facing > 0 ? -100 : $h + 100,
+              }),
+              (this.announce = { text: `GAZA BAS!`, t: 0, dur: 900, size: 64, color: `#ff7a1a` }),
+              X.carRev(),
+              X.carRev())
+            : (this.projectiles.push(i(`car`, e.y - 2, 980, 0, 48, 40, 0)),
+              (this.announce = { text: `KA-ÇOV!`, t: 0, dur: 900, size: 64, color: dg }),
+              X.carRev()),
       this.shake(10, 260),
       !0
     );
@@ -681,7 +705,7 @@ var Xy = class {
       }
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
-      else if (n.kind === `car`) {
+      else if (n.kind === `car` || n.kind === `motor`) {
         let e = n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
         (n.y < e - 2
           ? ((n.vy += eg * t), (n.y = Math.min(e - 2, n.y + n.vy * t)))
@@ -695,7 +719,12 @@ var Xy = class {
               size: 3 + Math.random() * 4,
               life: 260,
               max: 260,
-              color: Math.random() < 0.5 ? `#ffd24a` : `#ff3b2f`,
+              color:
+                n.kind === `motor`
+                  ? [`#ff9a1f`, `#ffd24a`, `#9aa0a6`][(Math.random() * 3) | 0]
+                  : Math.random() < 0.5
+                    ? `#ffd24a`
+                    : `#ff3b2f`,
               rot: 0,
               spin: 4,
             }));
@@ -714,7 +743,7 @@ var Xy = class {
           rot: 0,
           spin: 6,
         }),
-        n.kind === `ring` &&
+        (n.kind === `ring` || n.kind === `ringshot`) &&
           Math.random() < 0.7 &&
           this.sparks.push({
             x: n.x + (Math.random() - 0.5) * 30,
@@ -731,11 +760,11 @@ var Xy = class {
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
       if (i.state !== `ko`) {
-        let e = n.kind === `car` ? n.y - 18 : n.y,
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 : n.y,
           t = Yy(n.x, e, n.r, i.hurtbox());
         t &&
           ((n.dead = !0),
-          this.applyHit(r, i, Gy[n.kind], t.x, t.y),
+          this.applyHit(r, i, n.kind === `ringshot` ? AF_ringShot : n.kind === `motor` ? AF_motorHit : Gy[n.kind], t.x, t.y),
           this.burst(
             t.x,
             t.y,
@@ -745,6 +774,8 @@ var Xy = class {
               ? `#ffffff`
               : n.kind === `car`
                 ? `#ff3b2f`
+                : n.kind === `motor`
+                  ? `#ff7a1a`
                 : n.kind === `flash`
                   ? `#8ad8ff`
                   : `#ffe27a`,

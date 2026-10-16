@@ -13,3 +13,6 @@ Thumbs.db
 # Paketler
 node_modules/
 *.zip
+
+# Sprite önizleme çıktısı (tools/sprite/isle.py)
+_onizleme/

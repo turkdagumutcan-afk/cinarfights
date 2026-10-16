@@ -67,7 +67,7 @@ npx playwright install chromium
 npm test
 ```
 
-Beklenen son satır: `30/30 test geçti.`
+Beklenen son satır: `27/27 test geçti.` (UMUT'un taklası kapalıyken 12 test `ATLANDI` yazar, bu normal.)
 
 - `npm install` yalnızca Playwright'ı (test aracı) indirir.
 - `npx playwright install chromium` ~450 MB'lık test tarayıcısını indirir. Yer yoksa bunu atla ve
@@ -94,7 +94,7 @@ git switch -c kisa-konu-adi
 1. `src/` altında düzenle (hangi dosya ne yapar: `CLAUDE.md` tablosu ve `docs/ANALIZ.md` §17.2).
 2. `npm run build` — `js/game.bundle.js` ve `index.html` güncellenir. Bu iki dosyayı **elle düzenleme**.
 3. `npm start` ile oyunda dene, tarayıcıda `Ctrl+F5`.
-4. `npm test` — 30/30 olmalı.
+4. `npm test` — 27/27 olmalı.
 5. Commit ve push:
 
    Önce `git status` ile listeye bak; yalnızca bu işle ilgili dosyaları ekle.

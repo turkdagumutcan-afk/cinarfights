@@ -682,3 +682,32 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Geçiş kuralı:** `separateBodies` artık yalnızca `airFlip` (E + yön) olan oyuncunun rakibin üzerinden geçmesine izin verir (eşik 0,34 × idle boyu). Normal zıplama (W, W+yön, yönü basılı tutarak W) rakibi aşamaz: baş hizasında bile görünmez bir duvar gibi durur, iter ve yanına iner. Kural aynı zemin seviyesindeki (yer–yer, masa–masa) dövüşçüler için geçerlidir; masadaki biri yerdeki rakibin üstünde yürüyebilir. Eski davranış için `AF_JUMP_CROSS = true` (`src/64-game-collision-helpers.js`).
 - **Boyut:** takla kareleri (`umut_back0-15`) idle'dan ~1,65× iri çizilmişti (kafa genişliği: idle ≈103 px × 0,36, takla ≈70 px × 0,874). Çizim ölçeği `AF_BACK_SIZE = 0.62` ile kafa boyunda eşitlendi. Çizim, karenin en alt noktasını (ayak) dövüşçünün `y` değerine oturtuyor; yükseklik gerçek yerçekimi yayından geliyor. Yerdeki A A / D D takla da aynı ölçeği kullanır.
 - Testler: 30/30 (zıplama-geçemez 7 test, takla-boyutu 1 test eklendi; eski "zıpla-geç" testleri kaldırıldı).
+
+## 18. Yeni Tasarım ve AHMET — 17 Ekim 2026
+
+> Bu bölüm §17'yi günceller; çakışma olursa bu bölüm esastır.
+
+### 18.1 Görseller
+- Dört karakterin bütün pozları Gemini ile yeniden çizildi (kaynak: kullanıcının `cınarfight tasarımlar` klasörü). Yeşil arka plan silindi, şeritler karelere bölündü, idle boyu 560 px olacak şekilde karakter başına tek ölçekle boyutlandırıldı, WebP olarak `assets/frames/` ve `assets/fx/`'e yazıldı. İşleme betikleri: `tools/sprite/isle.py` (önizleme → `_onizleme/`, git yoksayar) ve `tools/sprite/aktar.py` (oyuna yazar). Kurulum: `pip install pillow numpy`. Tasarım klasörü varsayılan `Masaüstü/cınarfight tasarımlar`; başka yerdeyse `KAYNAK` ortam değişkeni. Yeni poz eklerken `isle.py` içindeki `KARAKTERLER` tablosuna dosya adını yaz; `aktar.py`'den sonra yeni dosyaları `js/assets.js`'e ekle.
+- Yeni dosya düzeni: `<id>_idle/crouch/jump/hurt/guard/guardlow/ult.webp`, `<id>_punch0..4` + `<id>_punch` (tepe karesi), `<id>_kick0..N` + `<id>_kick`, METEHAN `metehan_run0..3`, SUDEM `sudem_cast`. Portreler eski adlarıyla (`fotograf_canavari`, `mcqueen`, `metehan`) + yeni `ahmet.webp`.
+- `js/assets.js` girdileri `?v=3` ile önbellekten kurtarıldı.
+
+### 18.2 Çok kareli animasyon
+- `Cg` (src/10) her karakter için `spr.seq.punch/kick/run` dizilerini yükler (yalnız manifestte olan dosyaları ister, 404 yok). Tepe karesi en geniş karedir; vuruş kutusu yine tek `punch`/`kick` karesinden (`Jy`).
+- `AF_seqFrame` (src/53): hazırlıkta tepeye kadarki kareler, aktif evrede tepe, toparlanmada sonrakiler. SUDEM tekmesi 3 kare (2 ve 4. karelerde yanlış bacak vardı) + `AF_speedTrail` hız izi.
+
+### 18.3 Karakterler ve özel hareketler
+| Karakter | Değişiklik |
+|---|---|
+| UMUT | F flaşı kaldırıldı (flaş yalnız ultide). Takla / yer taklası / süpürme `AF_UMUT_OZEL=false` ile geçici kapalı; kod duruyor. |
+| SUDEM | F = **Sihirli Yüzük** (`ringshot`, 6 hasar, 900 ms bekleme). Ulti KA-ÇOV!: yalnız yarış arabası (06). |
+| METEHAN | Tank dengesi: vuruş kutusu %15 geniş + 12 px önde (`mod.reach/reachX`); koşu ulti barı harcamaz, 1,5 sn bekleme, 3 sn içindeki tekrarlar %60/%30 hasar ve zırhsız, köşede geri seker, korunursa 350 ms savunmasız (`AF_dashImpact`, src/64). |
+| AHMET (yeni) | Motorcu, dengeli. Ulti **GAZA BAS!**: sürücüsüz motor ekranın arkasındaki kenarından gelir (`AF_motorHit`, 16 hasar). Memleketi şimdilik ÇORUM (seçim haritası, değiştirilebilir). |
+
+### 18.4 Testler
+27 test + takla kapalıyken 12 `ATLANDI`. Yeni testler: 4 karakter yükleme + kare dizileri, SUDEM yüzüğü, UMUT'ta F flaşı yok, AHMET motoru, METEHAN koşu bedeli ve köşe döngüsü (6 sn spam ≤ 30 hasar). Takla açılınca `tools/test/smoke.mjs` içindeki `TAKLA_ACIK` da `true` yapılmalı.
+
+### 18.5 Açık işler
+- UMUT'un takla/süpürme kareleri yeni tarzda çizilince `AF_UMUT_OZEL=true`.
+- Tişörtlerdeki marka logoları (Ford Mustang, McQueen, Adidas) depo herkese açılmadan değiştirilecek.
+

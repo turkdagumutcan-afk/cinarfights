@@ -101,7 +101,7 @@ var Hy = class {
       else if (r.meter >= 100 && r.grounded && o > 260 && Math.random() < this.cfg.ult)
         n.ultEdge = !0;
       else if (
-        r.charId === `umut` &&
+        AF_char(r.charId).proj &&
         r.grounded &&
         r.projCd <= 0 &&
         o > 380 &&
@@ -109,7 +109,7 @@ var Hy = class {
       )
         n.projEdge = !0;
       else if (
-        r.charId === `umut` &&
+        AF_char(r.charId).roll &&
         r.grounded &&
         r.rollCd <= 0 &&
         o < 150 &&

@@ -972,9 +972,38 @@ async function Cg(e, t, n, r2, same) {
       ((sweepFrames = sw), (sweepScale = i.idle.scale * 1.75), (sweepAnchorX = 190));
     }
   }
+  // Çok kareli animasyonlar: <id>_punch0..N, _kick0..N, _run0..N (en az 2 kare varsa kullanılır).
+  // Ölçek tek karelerle aynı (idle'a göre); vuruş kutusu yine tek "punch"/"kick" (tepe) karesinden hesaplanır.
+  let seq = {};
+  for (let p of [`punch`, `kick`, `run`]) {
+    // yalnızca asset manifestinde olan kareleri iste (olmayanı istemek konsola 404 düşürür)
+    let im = await Promise.all(
+      Array.from({ length: 6 }).map((_, k) => {
+        let yol = `/assets/frames/${e}_${p}${k}.png`;
+        return window.__ANKARA_ASSETS__ && !(yol in window.__ANKARA_ASSETS__)
+          ? null
+          : bg(yol).catch(() => null);
+      }),
+    );
+    let ok = [];
+    for (let o of im) {
+      if (!o) break;
+      ok.push(o);
+    }
+    if (ok.length < 2) continue;
+    seq[p] = ok.map((o) => {
+      let w = o.naturalWidth,
+        h = o.naturalHeight,
+        rr = t * (hg[p] || 1);
+      if (same && idleBh) rr = (t * xg(o, w, h, 1, !1).bh) / idleBh;
+      return xg(o, w, h, rr, r2);
+    });
+    seq[p].peak = seq[p].reduce((b, f, k, a) => (f.bw > a[b].bw ? k : b), 0);
+  }
   let a = i.idle;
   return {
     frames: i,
+    seq,
     halfW: Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
@@ -1003,6 +1032,10 @@ function wg() {
   );
 }
 
+// UMUT'a özel takla / yer taklası / süpürme tekme: yeni tasarımda karesi yok, GEÇİCİ olarak kapalı.
+// Kod yerinde duruyor; true yapınca (eski karelerle) geri gelir.
+var AF_UMUT_OZEL = !1;
+
 var AF_CHARS = {
   umut: {
     id: `umut`,
@@ -1010,10 +1043,10 @@ var AF_CHARS = {
     color: `#ff2a5f`,
     color2: `#ff7aa8`,
     scale: 250,
+    same: !0,
     guard: !0,
-    proj: !0,
-    roll: !0,
-    tag: `Fotoğrafçı · Hızlı yumruklar, kör edici flaş`,
+    roll: AF_UMUT_OZEL,
+    tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
     img: () => gg(_g.p1),
@@ -1029,9 +1062,12 @@ var AF_CHARS = {
     color: `#00f0ff`,
     color2: `#2dd4bf`,
     scale: sg,
-    tag: `McQueen hayranı · Çevik tekmeler, oyuncak araba`,
+    same: !0,
+    guard: !0,
+    proj: !0, // F: sihirli yüzük (uzak menzil)
+    tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
     ultName: `KA-ÇOV!`,
-    ultHint: `oyuncak araba + sihirli yüzük`,
+    ultHint: `yarış arabası`,
     img: () => gg(_g.p2),
     stats: [
       [`HIZ`, 0.9],
@@ -1046,16 +1082,36 @@ var AF_CHARS = {
     color2: `#fff08a`,
     scale: 232,
     same: !0,
+    guard: !0,
     run: !0,
-    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175 },
-    tag: `Müzisyen · Hantal ama çok sert vuruyor`,
+    // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
+    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175, reach: 1.15, reachX: 12 },
+    tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
-    ultHint: `gitardan 3 yıldırımlı nota`,
+    ultHint: `gitardan yıldırımlı notalar`,
     img: () => gg(`/assets/metehan.png`),
     stats: [
       [`HIZ`, 0.45],
       [`GÜÇ`, 1],
       [`MENZİL`, 0.7],
+    ],
+  },
+  ahmet: {
+    id: `ahmet`,
+    name: `AHMET`,
+    color: `#ff7a1a`,
+    color2: `#ffb36b`,
+    scale: 252,
+    same: !0,
+    guard: !0,
+    tag: `Motorcu · Sakin, güçlü ve dengeli`,
+    ultName: `GAZA BAS!`,
+    ultHint: `arkadan gelen motor`,
+    img: () => gg(`/assets/ahmet.png`),
+    stats: [
+      [`HIZ`, 0.7],
+      [`GÜÇ`, 0.85],
+      [`MENZİL`, 0.8],
     ],
   },
 };
@@ -1254,9 +1310,35 @@ function Eg(e, t) {
   return Dg(e, t);
 }
 
+// Ulti / mermi görselleri (assets/fx). Yüklenemezse eski kodla çizilen hâli kullanılır.
+var AF_FX = {},
+  AF_FX_LIST = [
+    `ahmet_motor`,
+    `sudem_araba`,
+    `sudem_yuzuk`,
+    `metehan_nota0`,
+    `metehan_nota1`,
+    `metehan_nota2`,
+    `metehan_nota3`,
+    `umut_foto0`,
+    `umut_foto1`,
+    `umut_foto2`,
+  ],
+  AF_fxP = null;
+
+function AF_loadFx() {
+  return (AF_fxP ||= Promise.all(
+    AF_FX_LIST.map((k) =>
+      bg(`/assets/fx/${k}.png`)
+        .then((im) => (AF_FX[k] = im))
+        .catch(() => null),
+    ),
+  ));
+}
+
 async function Dg(e = `umut`, t = `sudem`) {
   AF_bgC ||= bg(vg).catch(() => null);
-  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC]);
+  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC, AF_loadFx()]);
   return { p1: n, p2: r, bg: i ?? wg() };
 }
 
@@ -1508,10 +1590,10 @@ function AF_Settings({ onClose, inGame }) {
       [`atk3`, `Ağır tekme`],
       [`guard`, `Koruma`],
       [`ult`, `Ulti`],
-      [`proj`, `Flaş Dalgası`],
-      [`sweep`, `Süpürme Tekme`],
-      [`dash`, `Koşu`],
-      [`flip`, `Hava taklası (+ yön)`],
+      [`proj`, `Sihirli Yüzük (SUDEM)`],
+      [`sweep`, `Süpürme Tekme (şimdilik kapalı)`],
+      [`dash`, `Koşu Çarpması (METEHAN)`],
+      [`flip`, `Hava taklası (şimdilik kapalı)`],
     ];
     const col = (p, title, color) =>
       (0, P.jsxs)(`div`, {
@@ -2215,12 +2297,12 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `İSTANBUL`, sudem: `KAYSERİ`, metehan: `SAMSUN` };
+var AF_HOME = { umut: `İSTANBUL`, sudem: `KAYSERİ`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`][(Math.random() * 3) | 0];
+  return [`umut`, `sudem`, `metehan`, `ahmet`][(Math.random() * 4) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -2688,7 +2770,7 @@ function AF_Card({
 }
 
 function AF_Grid({ p1c, p2c, r1, r2, bot, onPick }) {
-  const cells = [`umut`, `sudem`, `metehan`, `random`, 0, 0];
+  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `random`, 0];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
       className: `anim-blink font-monox`,
@@ -3663,27 +3745,36 @@ function AF_pair(a, b) {
 }
 
 function AF_legend(pi) {
-  const k = (a) => AF_k(pi, a);
+  const k = (a) => AF_k(pi, a),
+    takla = AF_UMUT_OZEL ? ` · ${k(`flip`)}+YÖN TAKLA · ${k(`sweep`)} SÜPÜRME` : ``;
   return [
-    `${k(`left`)}/${k(`right`)} HAREKET · ${k(`jump`)} ZIPLA · ${k(`flip`)}+YÖN TAKLA · ${k(`down`)} EĞİL · ${k(`guard`)} KORUMA`,
-    `${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`proj`)} FLAŞ · ${k(`sweep`)} SÜPÜRME · ${k(`ult`)} ULTİ`,
+    `${k(`left`)}/${k(`right`)} HAREKET · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`guard`)} KORUMA`,
+    `${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`proj`)} YÜZÜK (SUDEM) · ${k(`dash`)} KOŞU (METEHAN)${takla} · ${k(`ult`)} ULTİ`,
   ];
 }
 
 function AF_footer(pi) {
-  const k = (a) => AF_k(pi, a);
-  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`flip`)}+YÖN TAKLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} FLAŞ · ${k(`sweep`)} SÜPÜRME · ${k(`ult`)} ULTİ`;
+  const k = (a) => AF_k(pi, a),
+    takla = AF_UMUT_OZEL ? ` · ${k(`flip`)}+YÖN TAKLA · ${k(`sweep`)} SÜPÜRME` : ``;
+  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} YÜZÜK · ${k(`dash`)} KOŞU${takla} · ${k(`ult`)} ULTİ`;
 }
 
 function AF_cardLines(pi, s) {
   const k = (a) => AF_k(pi, a);
+  const ozel = s.proj
+    ? `${k(`proj`)} — sihirli yüzük (uzaktan)`
+    : s.run
+      ? `${k(`dash`)} — koşu çarpması (zırhlı)`
+      : s.roll
+        ? `${k(`flip`)}+yön takla · ${k(`sweep`)} süpürme`
+        : null;
   return [
-    `${k(`left`)}/${k(`right`)} hareket · ${k(`jump`)} zıpla · ${k(`flip`)}+yön takla`,
-    `${k(`down`)} eğil · 2×${k(`down`)} masadan düş`,
+    `${k(`left`)}/${k(`right`)} hareket · ${k(`jump`)} zıpla · ${k(`down`)} eğil`,
     `${k(`atk0`)} yumruk · ${k(`atk1`)} tekme · ${AF_pair(k(`atk2`), k(`atk3`))} güçlü`,
     `${k(`guard`)} — koruma (basılı tut)`,
+    ozel,
     `${k(`ult`)} — ${s.ultName} (${s.ultHint})`,
-  ];
+  ].filter(Boolean);
 }
 
 function AF_scaleHit(n) {
@@ -3911,7 +4002,7 @@ function AF_drawBody(e, t, r) {
       return;
     }
   }
-  if (t.walkB > 0.001 && t.grounded && t.pose() === "idle") {
+  if (t.walkB > 0.001 && t.grounded && t.state !== "attack" && t.pose() === "idle") {
     const lp = AF_legParts(r);
     if (lp) {
       const B = t.walkB,
@@ -4019,6 +4110,52 @@ function AF_applyAnim(e, t) {
   e.scale(sx, sy);
 }
 
+// Çok kareli yumruk/tekme/koşu: saldırının evresine göre kare seçer.
+// Hazırlık (startup) -> tepeye kadarki kareler, aktif -> tepe karesi, toparlanma -> tepeden sonraki kareler.
+function AF_seqFrame(t) {
+  const S = t.spr.seq;
+  if (!S || t.state === `ko`) return null;
+  const a = t.attack;
+  if (t.state === `attack` && a && (a.def.pose === `punch` || a.def.pose === `kick`) && S[a.def.pose]) {
+    const q = S[a.def.pose],
+      pk = q.peak,
+      d = a.def,
+      tt = a.t;
+    let f;
+    if (tt < d.startup) {
+      const L = q.slice(0, pk);
+      f = L.length ? L[Math.min(L.length - 1, Math.floor((tt / d.startup) * L.length))] : q[pk];
+    } else if (tt <= d.startup + d.active) f = q[pk];
+    else {
+      const L = q.slice(pk + 1),
+        p = (tt - d.startup - d.active) / Math.max(1, d.recovery);
+      f = L.length ? L[Math.min(L.length - 1, Math.floor(p * L.length))] : q[pk];
+    }
+    // az kareli tekmede (SUDEM, 3 kare) tepe anında hız izi: hareket ani değil çok hızlı görünür
+    const hiz = q.length <= 3 && f === q[pk] && tt <= d.startup + d.active + 60 ? q : null;
+    return { f, hiz };
+  }
+  if (t.pose() === `run` && S.run) return { f: S.run[Math.floor(t.animT / 85) % S.run.length], hiz: null };
+  return null;
+}
+
+function AF_speedTrail(e, t, q) {
+  const f = q[q.peak],
+    kalca = -f.visibleH * 0.45;
+  for (const [aci, saydam] of [
+    [0.34, 0.16],
+    [0.17, 0.3],
+  ]) {
+    e.save();
+    e.globalAlpha = saydam;
+    e.translate(0, kalca);
+    e.rotate(aci);
+    e.translate(0, -kalca);
+    AF_drawBody(e, t, f);
+    e.restore();
+  }
+}
+
 function AF_rollIndex(p) {
   const c = [4, 9, 12, 18, 24, 29, 34, 40],
     x = p * 40;
@@ -4074,7 +4211,12 @@ function xy(e, t) {
     return;
   }
   let n = t.pose(),
-    r = t.spr.frames[n];
+    r = t.spr.frames[n],
+    hiz = null;
+  {
+    const sq = AF_seqFrame(t);
+    sq && ((r = sq.f), (hiz = sq.hiz));
+  }
   if ((e.save(), e.translate(t.x, t.y), t.state === `ko`))
     (e.beginPath(), e.rect(-2e3, -2e3, 4e3, 2e3), e.clip(), e.translate(0, -AF_koLift(t)));
   if ((t.state === `hitstun` && e.translate((Math.random() - 0.5) * 8, 0), t.ultiAuraT > 0)) {
@@ -4091,6 +4233,7 @@ function xy(e, t) {
   (AF_applyAnim(e, t),
     e.scale(t.facing, 1),
     t.hitFlash > 0 && (e.filter = `brightness(2.4) saturate(0.5)`),
+    hiz && AF_speedTrail(e, t, hiz),
     AF_drawBody(e, t, r),
     (e.filter = `none`),
     t.state !== `roll` && AF_guardFx(e, t, r),
@@ -4154,9 +4297,46 @@ function wy() {
   return ((t.font = `900 12px ${_y}`), (t.fillStyle = `#ffd21f`), (Cy = e), e);
 }
 
+// Ulti/mermi görseli (assets/fx). Yoksa null döner ve eski çizim kullanılır.
+function AF_fxImg(t) {
+  const k =
+    t.kind === `motor`
+      ? `ahmet_motor`
+      : t.kind === `car`
+        ? `sudem_araba`
+        : t.kind === `ringshot`
+          ? `sudem_yuzuk`
+          : t.kind === `note`
+            ? `metehan_nota${(t.col || 0) % 4}`
+            : t.kind === `photo`
+              ? `umut_foto${(t.fi || 0) % 3}`
+              : null;
+  return k && AF_FX[k] ? AF_FX[k] : null;
+}
+
 function Ty(e, t) {
   if (t.delay > 0) return;
   let n = Math.sign(t.vx) || 1;
+  const im = AF_fxImg(t);
+  if (im) {
+    // boy (px) ve yatay çapa (görselin solunda iz/duman var, gövde sağda)
+    const [h, ax, zemin] =
+      t.kind === `motor`
+        ? [130, 0.58, !0]
+        : t.kind === `car`
+          ? [104, 0.6, !0]
+          : t.kind === `ringshot`
+            ? [62, 0.66, !1]
+            : t.kind === `note`
+              ? [54, 0.5, !1]
+              : [66, 0.55, !1];
+    const w = (im.width * h) / im.height;
+    (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
+    t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
+    t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
+    (e.drawImage(im, -w * ax, zemin ? -h : -h / 2, w, h), e.restore());
+    return;
+  }
   if ((e.save(), e.translate(t.x, t.y), t.kind === `photo`)) {
     (e.rotate(t.rot),
       (e.shadowColor = `rgba(255,255,255,0.9)`),
@@ -4725,7 +4905,7 @@ var Hy = class {
       else if (r.meter >= 100 && r.grounded && o > 260 && Math.random() < this.cfg.ult)
         n.ultEdge = !0;
       else if (
-        r.charId === `umut` &&
+        AF_char(r.charId).proj &&
         r.grounded &&
         r.projCd <= 0 &&
         o > 380 &&
@@ -4733,7 +4913,7 @@ var Hy = class {
       )
         n.projEdge = !0;
       else if (
-        r.charId === `umut` &&
+        AF_char(r.charId).roll &&
         r.grounded &&
         r.rollCd <= 0 &&
         o < 150 &&
@@ -4967,6 +5147,38 @@ var Gy = {
   },
 };
 
+var AF_ringShot = {
+  id: `ringshot`,
+  label: `SİHİRLİ YÜZÜK`,
+  pose: `cast`,
+  startup: 0,
+  active: 0,
+  recovery: 0,
+  damage: 6,
+  w: 0,
+  h: 0,
+  kbx: 380,
+  kby: -120,
+  hitstun: 400,
+  meter: 4,
+};
+
+var AF_motorHit = {
+  id: `motor`,
+  label: `GAZA BAS!`,
+  pose: `ult`,
+  startup: 0,
+  active: 0,
+  recovery: 0,
+  damage: 16,
+  w: 0,
+  h: 0,
+  kbx: 700,
+  kby: -460,
+  hitstun: 680,
+  meter: 0,
+};
+
 var AF_dashHit = {
   id: `dash`,
   label: `KOŞU ÇARPMASI`,
@@ -4974,7 +5186,7 @@ var AF_dashHit = {
   startup: 0,
   active: 0,
   recovery: 0,
-  damage: 4,
+  damage: 6,
   w: 0,
   h: 0,
   kbx: 470,
@@ -5029,6 +5241,8 @@ var Ky = class {
   dashT = 0;
   dashHit = !1;
   dashCd = 0;
+  dashChain = 0; // 3 sn içindeki art arda koşu sayısı (METEHAN)
+  dashChainT = 0;
   projCd = 0;
   rollT = 0;
   rollDur = 700;
@@ -5137,10 +5351,12 @@ function Jy(e, t) {
       i = e.y - (t.hby || 0);
     return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
   }
+  // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
-    r = e.x + e.facing * (n.tipX - t.w * 0.3),
+    w = t.w * ((e.mod && e.mod.reach) || 1),
+    r = e.x + e.facing * (n.tipX - w * 0.3 + ((e.mod && e.mod.reachX) || 0)),
     i = e.y - n.tipY;
-  return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
+  return { x: r - w / 2, y: i - t.h / 2, w, h: t.h };
 }
 
 function Yy(e, t, n, r) {
@@ -5177,7 +5393,7 @@ function AF_tryAirFlip(e, t, n, dt) {
   const fresh = e.bufFlipT > 0 || e.bufDirT > 0;
   if (!fresh || !dir || !(t.flip || e.bufFlipT > 0)) return !1;
   if (
-    e.charId !== `umut` ||
+    !AF_char(e.charId).roll ||
     !e.grounded ||
     !e.spr.backFrames ||
     e.spr.backFrames.length !== 16 ||
@@ -5218,6 +5434,36 @@ function AF_tryAirFlip(e, t, n, dt) {
   e.vx = dir * speed;
   X.jump();
   return !0;
+}
+
+// ---- METEHAN koşu çarpması dengesi ----
+var AF_DASH_CD = 1500; // koşular arası bekleme (ms)
+var AF_DASH_CHAIN = [1, 0.6, 0.3]; // 3 sn içindeki 1./2./3.+ koşunun hasar çarpanı
+
+function AF_dashImpact(g, e, n) {
+  const a = e.x <= n.x ? 1 : -1,
+    korudu = n.state === `guard` && n.facing === -a,
+    duvar = n.x < 90 || n.x > $h - 90,
+    k = AF_DASH_CHAIN[Math.min(AF_DASH_CHAIN.length - 1, e.dashChain || 0)];
+  e.dashHit = !0;
+  e.dashT = 0;
+  e.dashCd = AF_DASH_CD;
+  e.armor = 0;
+  e.vx *= 0.2;
+  g.shake(12, 180);
+  g.applyHit(e, n, { ...AF_dashHit, damage: Math.max(1, Math.round(AF_dashHit.damage * k)) }, (e.x + n.x) / 2, e.y - 90);
+  if (korudu) {
+    // korunan koşu cezasız değil: kısa süre savunmasız kalır
+    e.state = `hitstun`;
+    e.attack = null;
+    e.hitstunT = Math.max(e.hitstunT || 0, 350);
+  } else if (duvar) {
+    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz
+    e.state = `hitstun`;
+    e.attack = null;
+    e.hitstunT = Math.max(e.hitstunT || 0, 220);
+    e.vx = -a * 1100;
+  }
 }
 
 // 65-game-match-engine.js — Maç motoru (Xy): güncelleme döngüsü, saldırı çözümü, separateBodies, çizim.
@@ -5385,8 +5631,9 @@ var Xy = class {
       e.blockT > 0 && (e.blockT = Math.max(0, e.blockT - r)),
       e.dashCd > 0 && (e.dashCd = Math.max(0, e.dashCd - r)),
       e.projCd > 0 && (e.projCd = Math.max(0, e.projCd - r)),
+      e.dashChainT > 0 && (e.dashChainT = Math.max(0, e.dashChainT - r)),
       e.dashT > 0 &&
-        ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = 850), (e.armor = 0))),
+        ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = AF_DASH_CD), (e.armor = 0))),
       e.state !== `guard` && e.gp < 100 && (e.gp = Math.min(100, e.gp + r * 0.012)),
       e.jumpT > 0 && (e.jumpT = Math.max(0, e.jumpT - r)),
       e.jumpGraceT > 0 && (e.jumpGraceT = Math.max(0, e.jumpGraceT - r)),
@@ -5415,7 +5662,7 @@ var Xy = class {
     if (
       t &&
       t.rollEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).roll &&
       a &&
       e.grounded &&
       e.rollCd <= 0 &&
@@ -5470,22 +5717,23 @@ var Xy = class {
       e.grounded &&
       e.dashCd <= 0 &&
       e.dashT <= 0 &&
-      e.meter >= 25 &&
       this.phase === `fight` &&
       e.state !== `attack` &&
       e.state !== `hitstun` &&
       e.state !== `guard`
     ) {
-      ((e.dashT = 420),
-        (e.armor = 1),
+      // Koşu çarpması ulti barı harcamaz; 3 sn içindeki tekrarlar zayıflar ve zırhsızdır (köşe döngüsü olmasın).
+      ((e.dashChain = e.dashChainT > 0 ? (e.dashChain || 0) + 1 : 0),
+        (e.dashChainT = 3000),
+        (e.dashT = 420),
+        (e.armor = e.dashChain ? 0 : 1),
         (e.dashHit = !1),
-        (e.meter = Math.max(0, e.meter - 25)),
         X.jump());
     }
     if (
       t &&
       t.projEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).proj &&
       a &&
       e.grounded &&
       e.projCd <= 0 &&
@@ -5498,7 +5746,7 @@ var Xy = class {
     if (
       t &&
       t.sweepEdge &&
-      e.charId === `umut` &&
+      AF_char(e.charId).roll &&
       a &&
       e.grounded &&
       this.phase === `fight` &&
@@ -5609,13 +5857,7 @@ var Xy = class {
         n.state !== `ko` &&
         Math.abs(e.x - n.x) < e.halfW + n.halfW + 14 &&
         Math.abs(e.y - n.y) < 135 &&
-        ((e.dashHit = !0),
-        (e.dashT = 0),
-        (e.dashCd = 850),
-        (e.armor = 0),
-        (e.vx *= 0.2),
-        this.shake(12, 180),
-        this.applyHit(e, n, AF_dashHit, (e.x + n.x) / 2, e.y - 90)),
+        AF_dashImpact(this, e, n),
       e.ghostHp > e.hp ? (e.ghostHp = Math.max(e.hp, e.ghostHp - r * 0.055)) : (e.ghostHp = e.hp));
   }
   onLand(e) {
@@ -5722,7 +5964,7 @@ var Xy = class {
     n = AF_scaleHit(n);
     if (t.dashT > 0 && t.armor > 0) {
       t.armor = 0;
-      let ad = Math.max(1, Math.round(n.damage * 0.4));
+      let ad = Math.max(1, Math.round(n.damage * 0.3));
       ((t.hp = Math.max(1, t.hp - ad)),
         (e.damageDealt += ad),
         this.addMeter(e, n.meter),
@@ -5734,7 +5976,7 @@ var Xy = class {
       return;
     }
     if (t.dashT > 0) {
-      ((t.dashT = 0), (t.dashCd = 850), (t.armor = 0));
+      ((t.dashT = 0), (t.dashCd = AF_DASH_CD), (t.armor = 0));
     }
     ((t.hp = Math.max(0, t.hp - n.damage)),
       (e.damageDealt += n.damage),
@@ -5779,13 +6021,34 @@ var Xy = class {
       this.phase !== `fight`
     )
       return !1;
-    ((e.projCd = 620),
+    // SUDEM: sihirli yüzük (F). Eski UMUT flaşı (kind "flash") kod olarak duruyor ama kimseye atanmadı.
+    const yuzuk = e.charId === `sudem`;
+    ((e.projCd = yuzuk ? 900 : 620),
       (e.attack = { def: AF_projCast, t: 0, hit: !0 }),
       (e.state = `attack`),
       (e.vx = 0));
     let t = e.spr.frames.cast || e.spr.frames.idle,
       n = e.x + e.facing * ((t.tipX || 40) + 10),
       r = e.y - (t.tipY || e.spr.frames.idle.visibleH * 0.52);
+    if (yuzuk) {
+      this.projectiles.push({
+        kind: `ringshot`,
+        owner: e.idx,
+        x: n,
+        y: r,
+        vx: 660 * e.facing,
+        vy: 0,
+        r: 26,
+        rot: 0,
+        vr: 0,
+        t: 0,
+        delay: 80,
+        baseY: r,
+        dead: !1,
+      });
+      X.ringChime();
+      return !0;
+    }
     this.projectiles.push({
       kind: `flash`,
       owner: e.idx,
@@ -5855,7 +6118,7 @@ var Xy = class {
                 k * 32,
                 0,
               );
-            ((p.rot = k % 2), (p.col = k % 3), this.projectiles.push(p));
+            ((p.rot = k % 2), (p.col = k % 4), this.projectiles.push(p));
           }),
           this.lensFlashes.push({ x: n, y: r, t: 0 }),
           (this.announce = {
@@ -5869,19 +6132,26 @@ var Xy = class {
         : e.charId === `umut`
           ? (this.lensFlashes.push({ x: n, y: r, t: 0 }),
             (this.flashA = 0.78),
-            this.projectiles.push(i(`photo`, r, 860, -110, 30, 60, 9)),
-            this.projectiles.push(i(`photo`, r, 900, 0, 30, 150, -8)),
-            this.projectiles.push(i(`photo`, r, 860, 110, 30, 240, 10)),
+            this.projectiles.push({ ...i(`photo`, r, 860, -110, 30, 60, 9), fi: 0 }),
+            this.projectiles.push({ ...i(`photo`, r, 900, 0, 30, 150, -8), fi: 1 }),
+            this.projectiles.push({ ...i(`photo`, r, 860, 110, 30, 240, 10), fi: 2 }),
             (this.announce = { text: `FLAŞ PATLAMASI!`, t: 0, dur: 900, size: 54, color: lg }),
             X.flashWave(),
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
-          : (this.projectiles.push(i(`car`, e.y - 2, 920, 0, 30, 40, 0)),
-            this.projectiles.push(i(`ring`, r, 700, 0, 34, 200, 0)),
-            (this.announce = { text: `KA-ÇOV!`, t: 0, dur: 900, size: 64, color: dg }),
-            X.carRev(),
-            X.ringChime()),
+          : e.charId === `ahmet`
+            ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
+              (this.projectiles.push({
+                ...i(`motor`, e.y - 2, 1150, 0, 52, 380, 0),
+                x: e.facing > 0 ? -100 : $h + 100,
+              }),
+              (this.announce = { text: `GAZA BAS!`, t: 0, dur: 900, size: 64, color: `#ff7a1a` }),
+              X.carRev(),
+              X.carRev())
+            : (this.projectiles.push(i(`car`, e.y - 2, 980, 0, 48, 40, 0)),
+              (this.announce = { text: `KA-ÇOV!`, t: 0, dur: 900, size: 64, color: dg }),
+              X.carRev()),
       this.shake(10, 260),
       !0
     );
@@ -5903,7 +6173,7 @@ var Xy = class {
       }
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
-      else if (n.kind === `car`) {
+      else if (n.kind === `car` || n.kind === `motor`) {
         let e = n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
         (n.y < e - 2
           ? ((n.vy += eg * t), (n.y = Math.min(e - 2, n.y + n.vy * t)))
@@ -5917,7 +6187,12 @@ var Xy = class {
               size: 3 + Math.random() * 4,
               life: 260,
               max: 260,
-              color: Math.random() < 0.5 ? `#ffd24a` : `#ff3b2f`,
+              color:
+                n.kind === `motor`
+                  ? [`#ff9a1f`, `#ffd24a`, `#9aa0a6`][(Math.random() * 3) | 0]
+                  : Math.random() < 0.5
+                    ? `#ffd24a`
+                    : `#ff3b2f`,
               rot: 0,
               spin: 4,
             }));
@@ -5936,7 +6211,7 @@ var Xy = class {
           rot: 0,
           spin: 6,
         }),
-        n.kind === `ring` &&
+        (n.kind === `ring` || n.kind === `ringshot`) &&
           Math.random() < 0.7 &&
           this.sparks.push({
             x: n.x + (Math.random() - 0.5) * 30,
@@ -5953,11 +6228,11 @@ var Xy = class {
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
       if (i.state !== `ko`) {
-        let e = n.kind === `car` ? n.y - 18 : n.y,
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 : n.y,
           t = Yy(n.x, e, n.r, i.hurtbox());
         t &&
           ((n.dead = !0),
-          this.applyHit(r, i, Gy[n.kind], t.x, t.y),
+          this.applyHit(r, i, n.kind === `ringshot` ? AF_ringShot : n.kind === `motor` ? AF_motorHit : Gy[n.kind], t.x, t.y),
           this.burst(
             t.x,
             t.y,
@@ -5967,6 +6242,8 @@ var Xy = class {
               ? `#ffffff`
               : n.kind === `car`
                 ? `#ff3b2f`
+                : n.kind === `motor`
+                  ? `#ff7a1a`
                 : n.kind === `flash`
                   ? `#8ad8ff`
                   : `#ffe27a`,

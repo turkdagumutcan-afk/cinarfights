@@ -326,9 +326,38 @@ async function Cg(e, t, n, r2, same) {
       ((sweepFrames = sw), (sweepScale = i.idle.scale * 1.75), (sweepAnchorX = 190));
     }
   }
+  // Çok kareli animasyonlar: <id>_punch0..N, _kick0..N, _run0..N (en az 2 kare varsa kullanılır).
+  // Ölçek tek karelerle aynı (idle'a göre); vuruş kutusu yine tek "punch"/"kick" (tepe) karesinden hesaplanır.
+  let seq = {};
+  for (let p of [`punch`, `kick`, `run`]) {
+    // yalnızca asset manifestinde olan kareleri iste (olmayanı istemek konsola 404 düşürür)
+    let im = await Promise.all(
+      Array.from({ length: 6 }).map((_, k) => {
+        let yol = `/assets/frames/${e}_${p}${k}.png`;
+        return window.__ANKARA_ASSETS__ && !(yol in window.__ANKARA_ASSETS__)
+          ? null
+          : bg(yol).catch(() => null);
+      }),
+    );
+    let ok = [];
+    for (let o of im) {
+      if (!o) break;
+      ok.push(o);
+    }
+    if (ok.length < 2) continue;
+    seq[p] = ok.map((o) => {
+      let w = o.naturalWidth,
+        h = o.naturalHeight,
+        rr = t * (hg[p] || 1);
+      if (same && idleBh) rr = (t * xg(o, w, h, 1, !1).bh) / idleBh;
+      return xg(o, w, h, rr, r2);
+    });
+    seq[p].peak = seq[p].reduce((b, f, k, a) => (f.bw > a[b].bw ? k : b), 0);
+  }
   let a = i.idle;
   return {
     frames: i,
+    seq,
     halfW: Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
@@ -357,6 +386,10 @@ function wg() {
   );
 }
 
+// UMUT'a özel takla / yer taklası / süpürme tekme: yeni tasarımda karesi yok, GEÇİCİ olarak kapalı.
+// Kod yerinde duruyor; true yapınca (eski karelerle) geri gelir.
+var AF_UMUT_OZEL = !1;
+
 var AF_CHARS = {
   umut: {
     id: `umut`,
@@ -364,10 +397,10 @@ var AF_CHARS = {
     color: `#ff2a5f`,
     color2: `#ff7aa8`,
     scale: 250,
+    same: !0,
     guard: !0,
-    proj: !0,
-    roll: !0,
-    tag: `Fotoğrafçı · Hızlı yumruklar, kör edici flaş`,
+    roll: AF_UMUT_OZEL,
+    tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
     img: () => gg(_g.p1),
@@ -383,9 +416,12 @@ var AF_CHARS = {
     color: `#00f0ff`,
     color2: `#2dd4bf`,
     scale: sg,
-    tag: `McQueen hayranı · Çevik tekmeler, oyuncak araba`,
+    same: !0,
+    guard: !0,
+    proj: !0, // F: sihirli yüzük (uzak menzil)
+    tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
     ultName: `KA-ÇOV!`,
-    ultHint: `oyuncak araba + sihirli yüzük`,
+    ultHint: `yarış arabası`,
     img: () => gg(_g.p2),
     stats: [
       [`HIZ`, 0.9],
@@ -400,16 +436,36 @@ var AF_CHARS = {
     color2: `#fff08a`,
     scale: 232,
     same: !0,
+    guard: !0,
     run: !0,
-    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175 },
-    tag: `Müzisyen · Hantal ama çok sert vuruyor`,
+    // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
+    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175, reach: 1.15, reachX: 12 },
+    tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
-    ultHint: `gitardan 3 yıldırımlı nota`,
+    ultHint: `gitardan yıldırımlı notalar`,
     img: () => gg(`/assets/metehan.png`),
     stats: [
       [`HIZ`, 0.45],
       [`GÜÇ`, 1],
       [`MENZİL`, 0.7],
+    ],
+  },
+  ahmet: {
+    id: `ahmet`,
+    name: `AHMET`,
+    color: `#ff7a1a`,
+    color2: `#ffb36b`,
+    scale: 252,
+    same: !0,
+    guard: !0,
+    tag: `Motorcu · Sakin, güçlü ve dengeli`,
+    ultName: `GAZA BAS!`,
+    ultHint: `arkadan gelen motor`,
+    img: () => gg(`/assets/ahmet.png`),
+    stats: [
+      [`HIZ`, 0.7],
+      [`GÜÇ`, 0.85],
+      [`MENZİL`, 0.8],
     ],
   },
 };

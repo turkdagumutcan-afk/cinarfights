@@ -239,10 +239,10 @@ function AF_Settings({ onClose, inGame }) {
       [`atk3`, `Ağır tekme`],
       [`guard`, `Koruma`],
       [`ult`, `Ulti`],
-      [`proj`, `Flaş Dalgası`],
-      [`sweep`, `Süpürme Tekme`],
-      [`dash`, `Koşu`],
-      [`flip`, `Hava taklası (+ yön)`],
+      [`proj`, `Sihirli Yüzük (SUDEM)`],
+      [`sweep`, `Süpürme Tekme (şimdilik kapalı)`],
+      [`dash`, `Koşu Çarpması (METEHAN)`],
+      [`flip`, `Hava taklası (şimdilik kapalı)`],
     ];
     const col = (p, title, color) =>
       (0, P.jsxs)(`div`, {

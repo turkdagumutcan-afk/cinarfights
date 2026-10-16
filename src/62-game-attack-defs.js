@@ -194,6 +194,38 @@ var Gy = {
   },
 };
 
+var AF_ringShot = {
+  id: `ringshot`,
+  label: `SİHİRLİ YÜZÜK`,
+  pose: `cast`,
+  startup: 0,
+  active: 0,
+  recovery: 0,
+  damage: 6,
+  w: 0,
+  h: 0,
+  kbx: 380,
+  kby: -120,
+  hitstun: 400,
+  meter: 4,
+};
+
+var AF_motorHit = {
+  id: `motor`,
+  label: `GAZA BAS!`,
+  pose: `ult`,
+  startup: 0,
+  active: 0,
+  recovery: 0,
+  damage: 16,
+  w: 0,
+  h: 0,
+  kbx: 700,
+  kby: -460,
+  hitstun: 680,
+  meter: 0,
+};
+
 var AF_dashHit = {
   id: `dash`,
   label: `KOŞU ÇARPMASI`,
@@ -201,7 +233,7 @@ var AF_dashHit = {
   startup: 0,
   active: 0,
   recovery: 0,
-  damage: 4,
+  damage: 6,
   w: 0,
   h: 0,
   kbx: 470,

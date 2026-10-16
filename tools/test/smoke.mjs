@@ -10,6 +10,9 @@ await new Promise((r) => server.listen(0, r));
 const base = `http://localhost:${server.address().port}`;
 const browser = await chromium.launch({ args: ['--no-sandbox'], executablePath: process.env.CHROMIUM_PATH || undefined });
 const results = [];
+// UMUT'un taklası / yer taklası / süpürmesi şimdilik kapalı (src/10: AF_UMUT_OZEL). Açılınca bunu da true yap.
+const TAKLA_ACIK = false;
+const skip = (name) => console.log(`ATLANDI ${name.padEnd(58)} (takla şimdilik kapalı)`);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function open({ p1 = 'umut', p2 = 'sudem', mode = '2p', pre } = {}) {
@@ -84,10 +87,10 @@ await test('Zıplama geçemez: P2 ▲+◄ ile de geçemez (masa dışında, sol 
 });
 
 // ---- Havada takla (E + yön, sıra fark etmez) ----
-const flipTest = (name, steps, expect = true) => test(`Takla: ${name}`, async (o) => {
+const flipTest = (name, steps, expect = true) => (expect && !TAKLA_ACIK ? skip(`Takla: ${name}`) : test(`Takla: ${name}`, async (o) => {
   const p = await o(); await p.clr(); await steps(p); await wait(500); const t = await p.tr(); const n = flips(t);
   return { ok: expect ? n === 1 : n === 0, note: `takla sayısı ${n}` };
-});
+}));
 await flipTest('E basılı, sonra D', async (p) => { await p.down('e'); await wait(30); await p.down('d'); await wait(300); await p.up('d'); await p.up('e'); });
 await flipTest('D basılı, sonra E', async (p) => { await p.down('d'); await wait(30); await p.down('e'); await wait(300); await p.up('e'); await p.up('d'); });
 await flipTest('E dokun-bırak, 60ms sonra D dokun (tampon)', async (p) => { await p.tap('e', 40); await wait(60); await p.tap('d', 40); });
@@ -98,28 +101,28 @@ await flipTest('W+D normal zıplama: takla YOK', async (p) => { await p.down('d'
 await flipTest('Eski tuş R+D artık takla YAPMAZ', async (p) => { await p.down('r'); await p.down('d'); await wait(200); await p.up('d'); await p.up('r'); }, false);
 await flipTest('E+D basılı tutmak art arda takla atmaz (1 takla)', async (p) => { await p.down('e'); await p.down('d'); await wait(2200); await p.up('d'); await p.up('e'); });
 
-await test('Takla boyutu: kafa boyu idle ile aynı (±%10)', async (o) => {
+if (!TAKLA_ACIK) skip('Takla boyutu: kafa boyu idle ile aynı (±%10)'); else await test('Takla boyutu: kafa boyu idle ile aynı (±%10)', async (o) => {
   const p = await o(); // kaynak karelerde kafa genişliği: idle ≈103 px, back0-15 ≈70 px (ölçülmüş); çizimde eşit olmalı
   const r = await p.evaluate(() => { const f = window.__AF_match.p1.spr; return { idle: 103 * f.frames.idle.scale, back: 70 * f.backScale }; });
   return { ok: Math.abs(r.back / r.idle - 1) <= 0.1, note: `kafa idle ${r.idle.toFixed(1)}px takla ${r.back.toFixed(1)}px` };
 });
-await test('Takla: rakibin üstünden geçip karşıya iniyor, ışınlanma yok', async (o) => {
+if (!TAKLA_ACIK) skip('Takla: rakibin üstünden geçip karşıya iniyor, ışınlanma yok'); else await test('Takla: rakibin üstünden geçip karşıya iniyor, ışınlanma yok', async (o) => {
   const p = await o(); await p.approach(110); await p.clr(); await p.down('d'); await p.down('e'); await wait(120); await p.up('e'); await wait(1300); await p.up('d'); await wait(300);
   const t = await p.tr(); const b = await p.st(); let jump = 0; for (let i = 1; i < t.length; i++) jump = Math.max(jump, Math.abs(t[i].x - t[i - 1].x));
   return { ok: crossed(t) && b.p1.s === 'idle' && b.p1.f === -1 && jump < 40 && Math.abs(b.p1.x - b.p2.x) >= 60, note: `dx=${(b.p1.x - b.p2.x).toFixed(0)} bakış=${b.p1.f} maks adım=${jump.toFixed(0)}px` };
 });
-await test('Takla: uzak rakip -> yine de tek takla, aynı tarafa iner', async (o) => {
+if (!TAKLA_ACIK) skip('Takla: uzak rakip -> yine de tek takla, aynı tarafa iner'); else await test('Takla: uzak rakip -> yine de tek takla, aynı tarafa iner', async (o) => {
   const p = await o(); await p.clr(); await p.down('d'); await p.down('e'); await wait(150); await p.up('e'); await wait(1300); await p.up('d');
   const t = await p.tr(); const b = await p.st(); return { ok: !crossed(t) && b.p1.x < b.p2.x && b.p1.s === 'idle', note: `dx=${(b.p1.x - b.p2.x).toFixed(0)}` };
 });
-await test('Takla: P2 (UMUT) Numpad6 ve N ile', async (o) => {
+if (!TAKLA_ACIK) skip('Takla: P2 (UMUT) Numpad6 ve N ile'); else await test('Takla: P2 (UMUT) Numpad6 ve N ile', async (o) => {
   const p = await o({ p1: 'sudem', p2: 'umut' }); await p.clr();
   await p.down('ArrowLeft'); await p.down('Numpad6'); await wait(150); await p.up('Numpad6'); await p.up('ArrowLeft'); await wait(1500);
   const a = flips(await p.tr(), 'af2'); await p.clr();
   await p.down('ArrowRight'); await p.down('n'); await wait(150); await p.up('n'); await p.up('ArrowRight'); await wait(1500);
   const b = flips(await p.tr(), 'af2'); return { ok: a === 1 && b === 1, note: `Numpad6=${a} N=${b}` };
 });
-await test('Ayar göçü: kayıtlı eski R tuşu -> yeni varsayılan E', async (o) => {
+if (!TAKLA_ACIK) skip('Ayar göçü: kayıtlı eski R tuşu -> yeni varsayılan E'); else await test('Ayar göçü: kayıtlı eski R tuşu -> yeni varsayılan E', async (o) => {
   const pre = () => localStorage.setItem('ankara-fighter-ayarlar-v1', JSON.stringify({ keys: { p1: { flip: ['KeyR'] }, p2: { flip: ['KeyT'] } } }));
   const p = await o({ pre }); await p.clr(); await p.down('d'); await p.down('r'); await wait(200); await p.up('r');
   const viaR = flips(await p.tr()); await p.down('e'); await wait(200); await p.up('e'); await p.up('d'); await wait(300);
@@ -127,11 +130,11 @@ await test('Ayar göçü: kayıtlı eski R tuşu -> yeni varsayılan E', async (
 });
 
 // ---- Korunan hareketler ----
-await test('D+D: yerdeki ileri takla rakibin İÇİNDEN GEÇMİYOR', async (o) => {
+if (!TAKLA_ACIK) skip('D+D: yerdeki ileri takla rakibin İÇİNDEN GEÇMİYOR'); else await test('D+D: yerdeki ileri takla rakibin İÇİNDEN GEÇMİYOR', async (o) => {
   const p = await o(); await p.approach(120); await p.clr(); await p.tap('d', 40); await wait(80); await p.tap('d', 40); await wait(1000);
   const t = await p.tr(); const gap = Math.min(...t.map((s) => s.x2 - s.x)); return { ok: t.some((s) => s.s === 'roll') && gap > 0, note: `en küçük mesafe ${gap.toFixed(0)}` };
 });
-await test('A+A: yerdeki geri takla çalışıyor', async (o) => {
+if (!TAKLA_ACIK) skip('A+A: yerdeki geri takla çalışıyor'); else await test('A+A: yerdeki geri takla çalışıyor', async (o) => {
   const p = await o(); await p.clr(); await p.tap('a', 40); await wait(80); await p.tap('a', 40); await wait(900); return (await p.tr()).some((s) => s.s === 'roll');
 });
 await test('Arena kenarı: duvara zıpla ve takla, sınır dışına çıkmaz', async (o) => {
@@ -146,9 +149,58 @@ await test('İniş: rakibin dibine zıplayıp inince iç içe geçme/titreme yok
   for (let i = 2; i < t.length; i++) { const a = t[i - 1].x - t[i - 2].x, b = t[i].x - t[i - 1].x; if (Math.abs(a) > 0.4 && Math.abs(b) > 0.4 && Math.sign(a) !== Math.sign(b)) rev++; }
   return { ok: sep >= 60 && rev === 0, note: `mesafe ${sep.toFixed(0)} titreme ${rev}` };
 });
-for (const who of ['sudem', 'metehan']) await test(`Takla yalnız UMUT'a özel: ${who.toUpperCase()} E+D ile takla ATMAZ`, async (o) => {
-  const p = await o({ p1: who, p2: 'umut' }); await p.clr(); await p.down('d'); await p.down('e'); await wait(300); await p.up('e'); await p.up('d'); await wait(300);
+for (const who of TAKLA_ACIK ? ['sudem', 'metehan', 'ahmet'] : ['umut', 'sudem', 'metehan', 'ahmet']) await test(`Takla ${TAKLA_ACIK ? "yalnız UMUT'a özel" : 'kapalı'}: ${who.toUpperCase()} E+D ile takla ATMAZ`, async (o) => {
+  const p = await o({ p1: who, p2: who === 'umut' ? 'sudem' : 'umut' }); await p.clr(); await p.down('d'); await p.down('e'); await wait(300); await p.up('e'); await p.up('d'); await wait(300);
   return { ok: flips(await p.tr()) === 0, note: '' };
+});
+if (!TAKLA_ACIK) await test('Yer taklası kapalı: UMUT D+D ile takla ATMAZ', async (o) => {
+  const p = await o(); await p.clr(); await p.tap('d', 40); await wait(80); await p.tap('d', 40); await wait(900);
+  return { ok: !(await p.tr()).some((s) => s.s === 'roll'), note: '' };
+});
+
+// ---- Yeni tasarım (Ekim 2026): 4 karakter, çok kareli yumruk/tekme, özel hareketler ----
+const fight = (p) => p.evaluate(async () => { const m = window.__AF_match; for (let i = 0; i < 80 && m.phase !== 'fight'; i++) await new Promise((r) => setTimeout(r, 100)); return m.phase; });
+await test('4 karakter yükleniyor, yumruk/tekme kare dizileri var', async (o) => {
+  const out = [];
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+    const p = await o({ p1: a, p2: b });
+    out.push(...(await p.evaluate(() => [window.__AF_match.p1, window.__AF_match.p2].map((f) => `${f.charId}:${f.spr.seq.punch?.length || 0}/${f.spr.seq.kick?.length || 0}`))));
+    if (p.errors.length) return { ok: false, note: p.errors[0] };
+    await p.close();
+  }
+  const ok = out.every((x) => /:5\/(5|3)$/.test(x));
+  return { ok, note: out.join(' ') };
+});
+await test('SUDEM F: sihirli yüzük uzağa gider ve vurur', async (o) => {
+  const p = await o({ p1: 'sudem', p2: 'umut' }); await fight(p); await p.tap('f', 50); await wait(250);
+  const kinds = await p.evaluate(() => window.__AF_match.projectiles.map((x) => x.kind)); await wait(1500);
+  const hp = await p.evaluate(() => window.__AF_match.p2.hp);
+  return { ok: kinds.includes('ringshot') && hp < 150, note: `mermi=${kinds.join(',')} rakip can=${hp}` };
+});
+await test('UMUT F: flaş artık yok (yalnız ultide)', async (o) => {
+  const p = await o(); await fight(p); await p.tap('f', 50); await wait(250);
+  const kinds = await p.evaluate(() => window.__AF_match.projectiles.map((x) => x.kind));
+  return { ok: kinds.length === 0, note: `mermi=${kinds.join(',') || 'yok'}` };
+});
+await test('AHMET ulti GAZA BAS!: motor arkadan gelip vurur', async (o) => {
+  const p = await o({ p1: 'ahmet', p2: 'sudem' }); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(250);
+  const k = await p.evaluate(() => window.__AF_match.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}`)); await wait(2200);
+  const hp = await p.evaluate(() => window.__AF_match.p2.hp);
+  return { ok: k.some((x) => x.startsWith('motor@-')) && hp <= 150 - 12, note: `mermi=${k.join(',')} rakip can=${hp}` };
+});
+await test('METEHAN koşusu ulti barı harcamaz', async (o) => {
+  const p = await o({ p1: 'metehan', p2: 'umut' }); await fight(p);
+  const m0 = await p.evaluate(() => { window.__AF_match.p1.meter = 40; return 40; }); await p.tap(' ', 60); await wait(120);
+  const r = await p.evaluate(() => ({ m: window.__AF_match.p1.meter, d: window.__AF_match.p1.dashT }));
+  return { ok: r.m >= m0 && r.d > 0, note: `bar ${m0} -> ${r.m}` };
+});
+await test('METEHAN köşe döngüsü yok: 6 sn koşu spamı rakibi bitirmez', async (o) => {
+  const p = await o({ p1: 'metehan', p2: 'umut' }); await fight(p);
+  await p.evaluate(() => { const m = window.__AF_match; m.p2.x = 1336 - 10; m.p1.x = 1336 - 200; });
+  const hp0 = await p.evaluate(() => window.__AF_match.p2.hp);
+  await p.down('d'); const t0 = Date.now(); while (Date.now() - t0 < 6000) { await p.tap(' ', 40); await wait(110); } await p.up('d');
+  const hp = await p.evaluate(() => window.__AF_match.p2.hp);
+  return { ok: hp0 - hp <= 30, note: `6 sn'de hasar ${hp0 - hp}` };
 });
 
 await browser.close(); server.close();

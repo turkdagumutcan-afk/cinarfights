@@ -15,10 +15,12 @@ function Jy(e, t) {
       i = e.y - (t.hby || 0);
     return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
   }
+  // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
-    r = e.x + e.facing * (n.tipX - t.w * 0.3),
+    w = t.w * ((e.mod && e.mod.reach) || 1),
+    r = e.x + e.facing * (n.tipX - w * 0.3 + ((e.mod && e.mod.reachX) || 0)),
     i = e.y - n.tipY;
-  return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
+  return { x: r - w / 2, y: i - t.h / 2, w, h: t.h };
 }
 
 function Yy(e, t, n, r) {
@@ -55,7 +57,7 @@ function AF_tryAirFlip(e, t, n, dt) {
   const fresh = e.bufFlipT > 0 || e.bufDirT > 0;
   if (!fresh || !dir || !(t.flip || e.bufFlipT > 0)) return !1;
   if (
-    e.charId !== `umut` ||
+    !AF_char(e.charId).roll ||
     !e.grounded ||
     !e.spr.backFrames ||
     e.spr.backFrames.length !== 16 ||
@@ -96,4 +98,34 @@ function AF_tryAirFlip(e, t, n, dt) {
   e.vx = dir * speed;
   X.jump();
   return !0;
+}
+
+// ---- METEHAN koşu çarpması dengesi ----
+var AF_DASH_CD = 1500; // koşular arası bekleme (ms)
+var AF_DASH_CHAIN = [1, 0.6, 0.3]; // 3 sn içindeki 1./2./3.+ koşunun hasar çarpanı
+
+function AF_dashImpact(g, e, n) {
+  const a = e.x <= n.x ? 1 : -1,
+    korudu = n.state === `guard` && n.facing === -a,
+    duvar = n.x < 90 || n.x > $h - 90,
+    k = AF_DASH_CHAIN[Math.min(AF_DASH_CHAIN.length - 1, e.dashChain || 0)];
+  e.dashHit = !0;
+  e.dashT = 0;
+  e.dashCd = AF_DASH_CD;
+  e.armor = 0;
+  e.vx *= 0.2;
+  g.shake(12, 180);
+  g.applyHit(e, n, { ...AF_dashHit, damage: Math.max(1, Math.round(AF_dashHit.damage * k)) }, (e.x + n.x) / 2, e.y - 90);
+  if (korudu) {
+    // korunan koşu cezasız değil: kısa süre savunmasız kalır
+    e.state = `hitstun`;
+    e.attack = null;
+    e.hitstunT = Math.max(e.hitstunT || 0, 350);
+  } else if (duvar) {
+    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz
+    e.state = `hitstun`;
+    e.attack = null;
+    e.hitstunT = Math.max(e.hitstunT || 0, 220);
+    e.vx = -a * 1100;
+  }
 }
