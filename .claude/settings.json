@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./js/game.bundle.js)",
+      "Read(./src/00-vendor-*)",
+      "Read(./src/30-vendor-*)",
+      "Read(./assets/**)",
+      "Read(./css/styles.css)",
+      "Read(./node_modules/**)",
+      "Read(./**/*.bak)",
+      "Read(./**/*.bak-*)"
+    ]
+  }
+}
