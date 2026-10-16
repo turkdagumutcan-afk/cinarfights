@@ -354,6 +354,11 @@ async function Cg(e, t, n, r2, same) {
     });
     seq[p].peak = seq[p].reduce((b, f, k, a) => (f.bw > a[b].bw ? k : b), 0);
   }
+  // dikey basıklık (yalnız eğilme pozları): çizimde ve vuruş/boy ölçülerinde birlikte uygulanır
+  let sy = AF_char(e).crouchSy;
+  if (sy)
+    for (let p of [`crouch`, `guardlow`])
+      i[p] && ((i[p].sy = sy), (i[p].visibleH *= sy), (i[p].tipY *= sy));
   let a = i.idle;
   return {
     frames: i,
@@ -400,6 +405,8 @@ var AF_CHARS = {
     same: !0,
     guard: !0,
     roll: AF_UMUT_OZEL,
+    // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
+    ultAt: { x: 0.42, y: 0.62 },
     tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
@@ -419,6 +426,7 @@ var AF_CHARS = {
     same: !0,
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
+    crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
     tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
     ultName: `KA-ÇOV!`,
     ultHint: `yarış arabası`,

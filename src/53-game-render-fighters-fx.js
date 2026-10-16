@@ -3,9 +3,9 @@
 
 function AF_drawBody(e, t, r) {
   const X = -r.ax * r.scale,
-    Y = -(r.by + r.bh) * r.scale,
+    Y = -(r.by + r.bh) * r.scale * (r.sy || 1),
     Wd = r.w * r.scale,
-    Ht = r.h * r.scale;
+    Ht = r.h * r.scale * (r.sy || 1);
   if (t.state === "ko") {
     const g = AF_koGeom(r);
     if (g) {

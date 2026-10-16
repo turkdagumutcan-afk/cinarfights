@@ -122,10 +122,11 @@ function AF_dashImpact(g, e, n) {
     e.attack = null;
     e.hitstunT = Math.max(e.hitstunT || 0, 350);
   } else if (duvar) {
-    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz
-    e.state = `hitstun`;
+    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz.
+    // Hasar pozuna girmez: normal duruşta kayar, bu sırada (bounceT) tuş girişi kilitli.
+    e.state = `idle`;
     e.attack = null;
-    e.hitstunT = Math.max(e.hitstunT || 0, 220);
+    e.bounceT = 260;
     e.vx = -a * 1100;
   }
 }

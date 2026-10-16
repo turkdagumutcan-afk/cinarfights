@@ -238,7 +238,7 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `İSTANBUL`, sudem: `KAYSERİ`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
 
 var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `random`];
 
@@ -318,7 +318,8 @@ function AF_Map({ p1, p2 }) {
     f.beginPath();
     f.arc(11.2, 6, 1.35, 0, 7);
     f.fill();
-    const city = (n) => fy.find((c) => c.n === n);
+    // ANKARA şehir listesinde değil, arena yıldızının yerinde (py)
+    const city = (n) => fy.find((c) => c.n === n) || (n === `ANKARA` ? { n, x: py.x, y: py.y } : null);
     const cx = (c) => 40 + c.x * 680,
       cy = (c) => 30 + c.y * 300;
     const lab = (t, x, y, col, al) => {

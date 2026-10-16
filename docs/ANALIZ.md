@@ -702,10 +702,13 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 | UMUT | F flaşı kaldırıldı (flaş yalnız ultide). Takla / yer taklası / süpürme `AF_UMUT_OZEL=false` ile geçici kapalı; kod duruyor. |
 | SUDEM | F = **Sihirli Yüzük** (`ringshot`, 6 hasar, 900 ms bekleme). Ulti KA-ÇOV!: yalnız yarış arabası (06). |
 | METEHAN | Tank dengesi: vuruş kutusu %15 geniş + 12 px önde (`mod.reach/reachX`); koşu ulti barı harcamaz, 1,5 sn bekleme, 3 sn içindeki tekrarlar %60/%30 hasar ve zırhsız, köşede geri seker, korunursa 350 ms savunmasız (`AF_dashImpact`, src/64). |
-| AHMET (yeni) | Motorcu, dengeli. Ulti **GAZA BAS!**: sürücüsüz motor ekranın arkasındaki kenarından gelir (`AF_motorHit`, 16 hasar). Memleketi şimdilik ÇORUM (seçim haritası, değiştirilebilir). |
+| AHMET (yeni) | Motorcu, dengeli. Ulti **GAZA BAS!**: sürücüsüz motor ekranın arkasındaki kenarından gelir (`AF_motorHit`, 16 hasar). |
+
+- **Memleketler (seçim haritası `AF_HOME`):** UMUT ve SUDEM ANKARA (arena yıldızı), METEHAN SAMSUN, AHMET ÇORUM.
+- **Düzeltmeler (17 Ekim, akşam):** UMUT ultisinde fotoğraflar ayakkabı hizasından çıkıyordu (ulti pozunun en ön noktası ayak) → `ultAt` ile gövde ortası (~155 px). SUDEM eğilmesi yüksekti (%78) → `crouchSy: 0.88` (≈%69). METEHAN köşede geri sekerken hasar pozuna giriyordu → `bounceT` (normal duruş, kısa girdi kilidi). SUDEM ve AHMET ultileri bilerek yerden gider.
 
 ### 18.4 Testler
-27 test + takla kapalıyken 12 `ATLANDI`. Yeni testler: 4 karakter yükleme + kare dizileri, SUDEM yüzüğü, UMUT'ta F flaşı yok, AHMET motoru, METEHAN koşu bedeli ve köşe döngüsü (6 sn spam ≤ 30 hasar). Takla açılınca `tools/test/smoke.mjs` içindeki `TAKLA_ACIK` da `true` yapılmalı.
+28 test + takla kapalıyken 12 `ATLANDI`. Yeni testler: UMUT ulti yüksekliği, 4 karakter yükleme + kare dizileri, SUDEM yüzüğü, UMUT'ta F flaşı yok, AHMET motoru, METEHAN koşu bedeli ve köşe döngüsü (6 sn spam ≤ 30 hasar). Takla açılınca `tools/test/smoke.mjs` içindeki `TAKLA_ACIK` da `true` yapılmalı.
 
 ### 18.5 Açık işler
 - UMUT'un takla/süpürme kareleri yeni tarzda çizilince `AF_UMUT_OZEL=true`.

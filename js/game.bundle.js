@@ -1000,6 +1000,11 @@ async function Cg(e, t, n, r2, same) {
     });
     seq[p].peak = seq[p].reduce((b, f, k, a) => (f.bw > a[b].bw ? k : b), 0);
   }
+  // dikey basıklık (yalnız eğilme pozları): çizimde ve vuruş/boy ölçülerinde birlikte uygulanır
+  let sy = AF_char(e).crouchSy;
+  if (sy)
+    for (let p of [`crouch`, `guardlow`])
+      i[p] && ((i[p].sy = sy), (i[p].visibleH *= sy), (i[p].tipY *= sy));
   let a = i.idle;
   return {
     frames: i,
@@ -1046,6 +1051,8 @@ var AF_CHARS = {
     same: !0,
     guard: !0,
     roll: AF_UMUT_OZEL,
+    // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
+    ultAt: { x: 0.42, y: 0.62 },
     tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
@@ -1065,6 +1072,7 @@ var AF_CHARS = {
     same: !0,
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
+    crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
     tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
     ultName: `KA-ÇOV!`,
     ultHint: `yarış arabası`,
@@ -2297,7 +2305,7 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `İSTANBUL`, sudem: `KAYSERİ`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
 
 var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `random`];
 
@@ -2377,7 +2385,8 @@ function AF_Map({ p1, p2 }) {
     f.beginPath();
     f.arc(11.2, 6, 1.35, 0, 7);
     f.fill();
-    const city = (n) => fy.find((c) => c.n === n);
+    // ANKARA şehir listesinde değil, arena yıldızının yerinde (py)
+    const city = (n) => fy.find((c) => c.n === n) || (n === `ANKARA` ? { n, x: py.x, y: py.y } : null);
     const cx = (c) => 40 + c.x * 680,
       cy = (c) => 30 + c.y * 300;
     const lab = (t, x, y, col, al) => {
@@ -3980,9 +3989,9 @@ function AF_walkStep(t, dt) {
 
 function AF_drawBody(e, t, r) {
   const X = -r.ax * r.scale,
-    Y = -(r.by + r.bh) * r.scale,
+    Y = -(r.by + r.bh) * r.scale * (r.sy || 1),
     Wd = r.w * r.scale,
-    Ht = r.h * r.scale;
+    Ht = r.h * r.scale * (r.sy || 1);
   if (t.state === "ko") {
     const g = AF_koGeom(r);
     if (g) {
@@ -5243,6 +5252,7 @@ var Ky = class {
   dashCd = 0;
   dashChain = 0; // 3 sn içindeki art arda koşu sayısı (METEHAN)
   dashChainT = 0;
+  bounceT = 0; // köşe çarpmasından geri sekme süresi (ms)
   projCd = 0;
   rollT = 0;
   rollDur = 700;
@@ -5458,10 +5468,11 @@ function AF_dashImpact(g, e, n) {
     e.attack = null;
     e.hitstunT = Math.max(e.hitstunT || 0, 350);
   } else if (duvar) {
-    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz
-    e.state = `hitstun`;
+    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz.
+    // Hasar pozuna girmez: normal duruşta kayar, bu sırada (bounceT) tuş girişi kilitli.
+    e.state = `idle`;
     e.attack = null;
-    e.hitstunT = Math.max(e.hitstunT || 0, 220);
+    e.bounceT = 260;
     e.vx = -a * 1100;
   }
 }
@@ -5632,6 +5643,7 @@ var Xy = class {
       e.dashCd > 0 && (e.dashCd = Math.max(0, e.dashCd - r)),
       e.projCd > 0 && (e.projCd = Math.max(0, e.projCd - r)),
       e.dashChainT > 0 && (e.dashChainT = Math.max(0, e.dashChainT - r)),
+      e.bounceT > 0 && (e.bounceT = Math.max(0, e.bounceT - r)),
       e.dashT > 0 &&
         ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = AF_DASH_CD), (e.armor = 0))),
       e.state !== `guard` && e.gp < 100 && (e.gp = Math.min(100, e.gp + r * 0.012)),
@@ -5757,7 +5769,7 @@ var Xy = class {
     ) {
       ((e.attack = { def: AF_sweepDef, t: 0, hit: !1 }), (e.state = `attack`), (e.vx = 0));
     }
-    if (a && t && this.phase === `fight` && e.state !== `attack` && e.state !== `hitstun`)
+    if (a && t && this.phase === `fight` && e.state !== `attack` && e.state !== `hitstun` && !(e.bounceT > 0))
       if (t.guard && AF_S.guard && e.grounded)
         (e.state !== `guard` && (e.vx = 0),
           (e.state = `guard`),
@@ -5836,7 +5848,8 @@ var Xy = class {
         (e.state === `hitstun` ||
           e.state === `attack` ||
           e.state === `ko` ||
-          e.state === `guard`) &&
+          e.state === `guard` ||
+          e.bounceT > 0) &&
         (e.vx *= 0.88 ** (r / 16.7)),
       e.ground === `table` &&
         (e.x < 375 || e.x > 1002) &&
@@ -6087,8 +6100,10 @@ var Xy = class {
       (e.state = `attack`),
       (e.vx = 0));
     let t = e.spr.frames.ult,
-      n = e.x + e.facing * t.tipX,
-      r = e.y - t.tipY,
+      at = AF_char(e.charId).ultAt,
+      iH = e.spr.frames.idle.visibleH,
+      n = e.x + e.facing * (at ? at.x * iH : t.tipX),
+      r = e.y - (at ? at.y * iH : t.tipY),
       i = (t, r, i, a, o, s, c) => ({
         kind: t,
         owner: e.idx,

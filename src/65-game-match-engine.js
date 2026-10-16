@@ -164,6 +164,7 @@ var Xy = class {
       e.dashCd > 0 && (e.dashCd = Math.max(0, e.dashCd - r)),
       e.projCd > 0 && (e.projCd = Math.max(0, e.projCd - r)),
       e.dashChainT > 0 && (e.dashChainT = Math.max(0, e.dashChainT - r)),
+      e.bounceT > 0 && (e.bounceT = Math.max(0, e.bounceT - r)),
       e.dashT > 0 &&
         ((e.dashT = Math.max(0, e.dashT - r)), e.dashT === 0 && ((e.dashCd = AF_DASH_CD), (e.armor = 0))),
       e.state !== `guard` && e.gp < 100 && (e.gp = Math.min(100, e.gp + r * 0.012)),
@@ -289,7 +290,7 @@ var Xy = class {
     ) {
       ((e.attack = { def: AF_sweepDef, t: 0, hit: !1 }), (e.state = `attack`), (e.vx = 0));
     }
-    if (a && t && this.phase === `fight` && e.state !== `attack` && e.state !== `hitstun`)
+    if (a && t && this.phase === `fight` && e.state !== `attack` && e.state !== `hitstun` && !(e.bounceT > 0))
       if (t.guard && AF_S.guard && e.grounded)
         (e.state !== `guard` && (e.vx = 0),
           (e.state = `guard`),
@@ -368,7 +369,8 @@ var Xy = class {
         (e.state === `hitstun` ||
           e.state === `attack` ||
           e.state === `ko` ||
-          e.state === `guard`) &&
+          e.state === `guard` ||
+          e.bounceT > 0) &&
         (e.vx *= 0.88 ** (r / 16.7)),
       e.ground === `table` &&
         (e.x < 375 || e.x > 1002) &&
@@ -619,8 +621,10 @@ var Xy = class {
       (e.state = `attack`),
       (e.vx = 0));
     let t = e.spr.frames.ult,
-      n = e.x + e.facing * t.tipX,
-      r = e.y - t.tipY,
+      at = AF_char(e.charId).ultAt,
+      iH = e.spr.frames.idle.visibleH,
+      n = e.x + e.facing * (at ? at.x * iH : t.tipX),
+      r = e.y - (at ? at.y * iH : t.tipY),
       i = (t, r, i, a, o, s, c) => ({
         kind: t,
         owner: e.idx,

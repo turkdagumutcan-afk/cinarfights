@@ -188,6 +188,11 @@ await test('AHMET ulti GAZA BAS!: motor arkadan gelip vurur', async (o) => {
   const hp = await p.evaluate(() => window.__AF_match.p2.hp);
   return { ok: k.some((x) => x.startsWith('motor@-')) && hp <= 150 - 12, note: `mermi=${k.join(',')} rakip can=${hp}` };
 });
+await test('UMUT ulti: fotoğraflar gövde ortasından çıkar (yerden değil)', async (o) => {
+  const p = await o(); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(150);
+  const h = await p.evaluate(() => { const m = window.__AF_match; return m.projectiles.filter((x) => x.kind === 'photo').map((x) => Math.round(m.p1.y - x.baseY)); });
+  return { ok: h.length === 3 && h.every((v) => v >= 100), note: `yerden yükseklik ${h.join(',')}` };
+});
 await test('METEHAN koşusu ulti barı harcamaz', async (o) => {
   const p = await o({ p1: 'metehan', p2: 'umut' }); await fight(p);
   const m0 = await p.evaluate(() => { window.__AF_match.p1.meter = 40; return 40; }); await p.tap(' ', 60); await wait(120);
@@ -198,9 +203,11 @@ await test('METEHAN köşe döngüsü yok: 6 sn koşu spamı rakibi bitirmez', a
   const p = await o({ p1: 'metehan', p2: 'umut' }); await fight(p);
   await p.evaluate(() => { const m = window.__AF_match; m.p2.x = 1336 - 10; m.p1.x = 1336 - 200; });
   const hp0 = await p.evaluate(() => window.__AF_match.p2.hp);
-  await p.down('d'); const t0 = Date.now(); while (Date.now() - t0 < 6000) { await p.tap(' ', 40); await wait(110); } await p.up('d');
+  await p.clr(); await p.down('d'); const t0 = Date.now(); while (Date.now() - t0 < 6000) { await p.tap(' ', 40); await wait(110); } await p.up('d');
   const hp = await p.evaluate(() => window.__AF_match.p2.hp);
-  return { ok: hp0 - hp <= 30, note: `6 sn'de hasar ${hp0 - hp}` };
+  // köşede geri sekerken METEHAN hasar pozuna (hitstun) girmemeli
+  const sekme = (await p.tr()).filter((s) => s.s === 'hitstun').length;
+  return { ok: hp0 - hp <= 30 && sekme === 0, note: `6 sn'de hasar ${hp0 - hp}, hasar pozu kare sayısı ${sekme}` };
 });
 
 await browser.close(); server.close();

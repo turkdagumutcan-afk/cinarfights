@@ -46,6 +46,7 @@ var Ky = class {
   dashCd = 0;
   dashChain = 0; // 3 sn içindeki art arda koşu sayısı (METEHAN)
   dashChainT = 0;
+  bounceT = 0; // köşe çarpmasından geri sekme süresi (ms)
   projCd = 0;
   rollT = 0;
   rollDur = 700;
