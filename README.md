@@ -35,7 +35,7 @@ git clone https://github.com/turkdagumutcan-afk/cinarfights.git
 cd cinarfights
 npm install            # yalnızca testler için (Playwright); oyunu çalıştırmak için gerekmez
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
-npm test               # build + 38 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
+npm test               # build + 39 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
 
 Test tarayıcısını indirecek yer yoksa Edge ile: `$env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test`

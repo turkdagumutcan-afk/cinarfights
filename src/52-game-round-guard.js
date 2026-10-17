@@ -132,10 +132,14 @@ function AF_block(g, e, t, n, a, r, i) {
     return !1;
   }
   t.gp -= drain;
-  const chip = Math.min(
-    Math.max(0, t.hp - 1),
-    Math.max(1, Math.round(n.damage * (ult ? 0.3 : 0.12))),
-  );
+  // ulti koruma hasarı: %25, kesirler biriktirilir (çok parçalı ultiler korumayı delmesin; 24'lük ulti en fazla 6)
+  let raw;
+  if (ult) {
+    t.chipAcc = (t.chipAcc || 0) + n.damage * 0.25;
+    raw = Math.floor(t.chipAcc);
+    t.chipAcc -= raw;
+  } else raw = Math.max(1, Math.round(n.damage * 0.12));
+  const chip = Math.min(Math.max(0, t.hp - 1), raw);
   t.hp -= chip;
   e.damageDealt += chip;
   g.addMeter(e, Math.round(n.meter * 0.4));

@@ -185,9 +185,9 @@ await test('UMUT F: flaş artık yok (yalnız ultide)', async (o) => {
 });
 await test('AHMET ulti GAZA BAS!: motor arkadan gelip vurur', async (o) => {
   const p = await o({ p1: 'ahmet', p2: 'sudem' }); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(250);
-  const k = await p.evaluate(() => window.__AF_match.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}`)); await wait(2200);
+  const k = await p.evaluate(() => { const m = window.__AF_match; return m.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}${x.x < m.p1.x ? '<arka' : ''}`); }); await wait(2200);
   const hp = await p.evaluate(() => window.__AF_match.p2.hp);
-  return { ok: k.some((x) => x.startsWith('motor@-')) && hp <= 150 - 12, note: `mermi=${k.join(',')} rakip can=${hp}` };
+  return { ok: k.some((x) => x.startsWith('motor@') && x.endsWith('<arka')) && hp <= 150 - 24, note: `mermi=${k.join(',')} rakip can=${hp}` };
 });
 await test('UMUT ulti: fotoğraflar gövde ortasından çıkar (yerden değil)', async (o) => {
   const p = await o(); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(150);
@@ -277,7 +277,7 @@ await test('Gövde genişlikleri: METEHAN en geniş, kimse 36 px altında değil
   const ok = Object.values(w).every((v) => v >= 36) && w.metehan === Math.max(...Object.values(w));
   return { ok, note: Object.entries(w).map(([k, v]) => `${k}=${v}`).join(' ') };
 });
-await test('SUDEM tekmesi en uzun menzilli tekme', async (o) => {
+await test('Tekme menzilleri eşit (±4 px), görsel farkı dengeyi bozmuyor', async (o) => {
   const r = {};
   for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
     const p = await o({ p1: a, p2: b });
@@ -287,7 +287,8 @@ await test('SUDEM tekmesi en uzun menzilli tekme', async (o) => {
     }));
     await p.close();
   }
-  return { ok: r.sudem === Math.max(...Object.values(r)), note: Object.entries(r).map(([k, v]) => `${k}=${v}`).join(' ') };
+  const v = Object.values(r);
+  return { ok: Math.max(...v) - Math.min(...v) <= 4, note: Object.entries(r).map(([k, v]) => `${k}=${v}`).join(' ') };
 });
 await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   const p = await o({ mode: 'bot', p1: 'umut', p2: 'metehan' }); await fight(p);
@@ -297,6 +298,27 @@ await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
     return false;
   });
   return { ok: kostu, note: kostu ? 'koştu' : '25 sn içinde koşmadı' };
+});
+
+await test('Ultiler eşit: tam isabet 24, korunursa en fazla 6 (4 karakter)', async (o) => {
+  const out = [];
+  for (const c of ['umut', 'sudem', 'metehan', 'ahmet']) {
+    const p = await o({ p1: c, p2: c === 'umut' ? 'sudem' : 'umut' });
+    out.push(await p.evaluate((c) => {
+      const m = window.__AF_match; m.disposed = !0;
+      const bos = () => ({ left: !1, right: !1, down: !1, jumpEdge: !1, dropEdge: !1, attacks: [!1, !1, !1, !1], ultEdge: !1, projEdge: !1, rollEdge: 0, sweepEdge: !1, flipPress: !1, dirPress: 0, flip: !1, guard: !1, dash: !1 });
+      const dene = (koru) => {
+        for (const f of [m.p1, m.p2]) { f.hp = f.maxHp; f.state = 'idle'; f.attack = null; f.vx = 0; f.y = 704; f.ground = 'g1'; f.gp = 100; f.chipAcc = 0; }
+        m.projectiles = []; m.p1.x = 300; m.p2.x = 750; m.p1.facing = 1; m.p2.facing = -1; m.p1.meter = 100;
+        const h0 = m.p2.hp;
+        for (let k = 0; k < 240; k++) { const a = bos(), b = bos(); k === 0 && (a.ultEdge = !0); koru && (b.guard = !0); m.input.consume = () => ({ p1: a, p2: b, pauseEdge: !1, boxesEdge: !1 }); m.step(1e3 / 60); }
+        return h0 - m.p2.hp;
+      };
+      return [c, dene(!1), dene(!0)];
+    }, c));
+    await p.close();
+  }
+  return { ok: out.every(([, a, b]) => a === 24 && b <= 6), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 
 // ---- Arenalar ----

@@ -516,6 +516,7 @@ var Xy = class {
   applyHit(e, t, n, r, i) {
     if (t.state === `ko` || this.phase !== `fight` || t.rollInv) return;
     e.mod &&
+      n.pose !== `ult` &&
       (n = {
         ...n,
         damage: Math.max(1, Math.round(n.damage * e.mod.dmg)),
@@ -539,6 +540,14 @@ var Xy = class {
     }
     if (t.dashT > 0) {
       ((t.dashT = 0), (t.dashCd = AF_DASH_CD), (t.armor = 0));
+    }
+    // Kombo hasar azalması (Street Fighter): rakip vuruş sersemliğindeyken gelen her vuruş biraz daha az
+    // hasar verir: 1.-2. %100, 3. %80, 4. %70, 5. %60, 6. %50, sonra %40. Ultiler sayılır ama azalmaz.
+    {
+      const idx = t.state === `hitstun` ? (t.comboIdx || 0) + 1 : 0,
+        k = AF_COMBO_SCALE[Math.min(idx, AF_COMBO_SCALE.length - 1)];
+      t.comboIdx = idx;
+      n.pose !== `ult` && k < 1 && (n = { ...n, damage: Math.max(1, Math.round(n.damage * k)) });
     }
     ((t.hp = Math.max(0, t.hp - n.damage)),
       (e.damageDealt += n.damage),
@@ -672,7 +681,7 @@ var Xy = class {
     return (
       e.charId === `metehan`
         ? ((this.flashA = 0.55),
-          Array.from({ length: 14 }).forEach((_, k) => {
+          Array.from({ length: 12 }).forEach((_, k) => {
             let yy = r + (Math.random() - 0.5) * 150,
               p = i(
                 `note`,
@@ -697,9 +706,10 @@ var Xy = class {
         : e.charId === `umut`
           ? (this.lensFlashes.push({ x: n, y: r, t: 0 }),
             (this.flashA = 0.78),
-            this.projectiles.push({ ...i(`photo`, r, 860, -110, 30, 60, 9), fi: 0 }),
-            this.projectiles.push({ ...i(`photo`, r, 900, 0, 30, 150, -8), fi: 1 }),
-            this.projectiles.push({ ...i(`photo`, r, 860, 110, 30, 240, 10), fi: 2 }),
+            // üç fotoğraf aynı yükseklikte (üst gövde) arka arkaya: eğilerek kaçılır (araba/motor zıplayarak)
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 60, 9), fi: 0 }),
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 170, -8), fi: 1 }),
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 280, 10), fi: 2 }),
             (this.announce = { text: `FLAŞ PATLAMASI!`, t: 0, dur: 900, size: 54, color: lg }),
             X.flashWave(),
             X.shutter(0.08),
@@ -708,7 +718,7 @@ var Xy = class {
           : e.charId === `ahmet`
             ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
               (this.projectiles.push({
-                ...i(`motor`, e.y - 2, 1150, 0, 52, 380, 0),
+                ...i(`motor`, e.y - 2, 1500, 0, 52, 150, 0),
                 x: e.facing > 0 ? -100 : $h + 100,
               }),
               (this.announce = { text: `GAZA BAS!`, t: 0, dur: 900, size: 64, color: `#ff7a1a` }),

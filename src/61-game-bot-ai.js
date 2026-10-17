@@ -65,8 +65,13 @@ var Hy = class {
       o = Math.abs(a),
       s = a >= 0 ? `right` : `left`,
       c = a >= 0 ? `left` : `right`,
-      l = r.spr.frames.punch.tipX + r.halfW * 0.4,
-      u = r.spr.frames.kick.tipX + r.halfW * 0.4,
+      // gerçek vuruş menzili (vuruş kutusunun ön ucu) + rakibin gövde yarısı; görsel genişliğine değil
+      ön = (d) => {
+        const k = Jy(r, d);
+        return (r.facing > 0 ? k.x + k.w - r.x : r.x - k.x) + i.halfW * 0.8;
+      },
+      l = ön(Uy[0]),
+      u = ön(Uy[1]),
       d = Math.abs(i.y - r.y) < 70;
     if (this.thinkT <= 0)
       if (

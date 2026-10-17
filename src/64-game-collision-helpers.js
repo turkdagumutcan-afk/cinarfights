@@ -106,6 +106,9 @@ function AF_tryAirFlip(e, t, n, dt) {
   return !0;
 }
 
+// Kombo hasar azalması: rakip sersemlikteyken gelen n. vuruşun çarpanı (applyHit)
+var AF_COMBO_SCALE = [1, 1, 0.8, 0.7, 0.6, 0.5, 0.4];
+
 // ---- METEHAN koşu çarpması dengesi ----
 var AF_DASH_CD = 1500; // koşular arası bekleme (ms)
 var AF_DASH_CHAIN = [1, 0.6, 0.3]; // 3 sn içindeki 1./2./3.+ koşunun hasar çarpanı

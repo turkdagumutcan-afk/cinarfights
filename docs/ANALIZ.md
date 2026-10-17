@@ -758,3 +758,16 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - `AF_BOY = 1.16` (src/10): karakter boyu (250 → ~290 px), elle verilen gövde genişlikleri, vuruş kutuları (`Jy`), ulti/mermi çizimi ve çarpışma yarıçapı bununla ölçeklenir. Zıplama hızı `rg` × √1,16 → yay ≈326 px. Görseller 560 px kaynaktan küçültüldüğü için kalite kaybı yok.
 - Hata düzeltmesi: `separateBodies` havadaki oyuncuyu y<430 ise "masa seviyesi" sayıyordu; yüksek zıplamada rakibin üstünden geçiliyordu. Artık yalnız masa varsa (`AF_PLAT`) öyle sayılır.
 - Testler: 38/38.
+
+## 25. Denge, 1. adım: ultiler, kombo azalması, bot menzili (18 Ekim 2026)
+
+Ölçüm araçları (git yoksayar, `_onizleme/`): `denge.mjs` (iki zor bot, 12 eşleşme × 25 maç, oyun döngüsü elle adımlanır), `ulti.mjs` (ulti × mesafe × savunma).
+
+- **Ultiler eşit:** tam isabet 24, korunursa en fazla 6. UMUT fotoğraf 3×8 (aynı yükseklikte, eğilerek kaçılır), SUDEM araba 24, METEHAN 12 nota × 2 (karakter hasar çarpanı ultiye uygulanmaz), AHMET motor 24 (150 ms gecikme, 1500 px/s). Ulti koruma hasarı %25, kesirler biriktirilir (`chipAcc`).
+- **Kombo hasar azalması** (`AF_COMBO_SCALE`, src/64): rakip sersemlikteyken 1.–2. vuruş %100, sonra %80/70/60/50, en az %40; ultiler azalmaz.
+- **Bot gerçek menzili kullanıyor** (src/61): yaklaşma/saldırı mesafesi görsel genişliğinden değil vuruş kutusundan. Eski hâlinde UMUT'un %89–94 baskınlığının asıl nedeni buydu.
+- **Tekme menzilleri eşit** (~216 px, `kickX`): bot simülasyonunda tekme menzilindeki 10 px fark kazanma oranını ±%30 oynatıyor.
+- METEHAN: hasar ×1,3 → ×1,2, can 175 → 165 (menzil eşitlenince %80 kazanıyordu).
+- Sonuç (300 maç): UMUT %42, SUDEM %61, METEHAN %57, AHMET %40 (başlangıç: %89/%44/%50/%17). Örnek başına ±%8 sapma.
+- 2. adım (karakter kimlikleri: can/hız/kare verisi) oyuncu testinden sonra.
+- Testler: 39.

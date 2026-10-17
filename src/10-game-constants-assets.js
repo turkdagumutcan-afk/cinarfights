@@ -409,10 +409,11 @@ var AF_CHARS = {
     scale: 250,
     same: !0,
     halfW: 40,
+    kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     roll: AF_UMUT_OZEL,
     // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
-    ultAt: { x: 0.42, y: 0.62 },
+    ultAt: { x: 0.42, y: 0.66 }, // fotoğraf alt kenarı eğilen rakibin üstünde kalır
     tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
@@ -431,7 +432,7 @@ var AF_CHARS = {
     scale: sg,
     same: !0,
     halfW: 37,
-    kickX: 20, // tekmesi asıl silahı: vuruş kutusu 20 px önde (en uzun tekme)
+    kickX: 9, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
     crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
@@ -453,10 +454,11 @@ var AF_CHARS = {
     scale: 232,
     same: !0,
     halfW: 42, // tank: en geniş gövde
+    kickX: 8, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     run: !0,
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
-    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175, reach: 1.15, reachX: 12 },
+    mod: { spd: 0.78, dmg: 1.2, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
     tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
     ultHint: `gitardan yıldırımlı notalar`,
@@ -475,6 +477,7 @@ var AF_CHARS = {
     scale: 252,
     same: !0,
     halfW: 40,
+    kickX: 16, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
     ultName: `GAZA BAS!`,

@@ -1055,10 +1055,11 @@ var AF_CHARS = {
     scale: 250,
     same: !0,
     halfW: 40,
+    kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     roll: AF_UMUT_OZEL,
     // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
-    ultAt: { x: 0.42, y: 0.62 },
+    ultAt: { x: 0.42, y: 0.66 }, // fotoğraf alt kenarı eğilen rakibin üstünde kalır
     tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
@@ -1077,7 +1078,7 @@ var AF_CHARS = {
     scale: sg,
     same: !0,
     halfW: 37,
-    kickX: 20, // tekmesi asıl silahı: vuruş kutusu 20 px önde (en uzun tekme)
+    kickX: 9, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
     crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
@@ -1099,10 +1100,11 @@ var AF_CHARS = {
     scale: 232,
     same: !0,
     halfW: 42, // tank: en geniş gövde
+    kickX: 8, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     run: !0,
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
-    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175, reach: 1.15, reachX: 12 },
+    mod: { spd: 0.78, dmg: 1.2, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
     tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
     ultHint: `gitardan yıldırımlı notalar`,
@@ -1121,6 +1123,7 @@ var AF_CHARS = {
     scale: 252,
     same: !0,
     halfW: 40,
+    kickX: 16, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
     ultName: `GAZA BAS!`,
@@ -4030,10 +4033,14 @@ function AF_block(g, e, t, n, a, r, i) {
     return !1;
   }
   t.gp -= drain;
-  const chip = Math.min(
-    Math.max(0, t.hp - 1),
-    Math.max(1, Math.round(n.damage * (ult ? 0.3 : 0.12))),
-  );
+  // ulti koruma hasarı: %25, kesirler biriktirilir (çok parçalı ultiler korumayı delmesin; 24'lük ulti en fazla 6)
+  let raw;
+  if (ult) {
+    t.chipAcc = (t.chipAcc || 0) + n.damage * 0.25;
+    raw = Math.floor(t.chipAcc);
+    t.chipAcc -= raw;
+  } else raw = Math.max(1, Math.round(n.damage * 0.12));
+  const chip = Math.min(Math.max(0, t.hp - 1), raw);
   t.hp -= chip;
   e.damageDealt += chip;
   g.addMeter(e, Math.round(n.meter * 0.4));
@@ -4975,8 +4982,13 @@ var Hy = class {
       o = Math.abs(a),
       s = a >= 0 ? `right` : `left`,
       c = a >= 0 ? `left` : `right`,
-      l = r.spr.frames.punch.tipX + r.halfW * 0.4,
-      u = r.spr.frames.kick.tipX + r.halfW * 0.4,
+      // gerçek vuruş menzili (vuruş kutusunun ön ucu) + rakibin gövde yarısı; görsel genişliğine değil
+      ön = (d) => {
+        const k = Jy(r, d);
+        return (r.facing > 0 ? k.x + k.w - r.x : r.x - k.x) + i.halfW * 0.8;
+      },
+      l = ön(Uy[0]),
+      u = ön(Uy[1]),
       d = Math.abs(i.y - r.y) < 70;
     if (this.thinkT <= 0)
       if (
@@ -5195,7 +5207,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 9,
+    damage: 8,
     w: 0,
     h: 0,
     kbx: 320,
@@ -5210,7 +5222,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 14,
+    damage: 24,
     w: 0,
     h: 0,
     kbx: 520,
@@ -5288,7 +5300,7 @@ var AF_motorHit = {
   startup: 0,
   active: 0,
   recovery: 0,
-  damage: 16,
+  damage: 24,
   w: 0,
   h: 0,
   kbx: 700,
@@ -5560,6 +5572,9 @@ function AF_tryAirFlip(e, t, n, dt) {
   X.jump();
   return !0;
 }
+
+// Kombo hasar azalması: rakip sersemlikteyken gelen n. vuruşun çarpanı (applyHit)
+var AF_COMBO_SCALE = [1, 1, 0.8, 0.7, 0.6, 0.5, 0.4];
 
 // ---- METEHAN koşu çarpması dengesi ----
 var AF_DASH_CD = 1500; // koşular arası bekleme (ms)
@@ -6110,6 +6125,7 @@ var Xy = class {
   applyHit(e, t, n, r, i) {
     if (t.state === `ko` || this.phase !== `fight` || t.rollInv) return;
     e.mod &&
+      n.pose !== `ult` &&
       (n = {
         ...n,
         damage: Math.max(1, Math.round(n.damage * e.mod.dmg)),
@@ -6133,6 +6149,14 @@ var Xy = class {
     }
     if (t.dashT > 0) {
       ((t.dashT = 0), (t.dashCd = AF_DASH_CD), (t.armor = 0));
+    }
+    // Kombo hasar azalması (Street Fighter): rakip vuruş sersemliğindeyken gelen her vuruş biraz daha az
+    // hasar verir: 1.-2. %100, 3. %80, 4. %70, 5. %60, 6. %50, sonra %40. Ultiler sayılır ama azalmaz.
+    {
+      const idx = t.state === `hitstun` ? (t.comboIdx || 0) + 1 : 0,
+        k = AF_COMBO_SCALE[Math.min(idx, AF_COMBO_SCALE.length - 1)];
+      t.comboIdx = idx;
+      n.pose !== `ult` && k < 1 && (n = { ...n, damage: Math.max(1, Math.round(n.damage * k)) });
     }
     ((t.hp = Math.max(0, t.hp - n.damage)),
       (e.damageDealt += n.damage),
@@ -6266,7 +6290,7 @@ var Xy = class {
     return (
       e.charId === `metehan`
         ? ((this.flashA = 0.55),
-          Array.from({ length: 14 }).forEach((_, k) => {
+          Array.from({ length: 12 }).forEach((_, k) => {
             let yy = r + (Math.random() - 0.5) * 150,
               p = i(
                 `note`,
@@ -6291,9 +6315,10 @@ var Xy = class {
         : e.charId === `umut`
           ? (this.lensFlashes.push({ x: n, y: r, t: 0 }),
             (this.flashA = 0.78),
-            this.projectiles.push({ ...i(`photo`, r, 860, -110, 30, 60, 9), fi: 0 }),
-            this.projectiles.push({ ...i(`photo`, r, 900, 0, 30, 150, -8), fi: 1 }),
-            this.projectiles.push({ ...i(`photo`, r, 860, 110, 30, 240, 10), fi: 2 }),
+            // üç fotoğraf aynı yükseklikte (üst gövde) arka arkaya: eğilerek kaçılır (araba/motor zıplayarak)
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 60, 9), fi: 0 }),
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 170, -8), fi: 1 }),
+            this.projectiles.push({ ...i(`photo`, r, 880, 0, 30, 280, 10), fi: 2 }),
             (this.announce = { text: `FLAŞ PATLAMASI!`, t: 0, dur: 900, size: 54, color: lg }),
             X.flashWave(),
             X.shutter(0.08),
@@ -6302,7 +6327,7 @@ var Xy = class {
           : e.charId === `ahmet`
             ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
               (this.projectiles.push({
-                ...i(`motor`, e.y - 2, 1150, 0, 52, 380, 0),
+                ...i(`motor`, e.y - 2, 1500, 0, 52, 150, 0),
                 x: e.facing > 0 ? -100 : $h + 100,
               }),
               (this.announce = { text: `GAZA BAS!`, t: 0, dur: 900, size: 64, color: `#ff7a1a` }),
