@@ -67,7 +67,7 @@ npx playwright install chromium
 npm test
 ```
 
-Beklenen son satır: `28/28 test geçti.` (UMUT'un taklası kapalıyken 12 test `ATLANDI` yazar, bu normal.)
+Beklenen son satır: `31/31 test geçti.` (UMUT'un taklası kapalıyken 12 test `ATLANDI` yazar, bu normal.)
 
 - `npm install` yalnızca Playwright'ı (test aracı) indirir.
 - `npx playwright install chromium` ~450 MB'lık test tarayıcısını indirir. Yer yoksa bunu atla ve
@@ -77,9 +77,6 @@ Beklenen son satır: `28/28 test geçti.` (UMUT'un taklası kapalıyken 12 test 
   $env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test
   ```
 
-- **Bilinen kararsız test:** "Zıplama geçemez: W+D basılı tutarak (90px)" nadiren bir çalıştırmada
-  `KALDI` verip bir sonrakinde geçebiliyor (`docs/ANALIZ.md` §17.7). Tek seferlik `29/30` görürsen
-  bir kez daha çalıştır; tekrar kalırsa gerçek hatadır.
 
 ## 5. Günlük iş akışı
 
@@ -94,7 +91,7 @@ git switch -c kisa-konu-adi
 1. `src/` altında düzenle (hangi dosya ne yapar: `CLAUDE.md` tablosu ve `docs/ANALIZ.md` §17.2).
 2. `npm run build` — `js/game.bundle.js` ve `index.html` güncellenir. Bu iki dosyayı **elle düzenleme**.
 3. `npm start` ile oyunda dene, tarayıcıda `Ctrl+F5`.
-4. `npm test` — 28/28 olmalı.
+4. `npm test` — 31/31 olmalı.
 5. Commit ve push:
 
    Önce `git status` ile listeye bak; yalnızca bu işle ilgili dosyaları ekle.

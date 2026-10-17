@@ -30,10 +30,18 @@ function Qy() {
     c = wn(),
     [l] = Zr(),
     u = l.get(`mode`) === `bot`,
+    tr = l.get(`mode`) === `training`,
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
-    d = `?mode=${u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+  // Antrenman: R ile konumları ve canları sıfırla
+  (0, N.useEffect)(() => {
+    if (!tr) return;
+    const h = (k) => k.code === `KeyR` && !k.repeat && (t.current?.trainReset(), X.uiClick());
+    window.addEventListener(`keydown`, h);
+    return () => window.removeEventListener(`keydown`, h);
+  }, [tr]);
   (0, N.useEffect)(() => {
     let n = e.current;
     if (!n) return;
@@ -58,7 +66,7 @@ function Qy() {
                   { description: `Özel atak hazır — kullan veya kaybet!` },
                 ),
             },
-            { vsBot: u, diff: afd, chars: [af1, af2] },
+            { vsBot: u, training: tr, diff: afd, chars: [af1, af2] },
           )),
           (t.current = o),
           o.start(),
@@ -68,7 +76,7 @@ function Qy() {
         ((i = !0), o?.dispose(), (t.current = null));
       }
     );
-  }, [u, af1, af2, afd]);
+  }, [u, tr, af1, af2, afd]);
   let f = () => {
       (X.uiClick(), t.current?.setPaused(!1));
     },
@@ -104,7 +112,14 @@ function Qy() {
               ],
             }),
             (0, P.jsx)(`span`, {
-              children: u
+              children: tr
+                ? (0, P.jsxs)(P.Fragment, {
+                    children: [
+                      (0, P.jsx)(`b`, { className: `text-cyan-300`, children: `P2` }),
+                      ` KUKLA · R — SIFIRLA · ESC — KUKLA AYARI`,
+                    ],
+                  })
+                : u
                 ? (0, P.jsxs)(P.Fragment, {
                     children: [
                       (0, P.jsx)(`b`, { className: `text-cyan-300`, children: `P2` }),
@@ -139,7 +154,7 @@ function Qy() {
             children: [
               (0, P.jsx)(`h2`, {
                 className: `font-display text-3xl font-black tracking-widest text-white`,
-                children: `DURDURULDU`,
+                children: tr ? `ANTRENMAN` : `DURDURULDU`,
               }),
               (0, P.jsxs)(`div`, {
                 className: `mt-5 flex flex-col gap-2.5`,
@@ -149,6 +164,37 @@ function Qy() {
                     onClick: f,
                     children: `DEVAM ET`,
                   }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-dummy-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        const g = t.current;
+                        if (!g) return;
+                        const i = AF_DUMMY.findIndex((x) => x[0] === g.dummy);
+                        (X.uiClick(), g.setDummy(AF_DUMMY[(i + 1) % AF_DUMMY.length][0]), afBump((v) => v + 1));
+                      },
+                      children: `KUKLA: ${AF_dummyName(t.current?.dummy)} ▸`,
+                    }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-ult-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        const g = t.current;
+                        g && (X.uiClick(), g.setTrainUlt(!g.trainUlt), afBump((v) => v + 1));
+                      },
+                      children: `ULTİ BARI: ${t.current?.trainUlt === !1 ? `NORMAL` : `HEP DOLU`}`,
+                    }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-reset-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        (X.uiClick(), t.current?.trainReset(), t.current?.setPaused(!1));
+                      },
+                      children: `KONUMLARI SIFIRLA (R)`,
+                    }),
                   (0, P.jsx)(uy, {
                     "data-testid": `pause-settings-button`,
                     variant: `outline`,

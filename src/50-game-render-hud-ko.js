@@ -36,6 +36,7 @@ function yy(e) {
     My(t, e),
     Ny(t, e),
     Py(t, e),
+    e.training && e.phase === `fight` && AF_drawTrain(t, e),
     e.flashA > 0 &&
       ((t.fillStyle = `rgba(255,255,255,${pg(e.flashA, 0, 0.92)})`), t.fillRect(0, 0, $h, 768)));
 }

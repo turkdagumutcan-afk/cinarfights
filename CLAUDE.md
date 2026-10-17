@@ -15,13 +15,13 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 | `20-21`, `40` | ayarlar / başlık / karakter seçim ekranları |
 | `50-53` | HUD, **ayar+tuş haritası (`51`)**, raunt+guard (`52`), çizim |
 | `60` girdi · `61` bot · `62` saldırı tabloları · `63` Fighter · `64` çarpışma+takla tetikleyici · `65` **maç motoru** | |
-| `70` dövüş ekranı · `99` bootstrap | |
+| `66` antrenman (kukla, can/ulti dolumu, panel) · `70` dövüş ekranı · `99` bootstrap | |
 
 ## İş akışı (her değişiklikte)
 1. `git switch -c <konu>` (main'e doğrudan değişiklik yapma)
 2. Önce `Grep` ile ilgili yeri bul (`src/[1-9]*` içinde), sonra yalnızca o aralığı `Read` et (offset/limit).
 3. `src/`'de düzenle → `npm run build` → localhost:8130'da dene (`oyunu-baslat.bat` ya da `npm start`)
-4. `npm test` (28 tarayıcı testi + takla kapalıyken 12 "ATLANDI") — geçmeyen testi "geçti" diye raporlama; test edemediğini açıkça söyle. Chromium kurulu değilse `CHROMIUM_PATH` ile Edge kullanılabilir (`docs/KURULUM.md` §4). "Zıplama geçemez: W+D basılı tutarak" kararsızdır; tek seferlik kalırsa bir kez daha çalıştır.
+4. `npm test` (31 tarayıcı testi + takla kapalıyken 12 "ATLANDI") — geçmeyen testi "geçti" diye raporlama; test edemediğini açıkça söyle. Chromium kurulu değilse `CHROMIUM_PATH` ile Edge kullanılabilir (`docs/KURULUM.md` §4).
 5. Commit → push → Pull Request. Birleştirmeyi kullanıcı yapar.
 - Görsel/sürüm değiştiğinde tarayıcı için `Ctrl+F5` hatırlat.
 - Kullanıcının daha yeni/pushlanmamış yerel dosyalarını silme/ezme; önce yedek al.

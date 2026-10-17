@@ -54,6 +54,7 @@ async function Dg(e = `umut`, t = `sudem`) {
 var Og = [
   { id: `bot`, label: `1VSBOT`, hint: `Karakterini ve rakip botu kendin seç` },
   { id: `2p`, label: `1VS1`, hint: `Tek klavyede arkadaşınla kapış` },
+  { id: `training`, label: `ANTRENMAN`, hint: `Kuklaya karşı hareketleri ve ultileri dene` },
   { id: `settings`, label: `AYARLAR`, hint: `Ses, raunt, hasar ve kontrolleri düzenle` },
   { id: `quit`, label: `ÇIKIŞ`, hint: `Oyunu kapat ve masaüstüne dön` },
 ];

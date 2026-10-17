@@ -50,8 +50,10 @@ function kg() {
                 : k.code === `Digit2` || k.code === `Numpad2`
                   ? a(`2p`)
                   : k.code === `Digit3` || k.code === `Numpad3`
-                    ? a(`settings`)
-                    : (k.code === `Digit4` || k.code === `Numpad4`) && a(`quit`);
+                    ? a(`training`)
+                    : k.code === `Digit4` || k.code === `Numpad4`
+                      ? a(`settings`)
+                      : (k.code === `Digit5` || k.code === `Numpad5`) && a(`quit`);
       };
       return (
         window.addEventListener(`keydown`, h),

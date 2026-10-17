@@ -364,6 +364,7 @@ function AF_Map({ p1, p2 }) {
         city: resolve(p.id, p.rand),
         ready: p.ready,
         bot: p.bot,
+        dummy: p.dummy,
       }));
       for (const c of fy) {
         const x = cx(c),
@@ -440,7 +441,7 @@ function AF_Map({ p1, p2 }) {
         g.font = `900 12px "JetBrains Mono Variable", monospace`;
         g.textAlign = `center`;
         g.fillStyle = `#fff`;
-        g.fillText(m.bot ? `BOT` : m.tag, x, y + 4);
+        g.fillText(m.bot ? (m.dummy ? `KUKLA` : `BOT`) : m.tag, x, y + 4);
         g.setLineDash([4, 3]);
         g.lineDashOffset = -t * 0.02;
         g.strokeStyle = m.col;
@@ -598,6 +599,7 @@ function AF_Card({
   ready: r,
   onReady: i,
   isBot: a,
+  dummy: dm,
   canSwitch: o,
 }) {
   const rnd = t === `random`,
@@ -609,7 +611,7 @@ function AF_Card({
         `HAZIR'a basınca ya da dövüş başlayınca belli olur`,
       ]
     : a
-      ? [`Bot yönetir — karakterini sen seç`, `Ulti: ${s.ultName} (${s.ultHint})`]
+      ? [dm ? `Antrenman kuklası — karakterini sen seç` : `Bot yönetir — karakterini sen seç`, `Ulti: ${s.ultName} (${s.ultHint})`]
       : AF_cardLines(e === 1 ? 0 : 1, s);
   const arrow = (tid, fn, txt) =>
     (0, P.jsx)(`button`, {
@@ -635,7 +637,7 @@ function AF_Card({
           (0, P.jsx)(`span`, {
             className: `font-monox text-xs tracking-widest`,
             style: { color: e === 1 ? `#ff2a5f` : `#00c8ff` },
-            children: a ? `BOT` : `OYUNCU ${e}`,
+            children: a ? (dm ? `KUKLA` : `BOT`) : `OYUNCU ${e}`,
           }),
           (0, P.jsx)(`span`, {
             "data-testid": `p${e}-ready-indicator`,
@@ -705,13 +707,13 @@ function AF_Card({
         className: `font-display mt-4 font-bold tracking-widest disabled:opacity-80`,
         style: r ? { background: c, color: `#06070f` } : { borderColor: c, color: c },
         onClick: i,
-        children: a ? `BOT HAZIR ✓` : r ? `HAZIR ✓` : `HAZIR`,
+        children: a ? (dm ? `KUKLA HAZIR ✓` : `BOT HAZIR ✓`) : r ? `HAZIR ✓` : `HAZIR`,
       }),
     ],
   });
 }
 
-function AF_Grid({ p1c, p2c, r1, r2, bot, onPick }) {
+function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
   const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `random`, 0];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
@@ -878,7 +880,7 @@ function AF_Grid({ p1c, p2c, r1, r2, bot, onPick }) {
               },
             }),
           sel1 && tag(r1 ? `1P ✓` : `1P`, `#ff2a5f`, `left`),
-          sel2 && tag(bot ? `BOT` : r2 ? `2P ✓` : `2P`, `#00a8d8`, `right`),
+          sel2 && tag(bot ? (dummy ? `KUKLA` : `BOT`) : r2 ? `2P ✓` : `2P`, `#00a8d8`, `right`),
         ],
       });
     }),
@@ -894,7 +896,9 @@ var AF_DIFFS = [
 function gy() {
   let nav = wn(),
     [q] = Zr(),
-    bot = q.get(`mode`) === `bot`;
+    mode = q.get(`mode`),
+    train = mode === `training`,
+    bot = mode === `bot` || train; // antrenmanda P2 (kukla) bot gibi P1 tarafından seçilir
   const norm = (v) => (v === `random` ? v : AF_char(v).id);
   const [p1c, sp1] = (0, N.useState)(norm(q.get(`p1`) || `umut`)),
     [p2c, sp2] = (0, N.useState)(norm(q.get(`p2`) || `sudem`)),
@@ -919,7 +923,7 @@ function gy() {
     setR1(!0);
     setR2(!0);
     window.setTimeout(
-      () => nav(`/battle?mode=${t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
+      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
       650,
     );
   }, [nav]);
@@ -980,6 +984,16 @@ function gy() {
     X.uiClick();
     setDf(e);
   }, []);
+  // ◀ GERİ / ESC / Backspace: önce "HAZIR" iptal edilir, ikinci basışta ana menüye dönülür
+  const back = (0, N.useCallback)(() => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    const t = rf.current;
+    if (t.r1) setR1(!1);
+    else if (!t.bot && t.r2) setR2(!1);
+    else nav(`/`);
+  }, [nav]);
   const d = r1 && r2;
   (0, N.useEffect)(() => {
     d && start();
@@ -997,7 +1011,9 @@ function gy() {
         `Numpad4`,
         `Numpad5`,
       ].includes(e.code) && e.preventDefault();
-      e.code === `KeyZ`
+      e.code === `Escape` || e.code === `Backspace`
+        ? (e.preventDefault(), back())
+        : e.code === `KeyZ`
         ? ready1()
         : e.code === `Numpad1` || e.code === `KeyJ`
           ? ready2()
@@ -1019,8 +1035,8 @@ function gy() {
     };
     window.addEventListener(`keydown`, h);
     return () => window.removeEventListener(`keydown`, h);
-  }, [ready1, ready2, start, mv1, mv2, dsel, bot]);
-  const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot });
+  }, [ready1, ready2, start, mv1, mv2, dsel, bot, back]);
+  const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot, dummy: isBot && train });
   return (0, P.jsxs)(`div`, {
     "data-testid": `select-screen`,
     className: `scanlines relative min-h-svh overflow-hidden bg-[#06070f] px-4 py-6 text-white`,
@@ -1031,6 +1047,13 @@ function gy() {
       (0, P.jsxs)(`div`, {
         className: `relative z-10 mx-auto max-w-7xl`,
         children: [
+          (0, P.jsx)(`button`, {
+            type: `button`,
+            "data-testid": `select-back-button`,
+            onClick: back,
+            className: `font-display absolute left-0 top-0 rounded-lg border-2 border-[#272744] bg-black/55 px-4 py-2 text-sm font-black tracking-wider text-slate-200 transition-colors hover:border-cyan-300 hover:text-white`,
+            children: `◀ GERİ`,
+          }),
           (0, P.jsxs)(`div`, {
             className: `text-center`,
             children: [
@@ -1042,8 +1065,8 @@ function gy() {
                 "data-testid": `select-mode-label`,
                 className: `font-monox mt-1 text-xs tracking-[0.3em] text-slate-400`,
                 children: [
-                  bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`,
-                  ` · 99 SANİYE · EN İYİ 3 RAUNT`,
+                  train ? `ANTRENMAN · KUKLAYA KARŞI` : bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`,
+                  train ? ` · SÜRE YOK · CAN DOLAR` : ` · 99 SANİYE · EN İYİ 3 RAUNT`,
                 ],
               }),
             ],
@@ -1065,8 +1088,9 @@ function gy() {
                 className: `flex flex-1 flex-col items-center justify-start gap-2`,
                 children: [
                   (0, P.jsx)(AF_Map, { p1: mp(p1c, r1, !1), p2: mp(p2c, r2, bot) }),
-                  (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, onPick: pick }),
+                  (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
                   bot &&
+                    !train &&
                     (0, P.jsxs)(`div`, {
                       "data-testid": `difficulty-picker`,
                       className: `flex flex-col items-center gap-2`,
@@ -1109,7 +1133,9 @@ function gy() {
                     className: `font-monox text-center text-sm text-slate-300`,
                     children: d
                       ? `DÖVÜŞ BAŞLIYOR...`
-                      : bot
+                      : train
+                        ? `KARAKTER: A/D (SEN) · ◄/► (KUKLA) · HAZIR OL: Z · ESC GERİ`
+                        : bot
                         ? `KARAKTER: A/D (SEN) · ◄/► (BOT) · HAZIR OL: Z`
                         : `KARAKTER: A/D (P1) · ◄/► (P2) · HAZIR: Z / NUM 1`,
                   }),
@@ -1122,7 +1148,7 @@ function gy() {
                     size: `lg`,
                     onClick: start,
                     className: `font-display px-10 text-xl font-black tracking-widest`,
-                    children: `DÖVÜŞ! ▶`,
+                    children: train ? `ANTRENMAN ▶` : `DÖVÜŞ! ▶`,
                   }),
                 ],
               }),
@@ -1134,6 +1160,7 @@ function gy() {
                 ready: r2,
                 onReady: ready2,
                 isBot: bot,
+                dummy: train,
                 canSwitch: bot ? !0 : !r2,
               }),
             ],

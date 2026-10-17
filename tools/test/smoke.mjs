@@ -75,7 +75,8 @@ for (const [name, gap, steps] of [
   ['D basılı, W vur: yakın (40px)', 40, async (p) => { await p.down('d'); await p.tap('w', 55); await wait(1500); await p.up('d'); }],
   ['W+D uzaktan (220px), tepe noktasında rakibin üstüne varır', 220, async (p) => { await p.down('d'); await p.down('w'); await wait(55); await p.up('w'); await wait(1500); await p.up('d'); }],
 ]) await test(`Zıplama geçemez: ${name}`, async (o) => {
-  const p = await o(); await p.approach(gap); await p.clr(); await steps(p); const t = await p.tr(); const b = await p.st();
+  // tuş bırakıldıktan sonra oyunun bir kare işlemesini bekle (yoksa durum hâlâ 'walk' okunabiliyordu)
+  const p = await o(); await p.approach(gap); await p.clr(); await steps(p); await wait(100); const t = await p.tr(); const b = await p.st();
   return { ok: noCross(t, b) && b.p1.s === 'idle', note: `bitiş dx=${(b.p1.x - b.p2.x).toFixed(0)} en yakın=${Math.min(...t.map((s) => s.x2 - s.x)).toFixed(0)}` };
 });
 await test('Zıplama geçemez: P2 ▲+◄ ile de geçemez (masa dışında, sol köşede)', async (o) => {
@@ -208,6 +209,41 @@ await test('METEHAN köşe döngüsü yok: 6 sn koşu spamı rakibi bitirmez', a
   // köşede geri sekerken METEHAN hasar pozuna (hitstun) girmemeli
   const sekme = (await p.tr()).filter((s) => s.s === 'hitstun').length;
   return { ok: hp0 - hp <= 30 && sekme === 0, note: `6 sn'de hasar ${hp0 - hp}, hasar pozu kare sayısı ${sekme}` };
+});
+
+// ---- Menü / antrenman ----
+await test('Seçim ekranı: ESC önce HAZIR\'ı iptal eder, sonra ana menüye döner', async () => {
+  const p = await browser.newPage(); p.errors = []; p.on('pageerror', (e) => p.errors.push(e.message));
+  try {
+    await p.goto(`${base}/index.html#/select?mode=2p`, { waitUntil: 'load' }); await p.waitForSelector('[data-testid=select-screen]');
+    await p.keyboard.press('z'); await wait(150);
+    const hazir = await p.textContent('[data-testid=p1-ready-indicator]');
+    await p.keyboard.press('Escape'); await wait(150);
+    const iptal = await p.textContent('[data-testid=p1-ready-indicator]'); const hala = await p.evaluate(() => location.hash);
+    await p.keyboard.press('Escape'); await wait(300); const son = await p.evaluate(() => location.hash);
+    const btn = await p.$('[data-testid=select-back-button]');
+    return { ok: /✓/.test(hazir) && !/✓/.test(iptal) && hala.startsWith('#/select') && (son === '#/' || son === '') && !btn && !p.errors.length, note: `${hazir.trim()} -> ${iptal.trim()} -> ${son || '#/'}` };
+  } finally { await p.close(); }
+});
+await test('Antrenman: süre yok, kukla nakavt olmaz, can dolar, istatistik tutulur', async (o) => {
+  const p = await o({ mode: 'training', p1: 'umut', p2: 'sudem' });
+  await p.evaluate(() => { const m = window.__AF_match; m.p2.x = m.p1.x + 150; m.p2.hp = 3; });
+  await p.tap('z', 50); await wait(500);
+  const a = await p.evaluate(() => { const m = window.__AF_match; return { t: m.timeLeft, phase: m.phase, hp: m.p2.hp, max: m.p2.maxHp, last: m.train.last }; });
+  await p.evaluate(() => { window.__AF_match.p2.hp = 50; }); await wait(1400);
+  const dolan = await p.evaluate(() => window.__AF_match.p2.hp);
+  return { ok: a.t === Infinity && a.phase === 'fight' && a.hp > 3 && a.last > 0 && dolan === a.max, note: `faz=${a.phase} can=${a.hp} son vuruş=${a.last} dolum=${dolan}` };
+});
+await test('Antrenman: R konumları sıfırlar, kukla eğilme/koruma modları', async (o) => {
+  const p = await o({ mode: 'training', p1: 'ahmet', p2: 'metehan' });
+  await p.evaluate(() => { const m = window.__AF_match; m.p1.x = 900; m.p2.x = 1100; });
+  await p.tap('r', 50); await wait(100);
+  const x = await p.evaluate(() => Math.round(window.__AF_match.p1.x));
+  await p.evaluate(() => window.__AF_match.setDummy('crouch')); await wait(200);
+  const c = await p.evaluate(() => window.__AF_match.p2.state);
+  await p.evaluate(() => window.__AF_match.setDummy('guard')); await wait(200);
+  const g = await p.evaluate(() => window.__AF_match.p2.state);
+  return { ok: x === Math.round(1376 * 0.26) && c === 'crouch' && g === 'guard', note: `x=${x} eğil=${c} koru=${g}` };
 });
 
 await browser.close(); server.close();

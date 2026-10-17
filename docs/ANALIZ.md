@@ -714,3 +714,14 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - UMUT'un takla/süpürme kareleri yeni tarzda çizilince `AF_UMUT_OZEL=true`.
 - Tişörtlerdeki marka logoları (Ford Mustang, McQueen, Adidas) depo herkese açılmadan değiştirilecek.
 
+## 19. Antrenman Modu ve Menü Geri Dönüşü — 17 Ekim 2026
+
+- **Ana menü:** 1VSBOT · 1VS1 · **ANTRENMAN** · AYARLAR · ÇIKIŞ (kısayollar 1–5).
+- **Seçim ekranı:** sol üstte `◀ GERİ`; `ESC` / `Backspace` önce "HAZIR"ı iptal eder, ikinci basışta ana menüye döner.
+- **Antrenman (`mode=training`)** — `src/66-game-training.js`:
+  - P2 kukla; karakterini P1 seçer (bot modu gibi). Süre ve raunt yok; kimse nakavt olmaz (`AF_trainKo`), vuruş bitince 1 sn sonra can dolar.
+  - Kukla davranışı (ESC menüsü): DURUR / EĞİLİR / KORUR / DÖVÜŞÜR (BOT). Ulti barı varsayılan HEP DOLU (menüden NORMAL).
+  - Panel: son vuruş, kombo, kombo hasarı, en yüksek kombo hasarı. `R` konumları ve canları sıfırlar.
+- **Test düzeltmesi:** zıplama testleri tuş bırakıldıktan hemen sonra durumu okuyordu (bazen hâlâ `walk`); 100 ms bekleme eklendi, artık kararsız değil.
+- Testler: 31 (+ takla kapalıyken 12 `ATLANDI`).
+

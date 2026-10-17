@@ -39,7 +39,11 @@ var Xy = class {
       (this.vsBot = !!r.vsBot),
       (this.diff = r.diff || `normal`),
       (this.chars = r.chars || [AF_char(`umut`), AF_char(`sudem`)]),
-      (this.bot = this.vsBot ? new Hy(this.diff) : null),
+      // antrenman: süre/raunt yok, kimse nakavt olmaz, P2 kukla (66-game-training.js)
+      (this.training = !!r.training),
+      (this.dummy = r.dummy || `stand`),
+      (this.trainUlt = !0),
+      (this.bot = this.vsBot || (this.training && this.dummy === `bot`) ? new Hy(this.diff) : null),
       (this.cb = n),
       (window.__AF_match = this), // test/hata ayıklama kancası (tools/test bunu kullanır)
       (this.p1 = new Ky(0, t.p1)),
@@ -58,6 +62,15 @@ var Xy = class {
   togglePause() {
     this.setPaused(!this.paused);
   }
+  setDummy(m) {
+    ((this.dummy = m), (this.bot = m === `bot` ? new Hy(this.diff) : null));
+  }
+  setTrainUlt(v) {
+    this.trainUlt = !!v;
+  }
+  trainReset() {
+    this.training && AF_trainReset(this);
+  }
   restart() {
     (this.reset(), this.cb.onPauseChange(!1));
   }
@@ -69,7 +82,8 @@ var Xy = class {
         ((this.p2.name += ` II`),
         (this.p2.accent = this.chars[0].id === `umut` ? `#3ddc84` : `#ff5a7a`),
         (this.p2.accent2 = this.chars[0].id === `umut` ? `#8af5b9` : `#ff9ab0`)),
-      (this.roundTime = AF_S.time > 0 ? AF_S.time : 1 / 0),
+      (this.roundTime = AF_S.time > 0 && !this.training ? AF_S.time : 1 / 0),
+      (this.train = { last: 0, combo: 0, dmg: 0, max: 0 }),
       (this.maxRounds = AF_S.rounds),
       (this.need = (AF_S.rounds + 1) >> 1),
       (this.wins = [0, 0]),
@@ -87,8 +101,8 @@ var Xy = class {
       (this.dmgs = []),
       (this.projectiles = []),
       (this.lensFlashes = []),
-      (this.announce = { text: `RAUNT 1`, t: 0, dur: 800, size: 72, color: `#ffffff` }),
-      this.vsBot && (this.bot = new Hy(this.diff)),
+      (this.announce = { text: this.training ? `ANTRENMAN` : `RAUNT 1`, t: 0, dur: 800, size: 72, color: `#ffffff` }),
+      (this.vsBot || (this.training && this.dummy === `bot`)) && (this.bot = new Hy(this.diff)),
       X.ensure(),
       X.roundStart());
   }
@@ -130,12 +144,13 @@ var Xy = class {
       }
       if (this.phase === `fight`) {
         this.updateFighter(this.p1, t.p1, this.p2, e);
-        let n = this.bot ? this.bot.think(this, e) : t.p2;
+        let n = this.bot ? this.bot.think(this, e) : this.training ? AF_dummyInput(this) : t.p2;
         (this.updateFighter(this.p2, n, this.p1, e),
           this.separateBodies(this.p1, this.p2),
           this.resolveAttacks(),
           this.updateProjectiles(e),
           this.updateEffects(e),
+          this.training && AF_trainTick(this, e),
           (this.timeLeft -= e / 1e3),
           this.timeLeft <= 0 && ((this.timeLeft = 0), this.onTimeUp()));
         return;
@@ -537,7 +552,8 @@ var Xy = class {
       this.burst(r, i, 10 + n.damage, a, e.accent),
       this.dmgNum(r, i - 30, n.damage, e.accent),
       n.damage >= 10 ? X.hitHeavy() : X.hitLight(),
-      t.hp <= 0 && this.onKo(e, t));
+      this.training && e.idx === 0 && AF_trainHit(this, e, n.damage),
+      t.hp <= 0 && (this.training ? AF_trainKo(this, t) : this.onKo(e, t)));
   }
   addMeter(e, t) {
     if (t <= 0 || !AF_S.ult) return;

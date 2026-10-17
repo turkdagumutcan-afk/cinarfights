@@ -1353,6 +1353,7 @@ async function Dg(e = `umut`, t = `sudem`) {
 var Og = [
   { id: `bot`, label: `1VSBOT`, hint: `Karakterini ve rakip botu kendin seç` },
   { id: `2p`, label: `1VS1`, hint: `Tek klavyede arkadaşınla kapış` },
+  { id: `training`, label: `ANTRENMAN`, hint: `Kuklaya karşı hareketleri ve ultileri dene` },
   { id: `settings`, label: `AYARLAR`, hint: `Ses, raunt, hasar ve kontrolleri düzenle` },
   { id: `quit`, label: `ÇIKIŞ`, hint: `Oyunu kapat ve masaüstüne dön` },
 ];
@@ -1873,8 +1874,10 @@ function kg() {
                 : k.code === `Digit2` || k.code === `Numpad2`
                   ? a(`2p`)
                   : k.code === `Digit3` || k.code === `Numpad3`
-                    ? a(`settings`)
-                    : (k.code === `Digit4` || k.code === `Numpad4`) && a(`quit`);
+                    ? a(`training`)
+                    : k.code === `Digit4` || k.code === `Numpad4`
+                      ? a(`settings`)
+                      : (k.code === `Digit5` || k.code === `Numpad5`) && a(`quit`);
       };
       return (
         window.addEventListener(`keydown`, h),
@@ -2431,6 +2434,7 @@ function AF_Map({ p1, p2 }) {
         city: resolve(p.id, p.rand),
         ready: p.ready,
         bot: p.bot,
+        dummy: p.dummy,
       }));
       for (const c of fy) {
         const x = cx(c),
@@ -2507,7 +2511,7 @@ function AF_Map({ p1, p2 }) {
         g.font = `900 12px "JetBrains Mono Variable", monospace`;
         g.textAlign = `center`;
         g.fillStyle = `#fff`;
-        g.fillText(m.bot ? `BOT` : m.tag, x, y + 4);
+        g.fillText(m.bot ? (m.dummy ? `KUKLA` : `BOT`) : m.tag, x, y + 4);
         g.setLineDash([4, 3]);
         g.lineDashOffset = -t * 0.02;
         g.strokeStyle = m.col;
@@ -2665,6 +2669,7 @@ function AF_Card({
   ready: r,
   onReady: i,
   isBot: a,
+  dummy: dm,
   canSwitch: o,
 }) {
   const rnd = t === `random`,
@@ -2676,7 +2681,7 @@ function AF_Card({
         `HAZIR'a basınca ya da dövüş başlayınca belli olur`,
       ]
     : a
-      ? [`Bot yönetir — karakterini sen seç`, `Ulti: ${s.ultName} (${s.ultHint})`]
+      ? [dm ? `Antrenman kuklası — karakterini sen seç` : `Bot yönetir — karakterini sen seç`, `Ulti: ${s.ultName} (${s.ultHint})`]
       : AF_cardLines(e === 1 ? 0 : 1, s);
   const arrow = (tid, fn, txt) =>
     (0, P.jsx)(`button`, {
@@ -2702,7 +2707,7 @@ function AF_Card({
           (0, P.jsx)(`span`, {
             className: `font-monox text-xs tracking-widest`,
             style: { color: e === 1 ? `#ff2a5f` : `#00c8ff` },
-            children: a ? `BOT` : `OYUNCU ${e}`,
+            children: a ? (dm ? `KUKLA` : `BOT`) : `OYUNCU ${e}`,
           }),
           (0, P.jsx)(`span`, {
             "data-testid": `p${e}-ready-indicator`,
@@ -2772,13 +2777,13 @@ function AF_Card({
         className: `font-display mt-4 font-bold tracking-widest disabled:opacity-80`,
         style: r ? { background: c, color: `#06070f` } : { borderColor: c, color: c },
         onClick: i,
-        children: a ? `BOT HAZIR ✓` : r ? `HAZIR ✓` : `HAZIR`,
+        children: a ? (dm ? `KUKLA HAZIR ✓` : `BOT HAZIR ✓`) : r ? `HAZIR ✓` : `HAZIR`,
       }),
     ],
   });
 }
 
-function AF_Grid({ p1c, p2c, r1, r2, bot, onPick }) {
+function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
   const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `random`, 0];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
@@ -2945,7 +2950,7 @@ function AF_Grid({ p1c, p2c, r1, r2, bot, onPick }) {
               },
             }),
           sel1 && tag(r1 ? `1P ✓` : `1P`, `#ff2a5f`, `left`),
-          sel2 && tag(bot ? `BOT` : r2 ? `2P ✓` : `2P`, `#00a8d8`, `right`),
+          sel2 && tag(bot ? (dummy ? `KUKLA` : `BOT`) : r2 ? `2P ✓` : `2P`, `#00a8d8`, `right`),
         ],
       });
     }),
@@ -2961,7 +2966,9 @@ var AF_DIFFS = [
 function gy() {
   let nav = wn(),
     [q] = Zr(),
-    bot = q.get(`mode`) === `bot`;
+    mode = q.get(`mode`),
+    train = mode === `training`,
+    bot = mode === `bot` || train; // antrenmanda P2 (kukla) bot gibi P1 tarafından seçilir
   const norm = (v) => (v === `random` ? v : AF_char(v).id);
   const [p1c, sp1] = (0, N.useState)(norm(q.get(`p1`) || `umut`)),
     [p2c, sp2] = (0, N.useState)(norm(q.get(`p2`) || `sudem`)),
@@ -2986,7 +2993,7 @@ function gy() {
     setR1(!0);
     setR2(!0);
     window.setTimeout(
-      () => nav(`/battle?mode=${t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
+      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
       650,
     );
   }, [nav]);
@@ -3047,6 +3054,16 @@ function gy() {
     X.uiClick();
     setDf(e);
   }, []);
+  // ◀ GERİ / ESC / Backspace: önce "HAZIR" iptal edilir, ikinci basışta ana menüye dönülür
+  const back = (0, N.useCallback)(() => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    const t = rf.current;
+    if (t.r1) setR1(!1);
+    else if (!t.bot && t.r2) setR2(!1);
+    else nav(`/`);
+  }, [nav]);
   const d = r1 && r2;
   (0, N.useEffect)(() => {
     d && start();
@@ -3064,7 +3081,9 @@ function gy() {
         `Numpad4`,
         `Numpad5`,
       ].includes(e.code) && e.preventDefault();
-      e.code === `KeyZ`
+      e.code === `Escape` || e.code === `Backspace`
+        ? (e.preventDefault(), back())
+        : e.code === `KeyZ`
         ? ready1()
         : e.code === `Numpad1` || e.code === `KeyJ`
           ? ready2()
@@ -3086,8 +3105,8 @@ function gy() {
     };
     window.addEventListener(`keydown`, h);
     return () => window.removeEventListener(`keydown`, h);
-  }, [ready1, ready2, start, mv1, mv2, dsel, bot]);
-  const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot });
+  }, [ready1, ready2, start, mv1, mv2, dsel, bot, back]);
+  const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot, dummy: isBot && train });
   return (0, P.jsxs)(`div`, {
     "data-testid": `select-screen`,
     className: `scanlines relative min-h-svh overflow-hidden bg-[#06070f] px-4 py-6 text-white`,
@@ -3098,6 +3117,13 @@ function gy() {
       (0, P.jsxs)(`div`, {
         className: `relative z-10 mx-auto max-w-7xl`,
         children: [
+          (0, P.jsx)(`button`, {
+            type: `button`,
+            "data-testid": `select-back-button`,
+            onClick: back,
+            className: `font-display absolute left-0 top-0 rounded-lg border-2 border-[#272744] bg-black/55 px-4 py-2 text-sm font-black tracking-wider text-slate-200 transition-colors hover:border-cyan-300 hover:text-white`,
+            children: `◀ GERİ`,
+          }),
           (0, P.jsxs)(`div`, {
             className: `text-center`,
             children: [
@@ -3109,8 +3135,8 @@ function gy() {
                 "data-testid": `select-mode-label`,
                 className: `font-monox mt-1 text-xs tracking-[0.3em] text-slate-400`,
                 children: [
-                  bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`,
-                  ` · 99 SANİYE · EN İYİ 3 RAUNT`,
+                  train ? `ANTRENMAN · KUKLAYA KARŞI` : bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`,
+                  train ? ` · SÜRE YOK · CAN DOLAR` : ` · 99 SANİYE · EN İYİ 3 RAUNT`,
                 ],
               }),
             ],
@@ -3132,8 +3158,9 @@ function gy() {
                 className: `flex flex-1 flex-col items-center justify-start gap-2`,
                 children: [
                   (0, P.jsx)(AF_Map, { p1: mp(p1c, r1, !1), p2: mp(p2c, r2, bot) }),
-                  (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, onPick: pick }),
+                  (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
                   bot &&
+                    !train &&
                     (0, P.jsxs)(`div`, {
                       "data-testid": `difficulty-picker`,
                       className: `flex flex-col items-center gap-2`,
@@ -3176,7 +3203,9 @@ function gy() {
                     className: `font-monox text-center text-sm text-slate-300`,
                     children: d
                       ? `DÖVÜŞ BAŞLIYOR...`
-                      : bot
+                      : train
+                        ? `KARAKTER: A/D (SEN) · ◄/► (KUKLA) · HAZIR OL: Z · ESC GERİ`
+                        : bot
                         ? `KARAKTER: A/D (SEN) · ◄/► (BOT) · HAZIR OL: Z`
                         : `KARAKTER: A/D (P1) · ◄/► (P2) · HAZIR: Z / NUM 1`,
                   }),
@@ -3189,7 +3218,7 @@ function gy() {
                     size: `lg`,
                     onClick: start,
                     className: `font-display px-10 text-xl font-black tracking-widest`,
-                    children: `DÖVÜŞ! ▶`,
+                    children: train ? `ANTRENMAN ▶` : `DÖVÜŞ! ▶`,
                   }),
                 ],
               }),
@@ -3201,6 +3230,7 @@ function gy() {
                 ready: r2,
                 onReady: ready2,
                 isBot: bot,
+                dummy: train,
                 canSwitch: bot ? !0 : !r2,
               }),
             ],
@@ -3249,6 +3279,7 @@ function yy(e) {
     My(t, e),
     Ny(t, e),
     Py(t, e),
+    e.training && e.phase === `fight` && AF_drawTrain(t, e),
     e.flashA > 0 &&
       ((t.fillStyle = `rgba(255,255,255,${pg(e.flashA, 0, 0.92)})`), t.fillRect(0, 0, $h, 768)));
 }
@@ -5518,7 +5549,11 @@ var Xy = class {
       (this.vsBot = !!r.vsBot),
       (this.diff = r.diff || `normal`),
       (this.chars = r.chars || [AF_char(`umut`), AF_char(`sudem`)]),
-      (this.bot = this.vsBot ? new Hy(this.diff) : null),
+      // antrenman: süre/raunt yok, kimse nakavt olmaz, P2 kukla (66-game-training.js)
+      (this.training = !!r.training),
+      (this.dummy = r.dummy || `stand`),
+      (this.trainUlt = !0),
+      (this.bot = this.vsBot || (this.training && this.dummy === `bot`) ? new Hy(this.diff) : null),
       (this.cb = n),
       (window.__AF_match = this), // test/hata ayıklama kancası (tools/test bunu kullanır)
       (this.p1 = new Ky(0, t.p1)),
@@ -5537,6 +5572,15 @@ var Xy = class {
   togglePause() {
     this.setPaused(!this.paused);
   }
+  setDummy(m) {
+    ((this.dummy = m), (this.bot = m === `bot` ? new Hy(this.diff) : null));
+  }
+  setTrainUlt(v) {
+    this.trainUlt = !!v;
+  }
+  trainReset() {
+    this.training && AF_trainReset(this);
+  }
   restart() {
     (this.reset(), this.cb.onPauseChange(!1));
   }
@@ -5548,7 +5592,8 @@ var Xy = class {
         ((this.p2.name += ` II`),
         (this.p2.accent = this.chars[0].id === `umut` ? `#3ddc84` : `#ff5a7a`),
         (this.p2.accent2 = this.chars[0].id === `umut` ? `#8af5b9` : `#ff9ab0`)),
-      (this.roundTime = AF_S.time > 0 ? AF_S.time : 1 / 0),
+      (this.roundTime = AF_S.time > 0 && !this.training ? AF_S.time : 1 / 0),
+      (this.train = { last: 0, combo: 0, dmg: 0, max: 0 }),
       (this.maxRounds = AF_S.rounds),
       (this.need = (AF_S.rounds + 1) >> 1),
       (this.wins = [0, 0]),
@@ -5566,8 +5611,8 @@ var Xy = class {
       (this.dmgs = []),
       (this.projectiles = []),
       (this.lensFlashes = []),
-      (this.announce = { text: `RAUNT 1`, t: 0, dur: 800, size: 72, color: `#ffffff` }),
-      this.vsBot && (this.bot = new Hy(this.diff)),
+      (this.announce = { text: this.training ? `ANTRENMAN` : `RAUNT 1`, t: 0, dur: 800, size: 72, color: `#ffffff` }),
+      (this.vsBot || (this.training && this.dummy === `bot`)) && (this.bot = new Hy(this.diff)),
       X.ensure(),
       X.roundStart());
   }
@@ -5609,12 +5654,13 @@ var Xy = class {
       }
       if (this.phase === `fight`) {
         this.updateFighter(this.p1, t.p1, this.p2, e);
-        let n = this.bot ? this.bot.think(this, e) : t.p2;
+        let n = this.bot ? this.bot.think(this, e) : this.training ? AF_dummyInput(this) : t.p2;
         (this.updateFighter(this.p2, n, this.p1, e),
           this.separateBodies(this.p1, this.p2),
           this.resolveAttacks(),
           this.updateProjectiles(e),
           this.updateEffects(e),
+          this.training && AF_trainTick(this, e),
           (this.timeLeft -= e / 1e3),
           this.timeLeft <= 0 && ((this.timeLeft = 0), this.onTimeUp()));
         return;
@@ -6016,7 +6062,8 @@ var Xy = class {
       this.burst(r, i, 10 + n.damage, a, e.accent),
       this.dmgNum(r, i - 30, n.damage, e.accent),
       n.damage >= 10 ? X.hitHeavy() : X.hitLight(),
-      t.hp <= 0 && this.onKo(e, t));
+      this.training && e.idx === 0 && AF_trainHit(this, e, n.damage),
+      t.hp <= 0 && (this.training ? AF_trainKo(this, t) : this.onKo(e, t)));
   }
   addMeter(e, t) {
     if (t <= 0 || !AF_S.ult) return;
@@ -6396,6 +6443,108 @@ var Xy = class {
   }
 };
 
+// 66-game-training.js — Antrenman modu: kukla davranışı, can/ulti dolumu, istatistik paneli.
+// Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
+// Maç motoru (Xy) yalnızca g.training açıkken bu yardımcıları çağırır.
+
+var AF_DUMMY = [
+  [`stand`, `DURUR`],
+  [`crouch`, `EĞİLİR`],
+  [`guard`, `KORUR`],
+  [`bot`, `DÖVÜŞÜR (BOT)`],
+];
+
+var AF_TRAIN_REFILL = 1000; // vuruş/kombo bitince canın dolması için bekleme (ms)
+
+function AF_dummyName(m) {
+  return (AF_DUMMY.find((d) => d[0] === m) || AF_DUMMY[0])[1];
+}
+
+// Kuklanın tuş girdisi (bot modunda motor kendi Hy botunu kullanır)
+function AF_dummyInput(g) {
+  const n = Vy();
+  g.dummy === `crouch` && (n.down = !0);
+  g.dummy === `guard` && (n.guard = !0);
+  return n;
+}
+
+// Antrenmanda kimse nakavt olmaz: can 0'a inince hemen dolar
+function AF_trainKo(g, t) {
+  t.hp = t.maxHp;
+  t.ghostHp = t.maxHp;
+}
+
+// P1'in vuruşlarını say: son vuruş, kombo ve kombonun toplam hasarı
+function AF_trainHit(g, e, dmg) {
+  const s = g.train;
+  s.last = dmg;
+  s.combo = e.combo;
+  s.dmg = e.combo <= 1 ? dmg : s.dmg + dmg;
+  s.max = Math.max(s.max, s.dmg);
+}
+
+function AF_trainTick(g, ms) {
+  for (const f of [g.p1, g.p2]) {
+    // vuruş almayı bırakınca kısa süre sonra can dolar
+    if (f.state === `hitstun` || f.hp >= f.maxHp) f.trainT = 0;
+    else if ((f.trainT = (f.trainT || 0) + ms) >= AF_TRAIN_REFILL) {
+      f.hp = f.maxHp;
+      f.trainT = 0;
+    }
+  }
+  // ulti barı hep dolu (seçenek); ulti sırasında değil, bittikten sonra dolar
+  if (g.trainUlt) for (const f of [g.p1, g.p2]) f.state !== `attack` && (f.meter = 100);
+}
+
+function AF_trainReset(g) {
+  for (const f of [g.p1, g.p2]) {
+    f.x = f.idx === 0 ? $h * 0.26 : $h * 0.74;
+    f.y = 704;
+    f.vx = 0;
+    f.vy = 0;
+    f.ground = `g1`;
+    f.state = `idle`;
+    f.attack = null;
+    f.hitstunT = 0;
+    f.hp = f.maxHp;
+    f.ghostHp = f.maxHp;
+    f.facing = f.idx === 0 ? 1 : -1;
+    f.dashT = 0;
+    f.bounceT = 0;
+  }
+  g.projectiles = [];
+  g.train.combo = 0;
+  g.train.dmg = 0;
+}
+
+// Ekranın üst ortasında, süre kutusunun altında küçük panel
+function AF_drawTrain(e, g) {
+  const s = g.train,
+    x = $h / 2,
+    y = 132,
+    w = 300,
+    h = 78;
+  e.save();
+  e.fillStyle = `rgba(6,7,15,.78)`;
+  e.strokeStyle = `rgba(0,240,255,.55)`;
+  e.lineWidth = 1.5;
+  e.beginPath();
+  e.roundRect(x - w / 2, y, w, h, 8);
+  e.fill();
+  e.stroke();
+  e.textAlign = `center`;
+  e.font = `800 13px ${_y}`;
+  e.fillStyle = `#00f0ff`;
+  e.fillText(`ANTRENMAN · KUKLA ${AF_dummyName(g.dummy)}`, x, y + 20);
+  e.font = `700 13px ${_y}`;
+  e.fillStyle = `#f8fafc`;
+  e.fillText(`SON VURUŞ ${s.last}   KOMBO ${s.combo}×   HASAR ${s.dmg}`, x, y + 42);
+  e.fillStyle = `#94a3b8`;
+  e.font = `600 11px ${_y}`;
+  e.fillText(`EN YÜKSEK KOMBO HASARI ${s.max} · R SIFIRLA · ESC SEÇENEKLER`, x, y + 64);
+  e.restore();
+}
+
 // 70-ui-battle-screen.js — Dövüş ekranı (canvas + React bileşeni) ve uygulama kökü bileşeni.
 // Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
 
@@ -6428,10 +6577,18 @@ function Qy() {
     c = wn(),
     [l] = Zr(),
     u = l.get(`mode`) === `bot`,
+    tr = l.get(`mode`) === `training`,
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
-    d = `?mode=${u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+  // Antrenman: R ile konumları ve canları sıfırla
+  (0, N.useEffect)(() => {
+    if (!tr) return;
+    const h = (k) => k.code === `KeyR` && !k.repeat && (t.current?.trainReset(), X.uiClick());
+    window.addEventListener(`keydown`, h);
+    return () => window.removeEventListener(`keydown`, h);
+  }, [tr]);
   (0, N.useEffect)(() => {
     let n = e.current;
     if (!n) return;
@@ -6456,7 +6613,7 @@ function Qy() {
                   { description: `Özel atak hazır — kullan veya kaybet!` },
                 ),
             },
-            { vsBot: u, diff: afd, chars: [af1, af2] },
+            { vsBot: u, training: tr, diff: afd, chars: [af1, af2] },
           )),
           (t.current = o),
           o.start(),
@@ -6466,7 +6623,7 @@ function Qy() {
         ((i = !0), o?.dispose(), (t.current = null));
       }
     );
-  }, [u, af1, af2, afd]);
+  }, [u, tr, af1, af2, afd]);
   let f = () => {
       (X.uiClick(), t.current?.setPaused(!1));
     },
@@ -6502,7 +6659,14 @@ function Qy() {
               ],
             }),
             (0, P.jsx)(`span`, {
-              children: u
+              children: tr
+                ? (0, P.jsxs)(P.Fragment, {
+                    children: [
+                      (0, P.jsx)(`b`, { className: `text-cyan-300`, children: `P2` }),
+                      ` KUKLA · R — SIFIRLA · ESC — KUKLA AYARI`,
+                    ],
+                  })
+                : u
                 ? (0, P.jsxs)(P.Fragment, {
                     children: [
                       (0, P.jsx)(`b`, { className: `text-cyan-300`, children: `P2` }),
@@ -6537,7 +6701,7 @@ function Qy() {
             children: [
               (0, P.jsx)(`h2`, {
                 className: `font-display text-3xl font-black tracking-widest text-white`,
-                children: `DURDURULDU`,
+                children: tr ? `ANTRENMAN` : `DURDURULDU`,
               }),
               (0, P.jsxs)(`div`, {
                 className: `mt-5 flex flex-col gap-2.5`,
@@ -6547,6 +6711,37 @@ function Qy() {
                     onClick: f,
                     children: `DEVAM ET`,
                   }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-dummy-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        const g = t.current;
+                        if (!g) return;
+                        const i = AF_DUMMY.findIndex((x) => x[0] === g.dummy);
+                        (X.uiClick(), g.setDummy(AF_DUMMY[(i + 1) % AF_DUMMY.length][0]), afBump((v) => v + 1));
+                      },
+                      children: `KUKLA: ${AF_dummyName(t.current?.dummy)} ▸`,
+                    }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-ult-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        const g = t.current;
+                        g && (X.uiClick(), g.setTrainUlt(!g.trainUlt), afBump((v) => v + 1));
+                      },
+                      children: `ULTİ BARI: ${t.current?.trainUlt === !1 ? `NORMAL` : `HEP DOLU`}`,
+                    }),
+                  tr &&
+                    (0, P.jsx)(uy, {
+                      "data-testid": `train-reset-button`,
+                      variant: `outline`,
+                      onClick: () => {
+                        (X.uiClick(), t.current?.trainReset(), t.current?.setPaused(!1));
+                      },
+                      children: `KONUMLARI SIFIRLA (R)`,
+                    }),
                   (0, P.jsx)(uy, {
                     "data-testid": `pause-settings-button`,
                     variant: `outline`,
