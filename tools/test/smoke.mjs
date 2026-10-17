@@ -266,6 +266,39 @@ await test('Aynı anda yumruk: P1 önceliği yok, ikisi de vurur (10 deneme)', a
   return { ok: ikisi === 10, note: `ikisi de vurdu: ${ikisi}/10` };
 });
 
+// ---- Denge (18 Ekim) ----
+await test('Gövde genişlikleri: METEHAN en geniş, kimse 36 px altında değil', async (o) => {
+  const w = {};
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+    const p = await o({ p1: a, p2: b });
+    Object.assign(w, await p.evaluate(() => Object.fromEntries([window.__AF_match.p1, window.__AF_match.p2].map((f) => [f.charId, Math.round(f.halfW)]))));
+    await p.close();
+  }
+  const ok = Object.values(w).every((v) => v >= 36) && w.metehan === Math.max(...Object.values(w));
+  return { ok, note: Object.entries(w).map(([k, v]) => `${k}=${v}`).join(' ') };
+});
+await test('SUDEM tekmesi en uzun menzilli tekme', async (o) => {
+  const r = {};
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+    const p = await o({ p1: a, p2: b });
+    Object.assign(r, await p.evaluate(() => {
+      const m = window.__AF_match;
+      return Object.fromEntries([m.p1, m.p2].map((f) => [f.charId, Math.round(m.reachOf(f, 'kick'))]));
+    }));
+    await p.close();
+  }
+  return { ok: r.sudem === Math.max(...Object.values(r)), note: Object.entries(r).map(([k, v]) => `${k}=${v}`).join(' ') };
+});
+await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
+  const p = await o({ mode: 'bot', p1: 'umut', p2: 'metehan' }); await fight(p);
+  const kostu = await p.evaluate(async () => {
+    const m = window.__AF_match;
+    for (let i = 0; i < 300; i++) { m.p1.x = Math.min(1336, Math.max(40, m.p2.x - 380)); m.p1.hp = m.p1.maxHp; if (m.p2.dashT > 0) return true; await new Promise((r) => setTimeout(r, 50)); }
+    return false;
+  });
+  return { ok: kostu, note: kostu ? 'koştu' : '15 sn içinde koşmadı' };
+});
+
 // ---- Arenalar ----
 for (const [ar, beklenen] of [['ankara', 'table'], ['samsun', 'g1']]) await test(`Arena ${ar.toUpperCase()}: masa ${beklenen === 'table' ? 'var (üstüne iner)' : 'yok (yere iner)'}`, async (o) => {
   const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });

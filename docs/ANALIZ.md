@@ -738,3 +738,11 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 
 - Ölçüm: P1 ve P2 tuş tepkisi aynı (ikisi de ort. ~9 ms, fark yok). Ama aynı karede vuruşta P1 20/20 kazanıyordu: `resolveAttacks` önce P1'in vuruşunu uyguluyor, P2'nin saldırısı hasar alınca siliniyordu.
 - Düzeltme: iki vuruş önce kontrol edilir, sonra birlikte uygulanır (karşılıklı vuruş). Test: 10/10 ikisi de vurur. Testler: 34.
+
+## 22. Denetim ve denge düzeltmeleri (18 Ekim 2026)
+
+- Otomatik denetim (4 karakter × 2 arena × bot/antrenman, rastgele girdi): hata, NaN, sınır dışı, takılma yok.
+- **Gövde genişliği** (`halfW`, vuruş alanı ve itişme) idle görselinden hesaplanıyordu; METEHAN (33) ve AHMET (32) en dar çıkıyordu → karakterde elle: UMUT 40, SUDEM 37, METEHAN 42 (tank), AHMET 40.
+- **SUDEM tekmesi** asıl silahı olduğu hâlde UMUT'unkinden kısaydı → `kickX: 20` (tekme vuruş kutusu öne). Menzil (px): SUDEM 197, UMUT 183, METEHAN 178, AHMET 170. Ölçüm kancası `match.reachOf(f, id)`.
+- **Bot METEHAN** koşu çarpmasını hiç kullanmıyordu → 220–520 px mesafede %12 olasılıkla koşar.
+- Testler: 37.

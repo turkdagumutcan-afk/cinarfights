@@ -116,6 +116,18 @@ var Hy = class {
         Math.random() < 0.02
       )
         n.rollEdge = r.x < i.x ? -1 : 1;
+      else if (
+        // METEHAN: orta mesafeden koşu çarpması
+        r.spr.frames.run &&
+        r.grounded &&
+        d &&
+        r.dashCd <= 0 &&
+        r.dashT <= 0 &&
+        o > 220 &&
+        o < 520 &&
+        Math.random() < 0.12
+      )
+        n.dash = !0;
       else if (!d && i.y < r.y - 70)
         ((this.hold[s] = o > 40),
           r.grounded && o < 300 && Math.random() < this.cfg.chase && (n.jumpEdge = !0));

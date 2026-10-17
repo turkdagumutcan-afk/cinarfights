@@ -64,6 +64,11 @@ var Xy = class {
   togglePause() {
     this.setPaused(!this.paused);
   }
+  // test kancası: dövüşçünün verilen saldırıdaki vuruş kutusunun ön ucu, gövde merkezinden (px)
+  reachOf(f, id) {
+    const k = Jy(f, Uy.find((x) => x.id === id));
+    return f.facing > 0 ? k.x + k.w - f.x : f.x - k.x;
+  }
   setDummy(m) {
     ((this.dummy = m), (this.bot = m === `bot` ? new Hy(this.diff) : null));
   }

@@ -363,7 +363,8 @@ async function Cg(e, t, n, r2, same) {
   return {
     frames: i,
     seq,
-    halfW: Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
+    // gövde yarı genişliği (vuruş alanı + itişme): karakterde elle verilmişse o, yoksa idle'dan
+    halfW: AF_char(e).halfW || Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
     rollScale,
@@ -403,6 +404,7 @@ var AF_CHARS = {
     color2: `#ff7aa8`,
     scale: 250,
     same: !0,
+    halfW: 40,
     guard: !0,
     roll: AF_UMUT_OZEL,
     // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
@@ -424,6 +426,8 @@ var AF_CHARS = {
     color2: `#2dd4bf`,
     scale: sg,
     same: !0,
+    halfW: 37,
+    kickX: 20, // tekmesi asıl silahı: vuruş kutusu 20 px önde (en uzun tekme)
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
     crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
@@ -444,6 +448,7 @@ var AF_CHARS = {
     color2: `#fff08a`,
     scale: 232,
     same: !0,
+    halfW: 42, // tank: en geniş gövde
     guard: !0,
     run: !0,
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
@@ -465,6 +470,7 @@ var AF_CHARS = {
     color2: `#ffb36b`,
     scale: 252,
     same: !0,
+    halfW: 40,
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
     ultName: `GAZA BAS!`,

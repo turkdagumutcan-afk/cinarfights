@@ -18,7 +18,13 @@ function Jy(e, t) {
   // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
     w = t.w * ((e.mod && e.mod.reach) || 1),
-    r = e.x + e.facing * (n.tipX - w * 0.3 + ((e.mod && e.mod.reachX) || 0)),
+    r =
+      e.x +
+      e.facing *
+        (n.tipX -
+          w * 0.3 +
+          ((e.mod && e.mod.reachX) || 0) +
+          (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)),
     i = e.y - n.tipY;
   return { x: r - w / 2, y: i - t.h / 2, w, h: t.h };
 }
