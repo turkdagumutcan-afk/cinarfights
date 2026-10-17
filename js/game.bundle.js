@@ -6056,6 +6056,9 @@ var Xy = class {
       [this.p1, this.p2],
       [this.p2, this.p1],
     ];
+    // Önce iki vuruş da (vuruştan önceki durumla) kontrol edilir, sonra uygulanır:
+    // aynı karede vuranlarda P1 önceliği olmasın, ikisi de birbirine vursun (karşılıklı vuruş).
+    let hits = [];
     for (let [t, n] of e) {
       if (n.state === `ko`) continue;
       let e = t.attack;
@@ -6063,8 +6066,9 @@ var Xy = class {
       let r = e.def;
       if (e.t < r.startup || e.t > r.startup + r.active) continue;
       let i = qy(Jy(t, r), n.hurtbox());
-      i && ((e.hit = !0), this.applyHit(t, n, r, i.x, i.y));
+      i && ((e.hit = !0), hits.push([t, n, r, i]));
     }
+    for (let [t, n, r, i] of hits) this.applyHit(t, n, r, i.x, i.y);
   }
   applyHit(e, t, n, r, i) {
     if (t.state === `ko` || this.phase !== `fight` || t.rollInv) return;

@@ -733,3 +733,8 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Yeni arena eklemek: 1376×768 görsel, zemin kenarı y=704; `AF_ARENAS`'a kayıt + `AF_ARENA_SEL`'e id + `js/assets.js`. Masa yoksa `platform: false`.
 - Testler: 33 (arena başına masa/zemin testi eklendi).
 
+
+## 21. Aynı anda vuruş (17 Ekim 2026)
+
+- Ölçüm: P1 ve P2 tuş tepkisi aynı (ikisi de ort. ~9 ms, fark yok). Ama aynı karede vuruşta P1 20/20 kazanıyordu: `resolveAttacks` önce P1'in vuruşunu uyguluyor, P2'nin saldırısı hasar alınca siliniyordu.
+- Düzeltme: iki vuruş önce kontrol edilir, sonra birlikte uygulanır (karşılıklı vuruş). Test: 10/10 ikisi de vurur. Testler: 34.

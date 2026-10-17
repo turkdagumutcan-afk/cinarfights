@@ -246,6 +246,26 @@ await test('Antrenman: R konumları sıfırlar, kukla eğilme/koruma modları', 
   return { ok: x === Math.round(1376 * 0.26) && c === 'crouch' && g === 'guard', note: `x=${x} eğil=${c} koru=${g}` };
 });
 
+await test('Aynı anda yumruk: P1 önceliği yok, ikisi de vurur (10 deneme)', async (o) => {
+  const p = await o({ p1: 'umut', p2: 'umut' }); await fight(p);
+  let ikisi = 0;
+  for (let i = 0; i < 10; i++) {
+    const r = await p.evaluate(async () => {
+      const m = window.__AF_match;
+      for (const f of [m.p1, m.p2]) { f.hp = f.maxHp; f.state = 'idle'; f.attack = null; f.vx = 0; f.hitstunT = 0; f.y = 704; f.ground = 'g1'; }
+      m.p1.x = 600; m.p2.x = 720; m.p1.facing = 1; m.p2.facing = -1;
+      await new Promise((r) => setTimeout(r, 80));
+      for (const c of ['KeyZ', 'Numpad1']) window.dispatchEvent(new KeyboardEvent('keydown', { code: c, bubbles: true }));
+      await new Promise((r) => setTimeout(r, 40));
+      for (const c of ['KeyZ', 'Numpad1']) window.dispatchEvent(new KeyboardEvent('keyup', { code: c, bubbles: true }));
+      await new Promise((r) => setTimeout(r, 600));
+      return m.p1.hp < m.p1.maxHp && m.p2.hp < m.p2.maxHp;
+    });
+    r && ikisi++;
+  }
+  return { ok: ikisi === 10, note: `ikisi de vurdu: ${ikisi}/10` };
+});
+
 // ---- Arenalar ----
 for (const [ar, beklenen] of [['ankara', 'table'], ['samsun', 'g1']]) await test(`Arena ${ar.toUpperCase()}: masa ${beklenen === 'table' ? 'var (üstüne iner)' : 'yok (yere iner)'}`, async (o) => {
   const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });
