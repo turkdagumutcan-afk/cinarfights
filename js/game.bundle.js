@@ -761,7 +761,11 @@ var tg = 1.85;
 
 var ng = 0.82;
 
-var rg = -1300;
+// Karakter boy çarpanı: görseller 560 px kaynaktan küçültülerek çizilir, büyütmek kalite kaybettirmez.
+// Boy, gövde genişliği, vuruş kutuları ve ulti görselleri bununla ölçeklenir; zıplama yüksekliği de aynı oranda artar.
+var AF_BOY = 1.16;
+
+var rg = -1300 * Math.sqrt(AF_BOY);
 
 var ig = 1e3 / 60;
 
@@ -1010,7 +1014,7 @@ async function Cg(e, t, n, r2, same) {
     frames: i,
     seq,
     // gövde yarı genişliği (vuruş alanı + itişme): karakterde elle verilmişse o, yoksa idle'dan
-    halfW: AF_char(e).halfW || Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
+    halfW: AF_char(e).halfW ? AF_char(e).halfW * AF_BOY : Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
     rollScale,
@@ -1331,7 +1335,7 @@ function AF_loadChar(e, t) {
   let n = e + (t ? `#m` : ``);
   return (AF_sprC[n] ||= Cg(
     AF_char(e).id,
-    AF_char(e).scale,
+    AF_char(e).scale * AF_BOY,
     AF_char(e).color,
     t,
     !!AF_char(e).same,
@@ -4431,11 +4435,12 @@ function Ty(e, t) {
             : t.kind === `note`
               ? [54, 0.5, !1]
               : [66, 0.55, !1];
-    const w = (im.width * h) / im.height;
+    const H = h * AF_BOY,
+      w = (im.width * H) / im.height;
     (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
     t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
     t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
-    (e.drawImage(im, -w * ax, zemin ? -h : -h / 2, w, h), e.restore());
+    (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());
     return;
   }
   if ((e.save(), e.translate(t.x, t.y), t.kind === `photo`)) {
@@ -5467,16 +5472,16 @@ function Jy(e, t) {
   }
   // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
-    w = t.w * ((e.mod && e.mod.reach) || 1),
+    w = t.w * AF_BOY * ((e.mod && e.mod.reach) || 1),
+    h = t.h * AF_BOY,
     r =
       e.x +
       e.facing *
         (n.tipX -
           w * 0.3 +
-          ((e.mod && e.mod.reachX) || 0) +
-          (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)),
+          (((e.mod && e.mod.reachX) || 0) + (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)) * AF_BOY),
     i = e.y - n.tipY;
-  return { x: r - w / 2, y: i - t.h / 2, w, h: t.h };
+  return { x: r - w / 2, y: i - h / 2, w, h };
 }
 
 function Yy(e, t, n, r) {
@@ -6024,7 +6029,8 @@ var Xy = class {
       b = t.hurtbox();
     // Rakibin üzerinden YALNIZCA takla (airFlip) geçebilir. Normal zıplama (W, W+yön) rakibi aşamaz:
     // yan yana ya da baş hizasında bile görünmez bir duvar gibi durur (AF_JUMP_CROSS ile eski davranış açılır).
-    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : f.y < 430 ? 429 : 704);
+    // masa yoksa (AF_PLAT) havadaki herkes zemin seviyesindedir; yüksek zıplama masa seviyesi sayılmasın
+    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : AF_PLAT && f.y < 430 ? 429 : 704);
     const flipClear = (upper, lower) =>
       upper.airFlip &&
       upper.ground === null &&
@@ -6381,8 +6387,8 @@ var Xy = class {
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
       if (i.state !== `ko`) {
-        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 : n.y,
-          t = Yy(n.x, e, n.r, i.hurtbox());
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 * AF_BOY : n.y,
+          t = Yy(n.x, e, n.r * AF_BOY, i.hurtbox());
         t &&
           ((n.dead = !0),
           this.applyHit(r, i, n.kind === `ringshot` ? AF_ringShot : n.kind === `motor` ? AF_motorHit : Gy[n.kind], t.x, t.y),

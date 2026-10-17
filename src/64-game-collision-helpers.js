@@ -17,16 +17,16 @@ function Jy(e, t) {
   }
   // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
-    w = t.w * ((e.mod && e.mod.reach) || 1),
+    w = t.w * AF_BOY * ((e.mod && e.mod.reach) || 1),
+    h = t.h * AF_BOY,
     r =
       e.x +
       e.facing *
         (n.tipX -
           w * 0.3 +
-          ((e.mod && e.mod.reachX) || 0) +
-          (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)),
+          (((e.mod && e.mod.reachX) || 0) + (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)) * AF_BOY),
     i = e.y - n.tipY;
-  return { x: r - w / 2, y: i - t.h / 2, w, h: t.h };
+  return { x: r - w / 2, y: i - h / 2, w, h };
 }
 
 function Yy(e, t, n, r) {

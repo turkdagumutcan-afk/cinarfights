@@ -115,7 +115,11 @@ var tg = 1.85;
 
 var ng = 0.82;
 
-var rg = -1300;
+// Karakter boy çarpanı: görseller 560 px kaynaktan küçültülerek çizilir, büyütmek kalite kaybettirmez.
+// Boy, gövde genişliği, vuruş kutuları ve ulti görselleri bununla ölçeklenir; zıplama yüksekliği de aynı oranda artar.
+var AF_BOY = 1.16;
+
+var rg = -1300 * Math.sqrt(AF_BOY);
 
 var ig = 1e3 / 60;
 
@@ -364,7 +368,7 @@ async function Cg(e, t, n, r2, same) {
     frames: i,
     seq,
     // gövde yarı genişliği (vuruş alanı + itişme): karakterde elle verilmişse o, yoksa idle'dan
-    halfW: AF_char(e).halfW || Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
+    halfW: AF_char(e).halfW ? AF_char(e).halfW * AF_BOY : Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
     rollScale,

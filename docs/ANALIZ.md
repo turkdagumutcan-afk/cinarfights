@@ -752,3 +752,9 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Üç arena, hepsi **tek zemin** (masa / 2. zemin kaldırıldı; `AF_PLAT` her arenada false, kod duruyor).
 - ANKARA: yeni şehir görseli `assets/ankara_sehir.webp` (eski Anıtkabir arenası listeden çıktı). ÇORUM: `assets/corum_arena.webp`. Görseller zemin kenarı y=704'e oturacak şekilde büyütüldü (Ankara ×1,07, Çorum ×1,12).
 - Seçim: ANKARA · SAMSUN · ÇORUM · RASTGELE (`Tab`). Testler: 38.
+
+## 24. Karakterler %16 büyük (18 Ekim 2026)
+
+- `AF_BOY = 1.16` (src/10): karakter boyu (250 → ~290 px), elle verilen gövde genişlikleri, vuruş kutuları (`Jy`), ulti/mermi çizimi ve çarpışma yarıçapı bununla ölçeklenir. Zıplama hızı `rg` × √1,16 → yay ≈326 px. Görseller 560 px kaynaktan küçültüldüğü için kalite kaybı yok.
+- Hata düzeltmesi: `separateBodies` havadaki oyuncuyu y<430 ise "masa seviyesi" sayıyordu; yüksek zıplamada rakibin üstünden geçiliyordu. Artık yalnız masa varsa (`AF_PLAT`) öyle sayılır.
+- Testler: 38/38.

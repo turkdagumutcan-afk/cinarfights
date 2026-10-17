@@ -435,7 +435,8 @@ var Xy = class {
       b = t.hurtbox();
     // Rakibin üzerinden YALNIZCA takla (airFlip) geçebilir. Normal zıplama (W, W+yön) rakibi aşamaz:
     // yan yana ya da baş hizasında bile görünmez bir duvar gibi durur (AF_JUMP_CROSS ile eski davranış açılır).
-    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : f.y < 430 ? 429 : 704);
+    // masa yoksa (AF_PLAT) havadaki herkes zemin seviyesindedir; yüksek zıplama masa seviyesi sayılmasın
+    const level = (f) => (f.ground === `table` ? 429 : f.ground !== null ? 704 : AF_PLAT && f.y < 430 ? 429 : 704);
     const flipClear = (upper, lower) =>
       upper.airFlip &&
       upper.ground === null &&
@@ -792,8 +793,8 @@ var Xy = class {
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
       if (i.state !== `ko`) {
-        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 : n.y,
-          t = Yy(n.x, e, n.r, i.hurtbox());
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 * AF_BOY : n.y,
+          t = Yy(n.x, e, n.r * AF_BOY, i.hurtbox());
         t &&
           ((n.dead = !0),
           this.applyHit(r, i, n.kind === `ringshot` ? AF_ringShot : n.kind === `motor` ? AF_motorHit : Gy[n.kind], t.x, t.y),

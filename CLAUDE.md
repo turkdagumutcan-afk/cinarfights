@@ -31,7 +31,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 `Ky` Fighter · `Xy` maç/motor (`updateFighter`, `separateBodies`, `onLand`, `resolveAttacks`, `applyHit`) · `Hy` bot · `By` girdi sınıfı (`Fy` tuş haritası) · `xy()` dövüşçü çizimi · `Cg` sprite yükleyici · `X` ses · `pg` clamp · `$h`=1376 arena genişliği · `eg`=2900 yerçekimi · `rg`=−1300 zıplama hızı · `Uy` saldırı tablosu · `AF_*` bu projede eklenen yardımcılar (`AF_S` ayarlar, `AF_DEFKEYS` varsayılan tuşlar, `AF_tryAirFlip` takla).
 
 ## Oyun sabitleri
-Zemin y=704 · masa (orta platform; şu an hiçbir arenada yok, `AF_PLAT`) x 387–990, y≈429 · zıplama yayı ≈281 px · idle boyu ≈250 px · rakibin üzerinden **yalnız takla** geçer (`separateBodies`, eşik 0,34; normal zıplama için `AF_JUMP_CROSS=false`) · takla çizim ölçeği `AF_BACK_SIZE`=0,62 · giriş tamponu `AF_FLIP_BUFFER`=130 ms, `AF_JUMP_DIR_GRACE`=90 ms.
+Zemin y=704 · masa (orta platform; şu an hiçbir arenada yok, `AF_PLAT`) x 387–990, y≈429 · karakter boy çarpanı `AF_BOY`=1,16 (idle ≈290 px, zıplama yayı ≈326 px) · rakibin üzerinden **yalnız takla** geçer (`separateBodies`, eşik 0,34; normal zıplama için `AF_JUMP_CROSS=false`) · takla çizim ölçeği `AF_BACK_SIZE`=0,62 · giriş tamponu `AF_FLIP_BUFFER`=130 ms, `AF_JUMP_DIR_GRACE`=90 ms.
 Kontroller: P1 A/D/W/S, Z X, Shift/Ctrl, V koruma, C ulti, F yüzük (SUDEM), Space koşu (METEHAN); P2 oklar + Numpad. Hepsi Ayarlar'dan değişir.
 Karakterler: UMUT, SUDEM, METEHAN, AHMET (`src/10` `AF_CHARS`). UMUT'un taklası/yer taklası/süpürmesi **geçici kapalı** (`AF_UMUT_OZEL=false`). Kare dizileri `<id>_punch0..4`, `_kick0..N`, `_run0..3` (`Cg` → `spr.seq`, çizim `AF_seqFrame`). Ulti görselleri `assets/fx/`. Ayrıntı: `docs/ANALIZ.md` §18.
 

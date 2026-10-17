@@ -8,7 +8,7 @@ function AF_loadChar(e, t) {
   let n = e + (t ? `#m` : ``);
   return (AF_sprC[n] ||= Cg(
     AF_char(e).id,
-    AF_char(e).scale,
+    AF_char(e).scale * AF_BOY,
     AF_char(e).color,
     t,
     !!AF_char(e).same,
