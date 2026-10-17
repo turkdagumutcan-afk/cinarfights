@@ -89,7 +89,7 @@ var Xy = class {
         ((this.p2.name += ` II`),
         (this.p2.accent = this.chars[0].id === `umut` ? `#3ddc84` : `#ff5a7a`),
         (this.p2.accent2 = this.chars[0].id === `umut` ? `#8af5b9` : `#ff9ab0`)),
-      (AF_PLAT = this.arena ? this.arena.platform : !0),
+      (AF_PLAT = this.arena ? this.arena.platform : !1),
       (this.roundTime = AF_S.time > 0 && !this.training ? AF_S.time : 1 / 0),
       (this.train = { last: 0, combo: 0, dmg: 0, max: 0 }),
       (this.maxRounds = AF_S.rounds),

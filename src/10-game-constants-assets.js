@@ -484,13 +484,15 @@ var AF_CHARS = {
   },
 };
 
-// Arenalar. platform: ortadaki masa (x 387-990, üstü y 429) var mı; yoksa yalnız zemin (y 704).
+// Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
+// şimdilik hiçbir arenada yok; kod duruyor, bir arenada true yapılırsa geri gelir.
 var AF_ARENAS = {
-  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_map.png`, platform: !0 },
+  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1 },
   samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
+  corum: { id: `corum`, name: `ÇORUM`, img: `/assets/corum_arena.png`, platform: !1 },
 };
-var AF_ARENA_SEL = [`ankara`, `samsun`, `random`];
-var AF_PLAT = !0; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
+var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `random`];
+var AF_PLAT = !1; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
 
 function AF_arena(id) {
   if (id === `random`) {

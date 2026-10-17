@@ -746,3 +746,9 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **SUDEM tekmesi** asıl silahı olduğu hâlde UMUT'unkinden kısaydı → `kickX: 20` (tekme vuruş kutusu öne). Menzil (px): SUDEM 197, UMUT 183, METEHAN 178, AHMET 170. Ölçüm kancası `match.reachOf(f, id)`.
 - **Bot METEHAN** koşu çarpmasını hiç kullanmıyordu → 220–520 px mesafede %12 olasılıkla koşar.
 - Testler: 37.
+
+## 23. Arenalar: ANKARA / SAMSUN / ÇORUM (18 Ekim 2026)
+
+- Üç arena, hepsi **tek zemin** (masa / 2. zemin kaldırıldı; `AF_PLAT` her arenada false, kod duruyor).
+- ANKARA: yeni şehir görseli `assets/ankara_sehir.webp` (eski Anıtkabir arenası listeden çıktı). ÇORUM: `assets/corum_arena.webp`. Görseller zemin kenarı y=704'e oturacak şekilde büyütüldü (Ankara ×1,07, Çorum ×1,12).
+- Seçim: ANKARA · SAMSUN · ÇORUM · RASTGELE (`Tab`). Testler: 38.

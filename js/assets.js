@@ -3,6 +3,8 @@
 window.__ANKARA_ASSETS__ = {
   "/assets/ankara_map.png": "assets/ankara_map.webp",
   "/assets/samsun_arena.png": "assets/samsun_arena.webp?v=1",
+  "/assets/ankara_sehir.png": "assets/ankara_sehir.webp?v=1",
+  "/assets/corum_arena.png": "assets/corum_arena.webp?v=1",
   "/assets/title_bg.png": "assets/title_bg.webp",
   "/assets/fotograf_canavari.png": "assets/fotograf_canavari.webp?v=3",
   "/assets/mcqueen.png": "assets/mcqueen.webp?v=3",

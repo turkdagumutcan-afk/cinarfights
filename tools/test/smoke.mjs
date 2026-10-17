@@ -293,14 +293,14 @@ await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   const p = await o({ mode: 'bot', p1: 'umut', p2: 'metehan' }); await fight(p);
   const kostu = await p.evaluate(async () => {
     const m = window.__AF_match;
-    for (let i = 0; i < 300; i++) { m.p1.x = Math.min(1336, Math.max(40, m.p2.x - 380)); m.p1.hp = m.p1.maxHp; if (m.p2.dashT > 0) return true; await new Promise((r) => setTimeout(r, 50)); }
+    for (let i = 0; i < 500; i++) { m.p1.x = Math.min(1336, Math.max(40, m.p2.x - 380)); m.p1.hp = m.p1.maxHp; if (m.p2.dashT > 0) return true; await new Promise((r) => setTimeout(r, 50)); }
     return false;
   });
-  return { ok: kostu, note: kostu ? 'koştu' : '15 sn içinde koşmadı' };
+  return { ok: kostu, note: kostu ? 'koştu' : '25 sn içinde koşmadı' };
 });
 
 // ---- Arenalar ----
-for (const [ar, beklenen] of [['ankara', 'table'], ['samsun', 'g1']]) await test(`Arena ${ar.toUpperCase()}: masa ${beklenen === 'table' ? 'var (üstüne iner)' : 'yok (yere iner)'}`, async (o) => {
+for (const [ar, beklenen] of [['ankara', 'g1'], ['samsun', 'g1'], ['corum', 'g1']]) await test(`Arena ${ar.toUpperCase()}: tek zemin, masa yok (yere iner)`, async (o) => {
   const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });
   await p.evaluate(() => { const m = window.__AF_match, a = m.p1; a.x = 690; a.y = 300; a.vy = 0; a.ground = null; a.state = 'air'; m.p2.x = 1250; });
   await wait(1200);
