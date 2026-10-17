@@ -905,11 +905,12 @@ function gy() {
     [df, setDf] = (0, N.useState)(
       [`easy`, `normal`, `hard`].includes(q.get(`diff`)) ? q.get(`diff`) : `normal`,
     ),
+    [ar, setAr] = (0, N.useState)(AF_ARENA_SEL.includes(q.get(`arena`)) ? q.get(`arena`) : `ankara`),
     [r1, setR1] = (0, N.useState)(!1),
     [r2, setR2] = (0, N.useState)(bot);
   const lock = (0, N.useRef)(!1),
     rf = (0, N.useRef)({});
-  rf.current = { p1c, p2c, df, bot, r1, r2 };
+  rf.current = { p1c, p2c, df, bot, r1, r2, ar };
   const start = (0, N.useCallback)(() => {
     if (lock.current) return;
     lock.current = !0;
@@ -923,7 +924,7 @@ function gy() {
     setR1(!0);
     setR2(!0);
     window.setTimeout(
-      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
+      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}&arena=${t.ar}`),
       650,
     );
   }, [nav]);
@@ -979,6 +980,12 @@ function gy() {
       sp2(id);
     }
   }, []);
+  const asel = (0, N.useCallback)((e) => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    setAr(e);
+  }, []);
   const dsel = (0, N.useCallback)((e) => {
     X.ensure();
     X.uiClick();
@@ -1013,6 +1020,8 @@ function gy() {
       ].includes(e.code) && e.preventDefault();
       e.code === `Escape` || e.code === `Backspace`
         ? (e.preventDefault(), back())
+        : e.code === `Tab`
+        ? (e.preventDefault(), asel(AF_ARENA_SEL[(AF_ARENA_SEL.indexOf(rf.current.ar) + 1) % AF_ARENA_SEL.length]))
         : e.code === `KeyZ`
         ? ready1()
         : e.code === `Numpad1` || e.code === `KeyJ`
@@ -1035,7 +1044,7 @@ function gy() {
     };
     window.addEventListener(`keydown`, h);
     return () => window.removeEventListener(`keydown`, h);
-  }, [ready1, ready2, start, mv1, mv2, dsel, bot, back]);
+  }, [ready1, ready2, start, mv1, mv2, dsel, asel, bot, back]);
   const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot, dummy: isBot && train });
   return (0, P.jsxs)(`div`, {
     "data-testid": `select-screen`,
@@ -1089,6 +1098,34 @@ function gy() {
                 children: [
                   (0, P.jsx)(AF_Map, { p1: mp(p1c, r1, !1), p2: mp(p2c, r2, bot) }),
                   (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
+                  (0, P.jsxs)(`div`, {
+                    "data-testid": `arena-picker`,
+                    className: `flex flex-col items-center gap-2`,
+                    children: [
+                      (0, P.jsx)(`p`, {
+                        className: `font-monox text-[10px] tracking-[0.3em] text-slate-500`,
+                        children: `ARENA · TAB`,
+                      }),
+                      (0, P.jsx)(`div`, {
+                        className: `flex gap-2`,
+                        children: AF_ARENA_SEL.map((id) =>
+                          (0, P.jsx)(
+                            uy,
+                            {
+                              "data-testid": `arena-${id}`,
+                              variant: ar === id ? `default` : `outline`,
+                              size: `sm`,
+                              onClick: () => asel(id),
+                              className: `font-display font-bold tracking-widest`,
+                              style: ar === id ? { background: `#00f0ff`, color: `#06070f` } : { borderColor: `#272744`, color: `#cbd5e1` },
+                              children: id === `random` ? `RASTGELE` : AF_ARENAS[id].name,
+                            },
+                            id,
+                          ),
+                        ),
+                      }),
+                    ],
+                  }),
                   bot &&
                     !train &&
                     (0, P.jsxs)(`div`, {

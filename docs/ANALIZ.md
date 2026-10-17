@@ -725,3 +725,11 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Test düzeltmesi:** zıplama testleri tuş bırakıldıktan hemen sonra durumu okuyordu (bazen hâlâ `walk`); 100 ms bekleme eklendi, artık kararsız değil.
 - Testler: 31 (+ takla kapalıyken 12 `ATLANDI`).
 
+## 20. Arenalar: SAMSUN — 17 Ekim 2026
+
+- `AF_ARENAS` (src/10): `ankara` (gece, ortada masa) ve `samsun` (gün batımı, aslanlar ve savaşçı heykeli, **tek zemin**). Görsel `assets/samsun_arena.webp`; kaynak görsel %7 büyütülüp zemin kenarı y=704'e oturtuldu.
+- Seçim ekranında **ARENA** seçici (ANKARA / SAMSUN / RASTGELE, `Tab` ile değişir). URL'de `&arena=`; rastgele seçim dövüş ekranında bir kez belirlenir, yeniden başlatınca aynı arena kalır.
+- Masa sabitleri tek anahtara bağlandı: `AF_PLAT` (maç motoru arenaya göre ayarlar). Kapalıyken masaya iniş, gölge, araba/motor zemini ve F2 çizgisi masayı yok sayar.
+- Yeni arena eklemek: 1376×768 görsel, zemin kenarı y=704; `AF_ARENAS`'a kayıt + `AF_ARENA_SEL`'e id + `js/assets.js`. Masa yoksa `platform: false`.
+- Testler: 33 (arena başına masa/zemin testi eklendi).
+

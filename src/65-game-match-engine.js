@@ -41,6 +41,8 @@ var Xy = class {
       (this.chars = r.chars || [AF_char(`umut`), AF_char(`sudem`)]),
       // antrenman: süre/raunt yok, kimse nakavt olmaz, P2 kukla (66-game-training.js)
       (this.training = !!r.training),
+      (this.arena = AF_arena(r.arena)),
+      (AF_PLAT = this.arena.platform),
       (this.dummy = r.dummy || `stand`),
       (this.trainUlt = !0),
       (this.bot = this.vsBot || (this.training && this.dummy === `bot`) ? new Hy(this.diff) : null),
@@ -82,6 +84,7 @@ var Xy = class {
         ((this.p2.name += ` II`),
         (this.p2.accent = this.chars[0].id === `umut` ? `#3ddc84` : `#ff5a7a`),
         (this.p2.accent2 = this.chars[0].id === `umut` ? `#8af5b9` : `#ff9ab0`)),
+      (AF_PLAT = this.arena ? this.arena.platform : !0),
       (this.roundTime = AF_S.time > 0 && !this.training ? AF_S.time : 1 / 0),
       (this.train = { last: 0, combo: 0, dmg: 0, max: 0 }),
       (this.maxRounds = AF_S.rounds),
@@ -393,7 +396,7 @@ var Xy = class {
         (e.state === `idle` || e.state === `walk` || e.state === `crouch`) && (e.state = `air`)),
       !e.grounded && e.vy >= 0)
     ) {
-      let t = e.x > 381 && e.x < 996;
+      let t = AF_PLAT && e.x > 381 && e.x < 996;
       e.dropT <= 0 && t && o <= 429 && e.y >= 429
         ? ((e.y = 429), (e.vy = 0), (e.ground = `table`), this.onLand(e))
         : e.y >= 704 && ((e.y = 704), (e.vy = 0), (e.ground = `g1`), this.onLand(e));
@@ -726,7 +729,7 @@ var Xy = class {
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
       else if (n.kind === `car` || n.kind === `motor`) {
-        let e = n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
+        let e = AF_PLAT && n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
         (n.y < e - 2
           ? ((n.vy += eg * t), (n.y = Math.min(e - 2, n.y + n.vy * t)))
           : ((n.vy = 0), (n.y = e - 2)),

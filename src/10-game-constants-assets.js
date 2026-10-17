@@ -478,6 +478,22 @@ var AF_CHARS = {
   },
 };
 
+// Arenalar. platform: ortadaki masa (x 387-990, üstü y 429) var mı; yoksa yalnız zemin (y 704).
+var AF_ARENAS = {
+  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_map.png`, platform: !0 },
+  samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
+};
+var AF_ARENA_SEL = [`ankara`, `samsun`, `random`];
+var AF_PLAT = !0; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
+
+function AF_arena(id) {
+  if (id === `random`) {
+    const k = Object.keys(AF_ARENAS);
+    return AF_ARENAS[k[(Math.random() * k.length) | 0]];
+  }
+  return AF_ARENAS[id] ?? AF_ARENAS.ankara;
+}
+
 function AF_char(e) {
   return AF_CHARS[e] ?? AF_CHARS.umut;
 }

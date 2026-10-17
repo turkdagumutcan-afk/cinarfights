@@ -31,10 +31,12 @@ function Qy() {
     [l] = Zr(),
     u = l.get(`mode`) === `bot`,
     tr = l.get(`mode`) === `training`,
+    // "random" seçildiyse arena burada bir kez belirlenir (yeniden başlatınca aynı arena kalır)
+    ar = (0, N.useMemo)(() => AF_arena(l.get(`arena`) || `ankara`).id, [l.get(`arena`)]),
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
-    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}&arena=${l.get(`arena`) || `ankara`}`;
   // Antrenman: R ile konumları ve canları sıfırla
   (0, N.useEffect)(() => {
     if (!tr) return;
@@ -48,7 +50,7 @@ function Qy() {
     let i = !1,
       o = null;
     return (
-      Eg(af1.id, af2.id).then((e) => {
+      Eg(af1.id, af2.id, ar).then((e) => {
         i ||
           ((o = new Xy(
             n,
@@ -66,7 +68,7 @@ function Qy() {
                   { description: `Özel atak hazır — kullan veya kaybet!` },
                 ),
             },
-            { vsBot: u, training: tr, diff: afd, chars: [af1, af2] },
+            { vsBot: u, training: tr, arena: ar, diff: afd, chars: [af1, af2] },
           )),
           (t.current = o),
           o.start(),
@@ -76,7 +78,7 @@ function Qy() {
         ((i = !0), o?.dispose(), (t.current = null));
       }
     );
-  }, [u, tr, af1, af2, afd]);
+  }, [u, tr, ar, af1, af2, afd]);
   let f = () => {
       (X.uiClick(), t.current?.setPaused(!1));
     },

@@ -88,7 +88,7 @@ function AF_tryAirFlip(e, t, n, dt) {
     flightTime = (2 * upSpeed) / eg,
     speed = 530 * AF_spd(e);
   e.airFlipDur = Math.max(250, flightTime * 1000);
-  if (e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
+  if (AF_PLAT && e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
     const platformTime =
       (upSpeed + Math.sqrt(upSpeed * upSpeed - 2 * eg * (e.airFlipStartY - 429))) / eg;
     const landingX = e.airFlipStartX + dir * speed * platformTime;

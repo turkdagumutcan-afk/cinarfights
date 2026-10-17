@@ -2,7 +2,7 @@
 // Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
 
 var AF_sprC = {},
-  AF_bgC = null;
+  AF_bgC = {};
 
 function AF_loadChar(e, t) {
   let n = e + (t ? `#m` : ``);
@@ -15,8 +15,8 @@ function AF_loadChar(e, t) {
   ));
 }
 
-function Eg(e, t) {
-  return Dg(e, t);
+function Eg(e, t, ar) {
+  return Dg(e, t, ar);
 }
 
 // Ulti / mermi görselleri (assets/fx). Yüklenemezse eski kodla çizilen hâli kullanılır.
@@ -45,9 +45,10 @@ function AF_loadFx() {
   ));
 }
 
-async function Dg(e = `umut`, t = `sudem`) {
-  AF_bgC ||= bg(vg).catch(() => null);
-  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC, AF_loadFx()]);
+async function Dg(e = `umut`, t = `sudem`, ar = `ankara`) {
+  const A = AF_arena(ar);
+  AF_bgC[A.id] ||= bg(A.img).catch(() => null);
+  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC[A.id], AF_loadFx()]);
   return { p1: n, p2: r, bg: i ?? wg() };
 }
 

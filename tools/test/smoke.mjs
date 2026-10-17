@@ -15,13 +15,13 @@ const TAKLA_ACIK = false;
 const skip = (name) => console.log(`ATLANDI ${name.padEnd(58)} (takla şimdilik kapalı)`);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function open({ p1 = 'umut', p2 = 'sudem', mode = '2p', pre } = {}) {
+async function open({ p1 = 'umut', p2 = 'sudem', mode = '2p', pre, arena = 'ankara' } = {}) {
   const page = await browser.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push('pageerror: ' + e.message));
   page.on('console', (m) => m.type() === 'error' && page.errors.push('console: ' + m.text()));
   if (pre) await page.addInitScript(pre);
-  await page.goto(`${base}/index.html#/battle?mode=${mode}&p1=${p1}&p2=${p2}&diff=normal`, { waitUntil: 'load' });
+  await page.goto(`${base}/index.html#/battle?mode=${mode}&p1=${p1}&p2=${p2}&diff=normal&arena=${arena}`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__AF_match?.phase === 'fight', null, { timeout: 20000 });
   await page.evaluate(() => {
     window.__tr = [];
@@ -244,6 +244,15 @@ await test('Antrenman: R konumları sıfırlar, kukla eğilme/koruma modları', 
   await p.evaluate(() => window.__AF_match.setDummy('guard')); await wait(200);
   const g = await p.evaluate(() => window.__AF_match.p2.state);
   return { ok: x === Math.round(1376 * 0.26) && c === 'crouch' && g === 'guard', note: `x=${x} eğil=${c} koru=${g}` };
+});
+
+// ---- Arenalar ----
+for (const [ar, beklenen] of [['ankara', 'table'], ['samsun', 'g1']]) await test(`Arena ${ar.toUpperCase()}: masa ${beklenen === 'table' ? 'var (üstüne iner)' : 'yok (yere iner)'}`, async (o) => {
+  const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });
+  await p.evaluate(() => { const m = window.__AF_match, a = m.p1; a.x = 690; a.y = 300; a.vy = 0; a.ground = null; a.state = 'air'; m.p2.x = 1250; });
+  await wait(1200);
+  const r = await p.evaluate(() => ({ g: window.__AF_match.p1.ground, y: Math.round(window.__AF_match.p1.y), ar: window.__AF_match.arena.id }));
+  return { ok: r.g === beklenen && r.ar === ar, note: `arena=${r.ar} zemin=${r.g} y=${r.y}` };
 });
 
 await browser.close(); server.close();

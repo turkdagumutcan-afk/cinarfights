@@ -1124,6 +1124,22 @@ var AF_CHARS = {
   },
 };
 
+// Arenalar. platform: ortadaki masa (x 387-990, üstü y 429) var mı; yoksa yalnız zemin (y 704).
+var AF_ARENAS = {
+  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_map.png`, platform: !0 },
+  samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
+};
+var AF_ARENA_SEL = [`ankara`, `samsun`, `random`];
+var AF_PLAT = !0; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
+
+function AF_arena(id) {
+  if (id === `random`) {
+    const k = Object.keys(AF_ARENAS);
+    return AF_ARENAS[k[(Math.random() * k.length) | 0]];
+  }
+  return AF_ARENAS[id] ?? AF_ARENAS.ankara;
+}
+
 function AF_char(e) {
   return AF_CHARS[e] ?? AF_CHARS.umut;
 }
@@ -1301,7 +1317,7 @@ function AF_drawNote(e, t) {
 // Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
 
 var AF_sprC = {},
-  AF_bgC = null;
+  AF_bgC = {};
 
 function AF_loadChar(e, t) {
   let n = e + (t ? `#m` : ``);
@@ -1314,8 +1330,8 @@ function AF_loadChar(e, t) {
   ));
 }
 
-function Eg(e, t) {
-  return Dg(e, t);
+function Eg(e, t, ar) {
+  return Dg(e, t, ar);
 }
 
 // Ulti / mermi görselleri (assets/fx). Yüklenemezse eski kodla çizilen hâli kullanılır.
@@ -1344,9 +1360,10 @@ function AF_loadFx() {
   ));
 }
 
-async function Dg(e = `umut`, t = `sudem`) {
-  AF_bgC ||= bg(vg).catch(() => null);
-  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC, AF_loadFx()]);
+async function Dg(e = `umut`, t = `sudem`, ar = `ankara`) {
+  const A = AF_arena(ar);
+  AF_bgC[A.id] ||= bg(A.img).catch(() => null);
+  let [n, r, i] = await Promise.all([AF_loadChar(e, !1), AF_loadChar(t, e === t), AF_bgC[A.id], AF_loadFx()]);
   return { p1: n, p2: r, bg: i ?? wg() };
 }
 
@@ -2975,11 +2992,12 @@ function gy() {
     [df, setDf] = (0, N.useState)(
       [`easy`, `normal`, `hard`].includes(q.get(`diff`)) ? q.get(`diff`) : `normal`,
     ),
+    [ar, setAr] = (0, N.useState)(AF_ARENA_SEL.includes(q.get(`arena`)) ? q.get(`arena`) : `ankara`),
     [r1, setR1] = (0, N.useState)(!1),
     [r2, setR2] = (0, N.useState)(bot);
   const lock = (0, N.useRef)(!1),
     rf = (0, N.useRef)({});
-  rf.current = { p1c, p2c, df, bot, r1, r2 };
+  rf.current = { p1c, p2c, df, bot, r1, r2, ar };
   const start = (0, N.useCallback)(() => {
     if (lock.current) return;
     lock.current = !0;
@@ -2993,7 +3011,7 @@ function gy() {
     setR1(!0);
     setR2(!0);
     window.setTimeout(
-      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}`),
+      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}&arena=${t.ar}`),
       650,
     );
   }, [nav]);
@@ -3049,6 +3067,12 @@ function gy() {
       sp2(id);
     }
   }, []);
+  const asel = (0, N.useCallback)((e) => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    setAr(e);
+  }, []);
   const dsel = (0, N.useCallback)((e) => {
     X.ensure();
     X.uiClick();
@@ -3083,6 +3107,8 @@ function gy() {
       ].includes(e.code) && e.preventDefault();
       e.code === `Escape` || e.code === `Backspace`
         ? (e.preventDefault(), back())
+        : e.code === `Tab`
+        ? (e.preventDefault(), asel(AF_ARENA_SEL[(AF_ARENA_SEL.indexOf(rf.current.ar) + 1) % AF_ARENA_SEL.length]))
         : e.code === `KeyZ`
         ? ready1()
         : e.code === `Numpad1` || e.code === `KeyJ`
@@ -3105,7 +3131,7 @@ function gy() {
     };
     window.addEventListener(`keydown`, h);
     return () => window.removeEventListener(`keydown`, h);
-  }, [ready1, ready2, start, mv1, mv2, dsel, bot, back]);
+  }, [ready1, ready2, start, mv1, mv2, dsel, asel, bot, back]);
   const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot, dummy: isBot && train });
   return (0, P.jsxs)(`div`, {
     "data-testid": `select-screen`,
@@ -3159,6 +3185,34 @@ function gy() {
                 children: [
                   (0, P.jsx)(AF_Map, { p1: mp(p1c, r1, !1), p2: mp(p2c, r2, bot) }),
                   (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
+                  (0, P.jsxs)(`div`, {
+                    "data-testid": `arena-picker`,
+                    className: `flex flex-col items-center gap-2`,
+                    children: [
+                      (0, P.jsx)(`p`, {
+                        className: `font-monox text-[10px] tracking-[0.3em] text-slate-500`,
+                        children: `ARENA · TAB`,
+                      }),
+                      (0, P.jsx)(`div`, {
+                        className: `flex gap-2`,
+                        children: AF_ARENA_SEL.map((id) =>
+                          (0, P.jsx)(
+                            uy,
+                            {
+                              "data-testid": `arena-${id}`,
+                              variant: ar === id ? `default` : `outline`,
+                              size: `sm`,
+                              onClick: () => asel(id),
+                              className: `font-display font-bold tracking-widest`,
+                              style: ar === id ? { background: `#00f0ff`, color: `#06070f` } : { borderColor: `#272744`, color: `#cbd5e1` },
+                              children: id === `random` ? `RASTGELE` : AF_ARENAS[id].name,
+                            },
+                            id,
+                          ),
+                        ),
+                      }),
+                    ],
+                  }),
                   bot &&
                     !train &&
                     (0, P.jsxs)(`div`, {
@@ -3285,7 +3339,7 @@ function yy(e) {
 }
 
 function by(e, t) {
-  let n = t.x > 387 && t.x < 990 && t.y <= 489,
+  let n = AF_PLAT && t.x > 387 && t.x < 990 && t.y <= 489,
     r = t.ground === `table` || n ? 429 : 704,
     i = Math.max(0, r - t.y),
     a = 0.4 * pg(1 - i / 480, 0.12, 1),
@@ -4298,8 +4352,7 @@ function Sy(e, t) {
     e.beginPath(),
     e.moveTo(0, 704),
     e.lineTo($h, 704),
-    e.moveTo(387, 429),
-    e.lineTo(990, 429),
+    AF_PLAT && (e.moveTo(387, 429), e.lineTo(990, 429)),
     e.stroke(),
     (e.font = `700 12px ${_y}`),
     (e.fillStyle = `#ffd700`),
@@ -5465,7 +5518,7 @@ function AF_tryAirFlip(e, t, n, dt) {
     flightTime = (2 * upSpeed) / eg,
     speed = 530 * AF_spd(e);
   e.airFlipDur = Math.max(250, flightTime * 1000);
-  if (e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
+  if (AF_PLAT && e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
     const platformTime =
       (upSpeed + Math.sqrt(upSpeed * upSpeed - 2 * eg * (e.airFlipStartY - 429))) / eg;
     const landingX = e.airFlipStartX + dir * speed * platformTime;
@@ -5551,6 +5604,8 @@ var Xy = class {
       (this.chars = r.chars || [AF_char(`umut`), AF_char(`sudem`)]),
       // antrenman: süre/raunt yok, kimse nakavt olmaz, P2 kukla (66-game-training.js)
       (this.training = !!r.training),
+      (this.arena = AF_arena(r.arena)),
+      (AF_PLAT = this.arena.platform),
       (this.dummy = r.dummy || `stand`),
       (this.trainUlt = !0),
       (this.bot = this.vsBot || (this.training && this.dummy === `bot`) ? new Hy(this.diff) : null),
@@ -5592,6 +5647,7 @@ var Xy = class {
         ((this.p2.name += ` II`),
         (this.p2.accent = this.chars[0].id === `umut` ? `#3ddc84` : `#ff5a7a`),
         (this.p2.accent2 = this.chars[0].id === `umut` ? `#8af5b9` : `#ff9ab0`)),
+      (AF_PLAT = this.arena ? this.arena.platform : !0),
       (this.roundTime = AF_S.time > 0 && !this.training ? AF_S.time : 1 / 0),
       (this.train = { last: 0, combo: 0, dmg: 0, max: 0 }),
       (this.maxRounds = AF_S.rounds),
@@ -5903,7 +5959,7 @@ var Xy = class {
         (e.state === `idle` || e.state === `walk` || e.state === `crouch`) && (e.state = `air`)),
       !e.grounded && e.vy >= 0)
     ) {
-      let t = e.x > 381 && e.x < 996;
+      let t = AF_PLAT && e.x > 381 && e.x < 996;
       e.dropT <= 0 && t && o <= 429 && e.y >= 429
         ? ((e.y = 429), (e.vy = 0), (e.ground = `table`), this.onLand(e))
         : e.y >= 704 && ((e.y = 704), (e.vy = 0), (e.ground = `g1`), this.onLand(e));
@@ -6236,7 +6292,7 @@ var Xy = class {
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
       else if (n.kind === `car` || n.kind === `motor`) {
-        let e = n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
+        let e = AF_PLAT && n.x > 387 && n.x < 990 && n.y <= 430 ? 429 : 704;
         (n.y < e - 2
           ? ((n.vy += eg * t), (n.y = Math.min(e - 2, n.y + n.vy * t)))
           : ((n.vy = 0), (n.y = e - 2)),
@@ -6578,10 +6634,12 @@ function Qy() {
     [l] = Zr(),
     u = l.get(`mode`) === `bot`,
     tr = l.get(`mode`) === `training`,
+    // "random" seçildiyse arena burada bir kez belirlenir (yeniden başlatınca aynı arena kalır)
+    ar = (0, N.useMemo)(() => AF_arena(l.get(`arena`) || `ankara`).id, [l.get(`arena`)]),
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
-    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}`;
+    d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}&arena=${l.get(`arena`) || `ankara`}`;
   // Antrenman: R ile konumları ve canları sıfırla
   (0, N.useEffect)(() => {
     if (!tr) return;
@@ -6595,7 +6653,7 @@ function Qy() {
     let i = !1,
       o = null;
     return (
-      Eg(af1.id, af2.id).then((e) => {
+      Eg(af1.id, af2.id, ar).then((e) => {
         i ||
           ((o = new Xy(
             n,
@@ -6613,7 +6671,7 @@ function Qy() {
                   { description: `Özel atak hazır — kullan veya kaybet!` },
                 ),
             },
-            { vsBot: u, training: tr, diff: afd, chars: [af1, af2] },
+            { vsBot: u, training: tr, arena: ar, diff: afd, chars: [af1, af2] },
           )),
           (t.current = o),
           o.start(),
@@ -6623,7 +6681,7 @@ function Qy() {
         ((i = !0), o?.dispose(), (t.current = null));
       }
     );
-  }, [u, tr, af1, af2, afd]);
+  }, [u, tr, ar, af1, af2, afd]);
   let f = () => {
       (X.uiClick(), t.current?.setPaused(!1));
     },
