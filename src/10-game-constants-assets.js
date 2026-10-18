@@ -432,6 +432,7 @@ var AF_CHARS = {
     scale: sg,
     same: !0,
     halfW: 37,
+    hp: 145, // küçük hedef (vurulabilir alanı ~%10 dar), karşılığında biraz az can
     kickX: 9, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
@@ -458,7 +459,7 @@ var AF_CHARS = {
     guard: !0,
     run: !0,
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
-    mod: { spd: 0.78, dmg: 1.2, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
+    mod: { spd: 0.78, dmg: 1.15, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
     tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
     ultHint: `gitardan yıldırımlı notalar`,
@@ -478,6 +479,8 @@ var AF_CHARS = {
     same: !0,
     halfW: 40,
     kickX: 16, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    // güçlü ve dengeli (Ken): vuruşları %5 sert, biraz fazla can; hız normal (720 maçlık simülasyonla ayarlandı)
+    mod: { spd: 1, dmg: 1.05, sup: 1, jump: 1, kb: 1, hp: 152 },
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
     ultName: `GAZA BAS!`,

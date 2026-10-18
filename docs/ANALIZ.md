@@ -771,3 +771,16 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Sonuç (300 maç): UMUT %42, SUDEM %61, METEHAN %57, AHMET %40 (başlangıç: %89/%44/%50/%17). Örnek başına ±%8 sapma.
 - 2. adım (karakter kimlikleri: can/hız/kare verisi) oyuncu testinden sonra.
 - Testler: 39.
+
+## 26. Denge: risk/ödül ultileri ve karakter kimliği (18 Ekim 2026)
+
+- **Ilke:** ultinin yazılı hasarı değil, **kullanım başına ortalama hasarı** eşit olmalı (Street Fighter risk/ödül). Güvenilir ulti az, kaçması kolay ulti çok hasar verir.
+  - METEHAN notalar 10×2 = **20** (yakında anında, en güvenilir; `AF_NOTA_SAYI`)
+  - UMUT fotoğraf 3×7 = **21** (eğilerek kaçılır)
+  - AHMET motor **25** (arkadan gelir, zıplayarak kaçılır)
+  - SUDEM araba **27** (zıplayarak kaçılır)
+  - Ölçülen ulti başına ortalama: 14,5 / 15,8 / 15,0 / 15,8.
+- **Karakter kimliği:** SUDEM can 145 (küçük hedef: vurulabilir alanı ~%10 dar), METEHAN hasar ×1,15 can 165, AHMET hasar ×1,05 can 152 (güçlü/dengeli), UMUT temel.
+- **Sonuç (720 maç, ±%5):** UMUT %45, SUDEM %50, METEHAN %52, AHMET %52.
+- Ders: 25 maçlık örnekte sapma ±%10'u geçiyor; karar için en az 60 maç/eşleşme. Hasarda ±%5 bile kazanma oranını ~%10 oynatıyor.
+- Testler: 39.

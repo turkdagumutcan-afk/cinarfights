@@ -1078,6 +1078,7 @@ var AF_CHARS = {
     scale: sg,
     same: !0,
     halfW: 37,
+    hp: 145, // küçük hedef (vurulabilir alanı ~%10 dar), karşılığında biraz az can
     kickX: 9, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     proj: !0, // F: sihirli yüzük (uzak menzil)
@@ -1104,7 +1105,7 @@ var AF_CHARS = {
     guard: !0,
     run: !0,
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
-    mod: { spd: 0.78, dmg: 1.2, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
+    mod: { spd: 0.78, dmg: 1.15, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
     tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
     ultName: `YILDIRIM NOTALARI`,
     ultHint: `gitardan yıldırımlı notalar`,
@@ -1124,6 +1125,8 @@ var AF_CHARS = {
     same: !0,
     halfW: 40,
     kickX: 16, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    // güçlü ve dengeli (Ken): vuruşları %5 sert, biraz fazla can; hız normal (720 maçlık simülasyonla ayarlandı)
+    mod: { spd: 1, dmg: 1.05, sup: 1, jump: 1, kb: 1, hp: 152 },
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
     ultName: `GAZA BAS!`,
@@ -5207,7 +5210,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 8,
+    damage: 7,
     w: 0,
     h: 0,
     kbx: 320,
@@ -5222,7 +5225,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 24,
+    damage: 27,
     w: 0,
     h: 0,
     kbx: 520,
@@ -5300,7 +5303,7 @@ var AF_motorHit = {
   startup: 0,
   active: 0,
   recovery: 0,
-  damage: 24,
+  damage: 25,
   w: 0,
   h: 0,
   kbx: 700,
@@ -5412,7 +5415,7 @@ var Ky = class {
       (this.accent2 = r.color2),
       (this.x = e === 0 ? $h * 0.26 : $h * 0.74),
       (this.facing = e === 0 ? 1 : -1),
-      (this.maxHp = (r.mod && r.mod.hp) || 150),
+      (this.maxHp = (r.mod && r.mod.hp) || r.hp || 150),
       (this.hp = this.maxHp),
       (this.ghostHp = this.maxHp));
   }
@@ -5572,6 +5575,11 @@ function AF_tryAirFlip(e, t, n, dt) {
   X.jump();
   return !0;
 }
+
+// Ulti hasarı risk/ödül ile: güvenilir ulti az, kaçması kolay ulti çok hasar verir; ulti başına
+// ORTALAMA hasar (bot simülasyonu, _onizleme/denge.mjs) dördünde yakın tutulur.
+// METEHAN notaları (2'şer) — yakında anında ve geniş, en güvenilir:
+var AF_NOTA_SAYI = 10;
 
 // Kombo hasar azalması: rakip sersemlikteyken gelen n. vuruşun çarpanı (applyHit)
 var AF_COMBO_SCALE = [1, 1, 0.8, 0.7, 0.6, 0.5, 0.4];
@@ -6290,7 +6298,7 @@ var Xy = class {
     return (
       e.charId === `metehan`
         ? ((this.flashA = 0.55),
-          Array.from({ length: 12 }).forEach((_, k) => {
+          Array.from({ length: AF_NOTA_SAYI }).forEach((_, k) => {
             let yy = r + (Math.random() - 0.5) * 150,
               p = i(
                 `note`,

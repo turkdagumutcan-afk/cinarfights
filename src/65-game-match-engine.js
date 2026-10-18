@@ -681,7 +681,7 @@ var Xy = class {
     return (
       e.charId === `metehan`
         ? ((this.flashA = 0.55),
-          Array.from({ length: 12 }).forEach((_, k) => {
+          Array.from({ length: AF_NOTA_SAYI }).forEach((_, k) => {
             let yy = r + (Math.random() - 0.5) * 150,
               p = i(
                 `note`,

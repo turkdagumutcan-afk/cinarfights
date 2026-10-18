@@ -106,6 +106,11 @@ function AF_tryAirFlip(e, t, n, dt) {
   return !0;
 }
 
+// Ulti hasarı risk/ödül ile: güvenilir ulti az, kaçması kolay ulti çok hasar verir; ulti başına
+// ORTALAMA hasar (bot simülasyonu, _onizleme/denge.mjs) dördünde yakın tutulur.
+// METEHAN notaları (2'şer) — yakında anında ve geniş, en güvenilir:
+var AF_NOTA_SAYI = 10;
+
 // Kombo hasar azalması: rakip sersemlikteyken gelen n. vuruşun çarpanı (applyHit)
 var AF_COMBO_SCALE = [1, 1, 0.8, 0.7, 0.6, 0.5, 0.4];
 

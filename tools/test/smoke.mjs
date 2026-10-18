@@ -187,7 +187,7 @@ await test('AHMET ulti GAZA BAS!: motor arkadan gelip vurur', async (o) => {
   const p = await o({ p1: 'ahmet', p2: 'sudem' }); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(250);
   const k = await p.evaluate(() => { const m = window.__AF_match; return m.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}${x.x < m.p1.x ? '<arka' : ''}`); }); await wait(2200);
   const hp = await p.evaluate(() => window.__AF_match.p2.hp);
-  return { ok: k.some((x) => x.startsWith('motor@') && x.endsWith('<arka')) && hp <= 150 - 24, note: `mermi=${k.join(',')} rakip can=${hp}` };
+  return { ok: k.some((x) => x.startsWith('motor@') && x.endsWith('<arka')) && hp <= 145 - 25, note: `mermi=${k.join(',')} rakip can=${hp}` };
 });
 await test('UMUT ulti: fotoğraflar gövde ortasından çıkar (yerden değil)', async (o) => {
   const p = await o(); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(150);
@@ -300,7 +300,7 @@ await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   return { ok: kostu, note: kostu ? 'koştu' : '25 sn içinde koşmadı' };
 });
 
-await test('Ultiler eşit: tam isabet 24, korunursa en fazla 6 (4 karakter)', async (o) => {
+await test('Ultiler: risk/ödül hasarı (20–27), korunursa en fazla 7', async (o) => {
   const out = [];
   for (const c of ['umut', 'sudem', 'metehan', 'ahmet']) {
     const p = await o({ p1: c, p2: c === 'umut' ? 'sudem' : 'umut' });
@@ -318,7 +318,8 @@ await test('Ultiler eşit: tam isabet 24, korunursa en fazla 6 (4 karakter)', as
     }, c));
     await p.close();
   }
-  return { ok: out.every(([, a, b]) => a === 24 && b <= 6), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
+  const bek = { umut: 21, sudem: 27, metehan: 20, ahmet: 25 };
+  return { ok: out.every(([c, a, b]) => a === bek[c] && b <= 7), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 
 // ---- Arenalar ----
