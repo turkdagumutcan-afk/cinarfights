@@ -184,8 +184,9 @@ await test('UMUT F: flaş artık yok (yalnız ultide)', async (o) => {
   return { ok: kinds.length === 0, note: `mermi=${kinds.join(',') || 'yok'}` };
 });
 await test('AHMET ulti GAZA BAS!: motor arkadan gelip vurur', async (o) => {
-  const p = await o({ p1: 'ahmet', p2: 'sudem' }); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0)); await p.tap('c', 50); await wait(250);
-  const k = await p.evaluate(() => { const m = window.__AF_match; return m.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}${x.x < m.p1.x ? '<arka' : ''}`); }); await wait(2200);
+  const p = await o({ p1: 'ahmet', p2: 'sudem' }); await fight(p);
+  // ulti doğrudan tetiklenir; motorun çıkış noktası AHMET'in arkasında ve yakın (≤200 px) olmalı
+  const k = await p.evaluate(() => { const m = window.__AF_match; m.giveUlti(0); m.tryUltimate(m.p1); return m.projectiles.map((x) => `${x.kind}@${Math.round(x.x)}${x.x < m.p1.x && m.p1.x - x.x <= 200 ? '<arka' : ''}`); }); await wait(2200);
   const hp = await p.evaluate(() => window.__AF_match.p2.hp);
   return { ok: k.some((x) => x.startsWith('motor@') && x.endsWith('<arka')) && hp <= 145 - 25, note: `mermi=${k.join(',')} rakip can=${hp}` };
 });
@@ -318,7 +319,7 @@ await test('Ultiler: risk/ödül hasarı (20–27), korunursa en fazla 7', async
     }, c));
     await p.close();
   }
-  const bek = { umut: 21, sudem: 27, metehan: 20, ahmet: 25 };
+  const bek = { umut: 21, sudem: 24, metehan: 20, ahmet: 25 };
   return { ok: out.every(([c, a, b]) => a === bek[c] && b <= 7), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 

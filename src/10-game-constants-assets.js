@@ -409,6 +409,7 @@ var AF_CHARS = {
     scale: 250,
     same: !0,
     halfW: 40,
+    hp: 153, // dengeli temel; 720 maçlık simülasyonda %38 kaldığı için +3 can
     kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     roll: AF_UMUT_OZEL,

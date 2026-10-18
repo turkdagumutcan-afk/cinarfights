@@ -778,7 +778,7 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
   - METEHAN notalar 10×2 = **20** (yakında anında, en güvenilir; `AF_NOTA_SAYI`)
   - UMUT fotoğraf 3×7 = **21** (eğilerek kaçılır)
   - AHMET motor **25** (arkadan gelir, zıplayarak kaçılır)
-  - SUDEM araba **27** (zıplayarak kaçılır)
+  - SUDEM araba **24** (zıplayarak kaçılır)
   - Ölçülen ulti başına ortalama: 14,5 / 15,8 / 15,0 / 15,8.
 - **Karakter kimliği:** SUDEM can 145 (küçük hedef: vurulabilir alanı ~%10 dar), METEHAN hasar ×1,15 can 165, AHMET hasar ×1,05 can 152 (güçlü/dengeli), UMUT temel.
 - **Sonuç (720 maç, ±%5):** UMUT %45, SUDEM %50, METEHAN %52, AHMET %52.
@@ -798,3 +798,9 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **↓↘→↓↘→ + Yumruk**: `ultEdge` (bar 100 ise).
 - Pencereler: çeyrek daire ≤ 420 ms, çift ≤ 900 ms, son yön ile tuş arası ≤ 220 ms; ↘ atlanabilir (klavye kolaylığı). Eski tek tuşlar çalışır.
 - Testler: 44 (P1/P2 yön çevrimi, Mete koşu, çift komutla ulti, özel hareketi olmayan karakter).
+
+## 29. Araç ultileri yakından ve büyük (18 Ekim 2026)
+
+- AHMET motoru ekran kenarı yerine **AHMET'in 160 px arkasından** çıkar (gecikme 100 ms, 1500 px/s). Rakibe ulaşma: 450 px'de 650 → 433 ms, 800 px'de 883 → 667 ms (SUDEM arabasına yakın).
+- Araçlar ~%30 büyük: çizim (motor 170, araba 136 px yükseklik), çarpışma yarıçapı (motor 68, araba 62) ve merkez yüksekliği (52 px). Zıplayarak kaçmak hâlâ mümkün ama zamanlama ister.
+- Denge (720 maç): araba daha sık isabet ettiği için hasarı 27 → **24**; UMUT can 150 → **153**. Sonuç: UMUT %42, SUDEM %50, METEHAN %52, AHMET %56; ulti başına ortalama 14,7–15,0.

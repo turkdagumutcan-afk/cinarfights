@@ -344,9 +344,9 @@ function Ty(e, t) {
     // boy (px) ve yatay çapa (görselin solunda iz/duman var, gövde sağda)
     const [h, ax, zemin] =
       t.kind === `motor`
-        ? [130, 0.58, !0]
+        ? [170, 0.58, !0]
         : t.kind === `car`
-          ? [104, 0.6, !0]
+          ? [136, 0.6, !0]
           : t.kind === `ringshot`
             ? [62, 0.66, !1]
             : t.kind === `note`

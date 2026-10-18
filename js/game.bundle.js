@@ -1055,6 +1055,7 @@ var AF_CHARS = {
     scale: 250,
     same: !0,
     halfW: 40,
+    hp: 153, // dengeli temel; 720 maçlık simülasyonda %38 kaldığı için +3 can
     kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     roll: AF_UMUT_OZEL,
@@ -4468,9 +4469,9 @@ function Ty(e, t) {
     // boy (px) ve yatay çapa (görselin solunda iz/duman var, gövde sağda)
     const [h, ax, zemin] =
       t.kind === `motor`
-        ? [130, 0.58, !0]
+        ? [170, 0.58, !0]
         : t.kind === `car`
-          ? [104, 0.6, !0]
+          ? [136, 0.6, !0]
           : t.kind === `ringshot`
             ? [62, 0.66, !1]
             : t.kind === `note`
@@ -5256,7 +5257,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 27,
+    damage: 24,
     w: 0,
     h: 0,
     kbx: 520,
@@ -6424,13 +6425,14 @@ var Xy = class {
           : e.charId === `ahmet`
             ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
               (this.projectiles.push({
-                ...i(`motor`, e.y - 2, 1500, 0, 52, 150, 0),
-                x: e.facing > 0 ? -100 : $h + 100,
+                // AHMET'in hemen arkasından gaz verip çıkar (ekran kenarından değil): arabaya yakın sürede ulaşır
+                ...i(`motor`, e.y - 2, 1500, 0, 68, 100, 0),
+                x: e.x - e.facing * 160,
               }),
               (this.announce = { text: `GAZA BAS!`, t: 0, dur: 900, size: 64, color: `#ff7a1a` }),
               X.carRev(),
               X.carRev())
-            : (this.projectiles.push(i(`car`, e.y - 2, 980, 0, 48, 40, 0)),
+            : (this.projectiles.push(i(`car`, e.y - 2, 980, 0, 62, 40, 0)),
               (this.announce = { text: `KA-ÇOV!`, t: 0, dur: 900, size: 64, color: dg }),
               X.carRev()),
       this.shake(10, 260),
@@ -6509,7 +6511,7 @@ var Xy = class {
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
       if (i.state !== `ko`) {
-        let e = n.kind === `car` || n.kind === `motor` ? n.y - 40 * AF_BOY : n.y,
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 52 * AF_BOY : n.y,
           t = Yy(n.x, e, n.r * AF_BOY, i.hurtbox());
         t &&
           ((n.dead = !0),

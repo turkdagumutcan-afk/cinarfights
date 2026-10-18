@@ -139,7 +139,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 27,
+    damage: 24,
     w: 0,
     h: 0,
     kbx: 520,
