@@ -1,8 +1,9 @@
 # ÇINAR FIGHTS
 
 Tarayıcıda çalışan, tek klavyede iki oyunculu retro arcade dövüş oyunu (eski adı ANKARA FIGHTER).
-**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı) ve **METEHAN** (müzisyen), Ankara temalı arenada
-**en iyi 3 raunt** (2 raunt kazanan maçı alır, her raunt 99 saniye) karşı karşıya.
+**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı), **METEHAN** (müzisyen) ve **AHMET** (motorcu)
+**ANKARA, SAMSUN ve ÇORUM** arenalarında **en iyi 3 raunt** (2 raunt kazanan maçı alır, her raunt 99 saniye) karşı karşıya.
+Modlar: **1VSBOT**, **1VS1** (tek klavye) ve **ANTRENMAN** (kuklaya karşı).
 
 ## Çalıştırma
 
@@ -35,7 +36,7 @@ git clone https://github.com/turkdagumutcan-afk/cinarfights.git
 cd cinarfights
 npm install            # yalnızca testler için (Playwright); oyunu çalıştırmak için gerekmez
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
-npm test               # build + 30 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
+npm test               # build + 39 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
 
 Test tarayıcısını indirecek yer yoksa Edge ile: `$env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test`
@@ -52,10 +53,11 @@ Dosya adı öneki (`10-`, `63-`…) çalışma sırasıdır; numaraları değiş
 ├── CLAUDE.md               Claude Code proje kuralları ve token tasarrufu
 ├── docs/ANALIZ.md          Ayrıntılı teknik analiz, değişiklik günlüğü, güncel durum
 ├── docs/TASARIM.html       Arayüz tasarım sistemi: renkler, yazı tipleri, efektler, bileşenler (tarayıcıda aç)
-├── src/                    ← DÜZENLENEN KAYNAK (20 dosya; 00/30 = üçüncü taraf, ham minify)
+├── src/                    ← DÜZENLENEN KAYNAK (21 dosya; 00/30 = üçüncü taraf, ham minify)
 ├── tools/
 │   ├── build.mjs           src → js/game.bundle.js
 │   ├── serve.mjs           önbelleksiz yerel sunucu
+│   ├── sprite/             Gemini görsellerini oyun karelerine çeviren betikler (Python + Pillow)
 │   └── test/smoke.mjs      tarayıcı duman testleri
 ├── css/styles.css          Derlenmiş Tailwind CSS v4 + özel retro efektler
 ├── js/
@@ -72,28 +74,27 @@ Dosya adı öneki (`10-`, `63-`…) çalışma sırasıdır; numaraları değiş
 
 ## Kontroller
 
-| | P1 — UMUT | P2 |
+| | P1 | P2 |
 |---|---|---|
 | Hareket | A / D | ◄ / ► |
 | Zıpla | W | ▲ |
-| Eğil / masadan düş | S / 2×S | ▼ / 2×▼ |
+| Eğil | S | ▼ |
 | Yumruk | Z | Num 1 (J) |
 | Tekme | X | Num 2 (K) |
 | Güçlü yumruk | Sol Shift | Num 4 (U) |
 | Ağır tekme | Sol Ctrl | Num 5 (I) |
-| Koruma (basılı tut) | V | Num 3 (L) |
-| ULTİ | C | Num 0 (O) |
-| Flaş dalgası (UMUT) | F | Num 9 (H) |
-| Süpürme tekme (UMUT) | G | Num 8 (M) |
+| Koruma (basılı tut; eğilerek alçak koruma) | V | Num 3 (L) |
+| ULTİ (bar dolunca) | C | Num 0 (O) |
+| Sihirli yüzük (SUDEM) | F | Num 9 (H) |
 | Koşu çarpması (METEHAN) | Boşluk | Sağ Shift / Num 7 |
-| **Takla + yön** (UMUT) | **E + A/D** | **Num 6 (N) + ◄/►** |
-| Yer takla (UMUT) | A A / D D | ◄ ◄ / ► ► |
 
-Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü onayı
+Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü onayı · Antrenmanda **R** konumları sıfırlar
 
-**Takla (rakibin üzerinden akrobatik atlayış):** `E` ile yön tuşu **hangi sırayla basılırsa basılsın** (130 ms içinde) çalışır.
-**W + yön** ile zıplarken yön, kalkış anında kilitlenir — önce W sonra D, önce D sonra W ya da aynı anda; hepsi aynı.
-Rakibin üzerinden **yalnızca takla** geçer; normal zıplama (W, W+yön) rakibi aşamaz.
+**Ultiler:** UMUT **FLAŞ PATLAMASI** (3 fotoğraf, eğilerek kaçılır) · SUDEM **KA-ÇOV!** (yarış arabası, zıplayarak kaçılır) ·
+METEHAN **YILDIRIM NOTALARI** (yakında anında) · AHMET **GAZA BAS!** (arkadan gelen motor, zıplayarak kaçılır).
+Kaçması kolay ulti daha çok hasar verir; ulti başına ortalama hasar dördünde eşittir.
+
+> UMUT'un takla / yer taklası / süpürme hareketi yeni çizimler gelene kadar **geçici olarak kapalı**.
 
 > Bu tuşlar **varsayılandır**. Başlık ekranındaki **AYARLAR** (ya da duraklatma menüsü) → **KONTROLLER** sekmesinden istediğin tuşu atayabilirsin.
 
@@ -110,12 +111,12 @@ Başlık ekranında **AYARLAR** (veya **3** tuşu) ve maç sırasında **ESC →
 
 ### Dövüşçü seçim ekranı
 
-- **Street Fighter II tarzı:** ortada sabit Türkiye haritası (bayraklı şehirler, kırmızı 1P / mavi 2P işareti), altında karakter ızgarası. Seçilen karakter kartta 3D dönerek gelir. Izgaradaki **?** kutusu rastgele karakter seçer, 2 adet **YAKINDA** kutusu ileride eklenecek karakterler için ayrıldı.
-- **Fare:** kutuya sol tık → P1, sağ tık veya Shift+tık → P2
-- **A / D** — P1 karakterini değiştir (UMUT → SUDEM → METEHAN → RASTGELE, kartlardaki ◀/▶ düğmeleri de çalışır)
-- **◄ / ►** — P2'nin (veya botun) karakterini değiştir
-- **1 / 2 / 3** — Bot zorluğu: KOLAY / NORMAL / ZOR (yalnızca 1P modunda)
-- **Z** — P1 hazır · **Num 1 / J** — P2 hazır · **Enter** — dövüşü başlat
+- **Street Fighter II tarzı:** ortada Türkiye haritası (memleketler: UMUT ve SUDEM Ankara, METEHAN Samsun, AHMET Çorum), altında karakter ızgarası, kartta dönen portre. Kartta karakterin **stili** (DENGELİ, TANK…), **zorluk** yıldızları ve gerçek değerlerden hesaplanan **HIZ / GÜÇ / CAN** çubukları.
+- **Fare:** kutuya sol tık → P1, sağ tık veya Shift+tık → P2 · **?** rastgele karakter
+- **A / D** — P1 karakteri · **◄ / ►** — P2 (veya bot / kukla) karakteri
+- **Tab** — arena: ANKARA / SAMSUN / ÇORUM / RASTGELE
+- **1 / 2 / 3** — bot zorluğu (1VSBOT)
+- **Z** — P1 hazır · **Num 1 / J** — P2 hazır · **Enter** — başlat · **ESC / ◀ GERİ** — önce hazırı iptal, sonra ana menü
 
 ## Özellikler (v3.1)
 
@@ -129,6 +130,8 @@ Başlık ekranında **AYARLAR** (veya **3** tuşu) ve maç sırasında **ESC →
   renk tonuyla ("SUDEM II" / "UMUT II") dövüşür.
 
 ## Sürüm
+
+- **17–18 Ekim 2026 — Yeni tasarım:** dört karakterin bütün pozları yeniden çizildi, yumruk ve tekme çok kareli animasyon; yeni karakter **AHMET** (ulti GAZA BAS!); SUDEM'e sihirli yüzük; **ANTRENMAN** modu; seçim ekranında geri dönüş; arenalar **ANKARA (şehir) / SAMSUN / ÇORUM** (tek zemin); karakterler %16 büyük; aynı anda vuruşta ikisi de vurur; **denge** (720 bot maçında her karakter %45–52; ayrıntı `docs/ANALIZ.md` §22–27). 39 tarayıcı testi.
 
 > Aşağıda adı geçen `.bak-*-oncesi` yedekleri ve eski arena görseli (`ankara_map.eski.webp`) 16 Ekim temizliğinde kaldırıldı. 16 Ekim'den sonraki sürümler GitHub'daki git geçmişinde.
 

@@ -15,10 +15,18 @@ function Jy(e, t) {
       i = e.y - (t.hby || 0);
     return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
   }
+  // mod.reach / mod.reachX: kısa kollu karakterlerde (METEHAN) vuruş kutusu biraz geniş ve önde
   let n = e.spr.frames[t.pose],
-    r = e.x + e.facing * (n.tipX - t.w * 0.3),
+    w = t.w * AF_BOY * ((e.mod && e.mod.reach) || 1),
+    h = t.h * AF_BOY,
+    r =
+      e.x +
+      e.facing *
+        (n.tipX -
+          w * 0.3 +
+          (((e.mod && e.mod.reachX) || 0) + (t.pose === `kick` ? AF_char(e.charId).kickX || 0 : 0)) * AF_BOY),
     i = e.y - n.tipY;
-  return { x: r - t.w / 2, y: i - t.h / 2, w: t.w, h: t.h };
+  return { x: r - w / 2, y: i - h / 2, w, h };
 }
 
 function Yy(e, t, n, r) {
@@ -55,7 +63,7 @@ function AF_tryAirFlip(e, t, n, dt) {
   const fresh = e.bufFlipT > 0 || e.bufDirT > 0;
   if (!fresh || !dir || !(t.flip || e.bufFlipT > 0)) return !1;
   if (
-    e.charId !== `umut` ||
+    !AF_char(e.charId).roll ||
     !e.grounded ||
     !e.spr.backFrames ||
     e.spr.backFrames.length !== 16 ||
@@ -86,7 +94,7 @@ function AF_tryAirFlip(e, t, n, dt) {
     flightTime = (2 * upSpeed) / eg,
     speed = 530 * AF_spd(e);
   e.airFlipDur = Math.max(250, flightTime * 1000);
-  if (e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
+  if (AF_PLAT && e.airFlipStartY > 429 && upSpeed * upSpeed >= 2 * eg * (e.airFlipStartY - 429)) {
     const platformTime =
       (upSpeed + Math.sqrt(upSpeed * upSpeed - 2 * eg * (e.airFlipStartY - 429))) / eg;
     const landingX = e.airFlipStartX + dir * speed * platformTime;
@@ -96,4 +104,43 @@ function AF_tryAirFlip(e, t, n, dt) {
   e.vx = dir * speed;
   X.jump();
   return !0;
+}
+
+// Ulti hasarı risk/ödül ile: güvenilir ulti az, kaçması kolay ulti çok hasar verir; ulti başına
+// ORTALAMA hasar (bot simülasyonu, _onizleme/denge.mjs) dördünde yakın tutulur.
+// METEHAN notaları (2'şer) — yakında anında ve geniş, en güvenilir:
+var AF_NOTA_SAYI = 10;
+
+// Kombo hasar azalması: rakip sersemlikteyken gelen n. vuruşun çarpanı (applyHit)
+var AF_COMBO_SCALE = [1, 1, 0.8, 0.7, 0.6, 0.5, 0.4];
+
+// ---- METEHAN koşu çarpması dengesi ----
+var AF_DASH_CD = 1500; // koşular arası bekleme (ms)
+var AF_DASH_CHAIN = [1, 0.6, 0.3]; // 3 sn içindeki 1./2./3.+ koşunun hasar çarpanı
+
+function AF_dashImpact(g, e, n) {
+  const a = e.x <= n.x ? 1 : -1,
+    korudu = n.state === `guard` && n.facing === -a,
+    duvar = n.x < 90 || n.x > $h - 90,
+    k = AF_DASH_CHAIN[Math.min(AF_DASH_CHAIN.length - 1, e.dashChain || 0)];
+  e.dashHit = !0;
+  e.dashT = 0;
+  e.dashCd = AF_DASH_CD;
+  e.armor = 0;
+  e.vx *= 0.2;
+  g.shake(12, 180);
+  g.applyHit(e, n, { ...AF_dashHit, damage: Math.max(1, Math.round(AF_dashHit.damage * k)) }, (e.x + n.x) / 2, e.y - 90);
+  if (korudu) {
+    // korunan koşu cezasız değil: kısa süre savunmasız kalır
+    e.state = `hitstun`;
+    e.attack = null;
+    e.hitstunT = Math.max(e.hitstunT || 0, 350);
+  } else if (duvar) {
+    // köşede rakip itilemez: METEHAN geri seker (~150 px), aynı yerde yapışıp tekrar vuramaz.
+    // Hasar pozuna girmez: normal duruşta kayar, bu sırada (bounceT) tuş girişi kilitli.
+    e.state = `idle`;
+    e.attack = null;
+    e.bounceT = 260;
+    e.vx = -a * 1100;
+  }
 }

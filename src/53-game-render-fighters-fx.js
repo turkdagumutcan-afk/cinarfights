@@ -3,9 +3,9 @@
 
 function AF_drawBody(e, t, r) {
   const X = -r.ax * r.scale,
-    Y = -(r.by + r.bh) * r.scale,
+    Y = -(r.by + r.bh) * r.scale * (r.sy || 1),
     Wd = r.w * r.scale,
-    Ht = r.h * r.scale;
+    Ht = r.h * r.scale * (r.sy || 1);
   if (t.state === "ko") {
     const g = AF_koGeom(r);
     if (g) {
@@ -25,7 +25,7 @@ function AF_drawBody(e, t, r) {
       return;
     }
   }
-  if (t.walkB > 0.001 && t.grounded && t.pose() === "idle") {
+  if (t.walkB > 0.001 && t.grounded && t.state !== "attack" && t.pose() === "idle") {
     const lp = AF_legParts(r);
     if (lp) {
       const B = t.walkB,
@@ -133,6 +133,52 @@ function AF_applyAnim(e, t) {
   e.scale(sx, sy);
 }
 
+// Çok kareli yumruk/tekme/koşu: saldırının evresine göre kare seçer.
+// Hazırlık (startup) -> tepeye kadarki kareler, aktif -> tepe karesi, toparlanma -> tepeden sonraki kareler.
+function AF_seqFrame(t) {
+  const S = t.spr.seq;
+  if (!S || t.state === `ko`) return null;
+  const a = t.attack;
+  if (t.state === `attack` && a && (a.def.pose === `punch` || a.def.pose === `kick`) && S[a.def.pose]) {
+    const q = S[a.def.pose],
+      pk = q.peak,
+      d = a.def,
+      tt = a.t;
+    let f;
+    if (tt < d.startup) {
+      const L = q.slice(0, pk);
+      f = L.length ? L[Math.min(L.length - 1, Math.floor((tt / d.startup) * L.length))] : q[pk];
+    } else if (tt <= d.startup + d.active) f = q[pk];
+    else {
+      const L = q.slice(pk + 1),
+        p = (tt - d.startup - d.active) / Math.max(1, d.recovery);
+      f = L.length ? L[Math.min(L.length - 1, Math.floor(p * L.length))] : q[pk];
+    }
+    // az kareli tekmede (SUDEM, 3 kare) tepe anında hız izi: hareket ani değil çok hızlı görünür
+    const hiz = q.length <= 3 && f === q[pk] && tt <= d.startup + d.active + 60 ? q : null;
+    return { f, hiz };
+  }
+  if (t.pose() === `run` && S.run) return { f: S.run[Math.floor(t.animT / 85) % S.run.length], hiz: null };
+  return null;
+}
+
+function AF_speedTrail(e, t, q) {
+  const f = q[q.peak],
+    kalca = -f.visibleH * 0.45;
+  for (const [aci, saydam] of [
+    [0.34, 0.16],
+    [0.17, 0.3],
+  ]) {
+    e.save();
+    e.globalAlpha = saydam;
+    e.translate(0, kalca);
+    e.rotate(aci);
+    e.translate(0, -kalca);
+    AF_drawBody(e, t, f);
+    e.restore();
+  }
+}
+
 function AF_rollIndex(p) {
   const c = [4, 9, 12, 18, 24, 29, 34, 40],
     x = p * 40;
@@ -188,7 +234,12 @@ function xy(e, t) {
     return;
   }
   let n = t.pose(),
-    r = t.spr.frames[n];
+    r = t.spr.frames[n],
+    hiz = null;
+  {
+    const sq = AF_seqFrame(t);
+    sq && ((r = sq.f), (hiz = sq.hiz));
+  }
   if ((e.save(), e.translate(t.x, t.y), t.state === `ko`))
     (e.beginPath(), e.rect(-2e3, -2e3, 4e3, 2e3), e.clip(), e.translate(0, -AF_koLift(t)));
   if ((t.state === `hitstun` && e.translate((Math.random() - 0.5) * 8, 0), t.ultiAuraT > 0)) {
@@ -205,6 +256,7 @@ function xy(e, t) {
   (AF_applyAnim(e, t),
     e.scale(t.facing, 1),
     t.hitFlash > 0 && (e.filter = `brightness(2.4) saturate(0.5)`),
+    hiz && AF_speedTrail(e, t, hiz),
     AF_drawBody(e, t, r),
     (e.filter = `none`),
     t.state !== `roll` && AF_guardFx(e, t, r),
@@ -229,8 +281,7 @@ function Sy(e, t) {
     e.beginPath(),
     e.moveTo(0, 704),
     e.lineTo($h, 704),
-    e.moveTo(387, 429),
-    e.lineTo(990, 429),
+    AF_PLAT && (e.moveTo(387, 429), e.lineTo(990, 429)),
     e.stroke(),
     (e.font = `700 12px ${_y}`),
     (e.fillStyle = `#ffd700`),
@@ -268,9 +319,47 @@ function wy() {
   return ((t.font = `900 12px ${_y}`), (t.fillStyle = `#ffd21f`), (Cy = e), e);
 }
 
+// Ulti/mermi görseli (assets/fx). Yoksa null döner ve eski çizim kullanılır.
+function AF_fxImg(t) {
+  const k =
+    t.kind === `motor`
+      ? `ahmet_motor`
+      : t.kind === `car`
+        ? `sudem_araba`
+        : t.kind === `ringshot`
+          ? `sudem_yuzuk`
+          : t.kind === `note`
+            ? `metehan_nota${(t.col || 0) % 4}`
+            : t.kind === `photo`
+              ? `umut_foto${(t.fi || 0) % 3}`
+              : null;
+  return k && AF_FX[k] ? AF_FX[k] : null;
+}
+
 function Ty(e, t) {
   if (t.delay > 0) return;
   let n = Math.sign(t.vx) || 1;
+  const im = AF_fxImg(t);
+  if (im) {
+    // boy (px) ve yatay çapa (görselin solunda iz/duman var, gövde sağda)
+    const [h, ax, zemin] =
+      t.kind === `motor`
+        ? [130, 0.58, !0]
+        : t.kind === `car`
+          ? [104, 0.6, !0]
+          : t.kind === `ringshot`
+            ? [62, 0.66, !1]
+            : t.kind === `note`
+              ? [54, 0.5, !1]
+              : [66, 0.55, !1];
+    const H = h * AF_BOY,
+      w = (im.width * H) / im.height;
+    (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
+    t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
+    t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
+    (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());
+    return;
+  }
   if ((e.save(), e.translate(t.x, t.y), t.kind === `photo`)) {
     (e.rotate(t.rot),
       (e.shadowColor = `rgba(255,255,255,0.9)`),

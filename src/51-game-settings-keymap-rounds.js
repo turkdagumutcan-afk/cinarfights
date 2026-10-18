@@ -225,27 +225,36 @@ function AF_pair(a, b) {
 }
 
 function AF_legend(pi) {
-  const k = (a) => AF_k(pi, a);
+  const k = (a) => AF_k(pi, a),
+    takla = AF_UMUT_OZEL ? ` · ${k(`flip`)}+YÖN TAKLA · ${k(`sweep`)} SÜPÜRME` : ``;
   return [
-    `${k(`left`)}/${k(`right`)} HAREKET · ${k(`jump`)} ZIPLA · ${k(`flip`)}+YÖN TAKLA · ${k(`down`)} EĞİL · ${k(`guard`)} KORUMA`,
-    `${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`proj`)} FLAŞ · ${k(`sweep`)} SÜPÜRME · ${k(`ult`)} ULTİ`,
+    `${k(`left`)}/${k(`right`)} HAREKET · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`guard`)} KORUMA`,
+    `${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`proj`)} YÜZÜK (SUDEM) · ${k(`dash`)} KOŞU (METEHAN)${takla} · ${k(`ult`)} ULTİ`,
   ];
 }
 
 function AF_footer(pi) {
-  const k = (a) => AF_k(pi, a);
-  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`flip`)}+YÖN TAKLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} FLAŞ · ${k(`sweep`)} SÜPÜRME · ${k(`ult`)} ULTİ`;
+  const k = (a) => AF_k(pi, a),
+    takla = AF_UMUT_OZEL ? ` · ${k(`flip`)}+YÖN TAKLA · ${k(`sweep`)} SÜPÜRME` : ``;
+  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} YÜZÜK · ${k(`dash`)} KOŞU${takla} · ${k(`ult`)} ULTİ`;
 }
 
 function AF_cardLines(pi, s) {
   const k = (a) => AF_k(pi, a);
+  const ozel = s.proj
+    ? `${k(`proj`)} — sihirli yüzük (uzaktan)`
+    : s.run
+      ? `${k(`dash`)} — koşu çarpması (zırhlı)`
+      : s.roll
+        ? `${k(`flip`)}+yön takla · ${k(`sweep`)} süpürme`
+        : null;
   return [
-    `${k(`left`)}/${k(`right`)} hareket · ${k(`jump`)} zıpla · ${k(`flip`)}+yön takla`,
-    `${k(`down`)} eğil · 2×${k(`down`)} masadan düş`,
+    `${k(`left`)}/${k(`right`)} hareket · ${k(`jump`)} zıpla · ${k(`down`)} eğil`,
     `${k(`atk0`)} yumruk · ${k(`atk1`)} tekme · ${AF_pair(k(`atk2`), k(`atk3`))} güçlü`,
     `${k(`guard`)} — koruma (basılı tut)`,
+    ozel,
     `${k(`ult`)} — ${s.ultName} (${s.ultHint})`,
-  ];
+  ].filter(Boolean);
 }
 
 function AF_scaleHit(n) {

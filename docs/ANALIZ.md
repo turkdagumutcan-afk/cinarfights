@@ -682,3 +682,111 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Geçiş kuralı:** `separateBodies` artık yalnızca `airFlip` (E + yön) olan oyuncunun rakibin üzerinden geçmesine izin verir (eşik 0,34 × idle boyu). Normal zıplama (W, W+yön, yönü basılı tutarak W) rakibi aşamaz: baş hizasında bile görünmez bir duvar gibi durur, iter ve yanına iner. Kural aynı zemin seviyesindeki (yer–yer, masa–masa) dövüşçüler için geçerlidir; masadaki biri yerdeki rakibin üstünde yürüyebilir. Eski davranış için `AF_JUMP_CROSS = true` (`src/64-game-collision-helpers.js`).
 - **Boyut:** takla kareleri (`umut_back0-15`) idle'dan ~1,65× iri çizilmişti (kafa genişliği: idle ≈103 px × 0,36, takla ≈70 px × 0,874). Çizim ölçeği `AF_BACK_SIZE = 0.62` ile kafa boyunda eşitlendi. Çizim, karenin en alt noktasını (ayak) dövüşçünün `y` değerine oturtuyor; yükseklik gerçek yerçekimi yayından geliyor. Yerdeki A A / D D takla da aynı ölçeği kullanır.
 - Testler: 30/30 (zıplama-geçemez 7 test, takla-boyutu 1 test eklendi; eski "zıpla-geç" testleri kaldırıldı).
+
+## 18. Yeni Tasarım ve AHMET — 17 Ekim 2026
+
+> Bu bölüm §17'yi günceller; çakışma olursa bu bölüm esastır.
+
+### 18.1 Görseller
+- Dört karakterin bütün pozları Gemini ile yeniden çizildi (kaynak: kullanıcının `cınarfight tasarımlar` klasörü). Yeşil arka plan silindi, şeritler karelere bölündü, idle boyu 560 px olacak şekilde karakter başına tek ölçekle boyutlandırıldı, WebP olarak `assets/frames/` ve `assets/fx/`'e yazıldı. İşleme betikleri: `tools/sprite/isle.py` (önizleme → `_onizleme/`, git yoksayar) ve `tools/sprite/aktar.py` (oyuna yazar). Kurulum: `pip install pillow numpy`. Tasarım klasörü varsayılan `Masaüstü/cınarfight tasarımlar`; başka yerdeyse `KAYNAK` ortam değişkeni. Yeni poz eklerken `isle.py` içindeki `KARAKTERLER` tablosuna dosya adını yaz; `aktar.py`'den sonra yeni dosyaları `js/assets.js`'e ekle.
+- Yeni dosya düzeni: `<id>_idle/crouch/jump/hurt/guard/guardlow/ult.webp`, `<id>_punch0..4` + `<id>_punch` (tepe karesi), `<id>_kick0..N` + `<id>_kick`, METEHAN `metehan_run0..3`, SUDEM `sudem_cast`. Portreler eski adlarıyla (`fotograf_canavari`, `mcqueen`, `metehan`) + yeni `ahmet.webp`.
+- `js/assets.js` girdileri `?v=3` ile önbellekten kurtarıldı.
+
+### 18.2 Çok kareli animasyon
+- `Cg` (src/10) her karakter için `spr.seq.punch/kick/run` dizilerini yükler (yalnız manifestte olan dosyaları ister, 404 yok). Tepe karesi en geniş karedir; vuruş kutusu yine tek `punch`/`kick` karesinden (`Jy`).
+- `AF_seqFrame` (src/53): hazırlıkta tepeye kadarki kareler, aktif evrede tepe, toparlanmada sonrakiler. SUDEM tekmesi 3 kare (2 ve 4. karelerde yanlış bacak vardı) + `AF_speedTrail` hız izi.
+
+### 18.3 Karakterler ve özel hareketler
+| Karakter | Değişiklik |
+|---|---|
+| UMUT | F flaşı kaldırıldı (flaş yalnız ultide). Takla / yer taklası / süpürme `AF_UMUT_OZEL=false` ile geçici kapalı; kod duruyor. |
+| SUDEM | F = **Sihirli Yüzük** (`ringshot`, 6 hasar, 900 ms bekleme). Ulti KA-ÇOV!: yalnız yarış arabası (06). |
+| METEHAN | Tank dengesi: vuruş kutusu %15 geniş + 12 px önde (`mod.reach/reachX`); koşu ulti barı harcamaz, 1,5 sn bekleme, 3 sn içindeki tekrarlar %60/%30 hasar ve zırhsız, köşede geri seker, korunursa 350 ms savunmasız (`AF_dashImpact`, src/64). |
+| AHMET (yeni) | Motorcu, dengeli. Ulti **GAZA BAS!**: sürücüsüz motor ekranın arkasındaki kenarından gelir (`AF_motorHit`, 16 hasar). |
+
+- **Memleketler (seçim haritası `AF_HOME`):** UMUT ve SUDEM ANKARA (arena yıldızı), METEHAN SAMSUN, AHMET ÇORUM.
+- **Düzeltmeler (17 Ekim, akşam):** UMUT ultisinde fotoğraflar ayakkabı hizasından çıkıyordu (ulti pozunun en ön noktası ayak) → `ultAt` ile gövde ortası (~155 px). SUDEM eğilmesi yüksekti (%78) → `crouchSy: 0.88` (≈%69). METEHAN köşede geri sekerken hasar pozuna giriyordu → `bounceT` (normal duruş, kısa girdi kilidi). SUDEM ve AHMET ultileri bilerek yerden gider.
+
+### 18.4 Testler
+28 test + takla kapalıyken 12 `ATLANDI`. Yeni testler: UMUT ulti yüksekliği, 4 karakter yükleme + kare dizileri, SUDEM yüzüğü, UMUT'ta F flaşı yok, AHMET motoru, METEHAN koşu bedeli ve köşe döngüsü (6 sn spam ≤ 30 hasar). Takla açılınca `tools/test/smoke.mjs` içindeki `TAKLA_ACIK` da `true` yapılmalı.
+
+### 18.5 Açık işler
+- UMUT'un takla/süpürme kareleri yeni tarzda çizilince `AF_UMUT_OZEL=true`.
+- Tişörtlerdeki marka logoları (Ford Mustang, McQueen, Adidas) depo herkese açılmadan değiştirilecek.
+
+## 19. Antrenman Modu ve Menü Geri Dönüşü — 17 Ekim 2026
+
+- **Ana menü:** 1VSBOT · 1VS1 · **ANTRENMAN** · AYARLAR · ÇIKIŞ (kısayollar 1–5).
+- **Seçim ekranı:** sol üstte `◀ GERİ`; `ESC` / `Backspace` önce "HAZIR"ı iptal eder, ikinci basışta ana menüye döner.
+- **Antrenman (`mode=training`)** — `src/66-game-training.js`:
+  - P2 kukla; karakterini P1 seçer (bot modu gibi). Süre ve raunt yok; kimse nakavt olmaz (`AF_trainKo`), vuruş bitince 1 sn sonra can dolar.
+  - Kukla davranışı (ESC menüsü): DURUR / EĞİLİR / KORUR / DÖVÜŞÜR (BOT). Ulti barı varsayılan HEP DOLU (menüden NORMAL).
+  - Panel: son vuruş, kombo, kombo hasarı, en yüksek kombo hasarı. `R` konumları ve canları sıfırlar.
+- **Test düzeltmesi:** zıplama testleri tuş bırakıldıktan hemen sonra durumu okuyordu (bazen hâlâ `walk`); 100 ms bekleme eklendi, artık kararsız değil.
+- Testler: 31 (+ takla kapalıyken 12 `ATLANDI`).
+
+## 20. Arenalar: SAMSUN — 17 Ekim 2026
+
+- `AF_ARENAS` (src/10): `ankara` (gece, ortada masa) ve `samsun` (gün batımı, aslanlar ve savaşçı heykeli, **tek zemin**). Görsel `assets/samsun_arena.webp`; kaynak görsel %7 büyütülüp zemin kenarı y=704'e oturtuldu.
+- Seçim ekranında **ARENA** seçici (ANKARA / SAMSUN / RASTGELE, `Tab` ile değişir). URL'de `&arena=`; rastgele seçim dövüş ekranında bir kez belirlenir, yeniden başlatınca aynı arena kalır.
+- Masa sabitleri tek anahtara bağlandı: `AF_PLAT` (maç motoru arenaya göre ayarlar). Kapalıyken masaya iniş, gölge, araba/motor zemini ve F2 çizgisi masayı yok sayar.
+- Yeni arena eklemek: 1376×768 görsel, zemin kenarı y=704; `AF_ARENAS`'a kayıt + `AF_ARENA_SEL`'e id + `js/assets.js`. Masa yoksa `platform: false`.
+- Testler: 33 (arena başına masa/zemin testi eklendi).
+
+
+## 21. Aynı anda vuruş (17 Ekim 2026)
+
+- Ölçüm: P1 ve P2 tuş tepkisi aynı (ikisi de ort. ~9 ms, fark yok). Ama aynı karede vuruşta P1 20/20 kazanıyordu: `resolveAttacks` önce P1'in vuruşunu uyguluyor, P2'nin saldırısı hasar alınca siliniyordu.
+- Düzeltme: iki vuruş önce kontrol edilir, sonra birlikte uygulanır (karşılıklı vuruş). Test: 10/10 ikisi de vurur. Testler: 34.
+
+## 22. Denetim ve denge düzeltmeleri (18 Ekim 2026)
+
+- Otomatik denetim (4 karakter × 2 arena × bot/antrenman, rastgele girdi): hata, NaN, sınır dışı, takılma yok.
+- **Gövde genişliği** (`halfW`, vuruş alanı ve itişme) idle görselinden hesaplanıyordu; METEHAN (33) ve AHMET (32) en dar çıkıyordu → karakterde elle: UMUT 40, SUDEM 37, METEHAN 42 (tank), AHMET 40.
+- **SUDEM tekmesi** asıl silahı olduğu hâlde UMUT'unkinden kısaydı → `kickX: 20` (tekme vuruş kutusu öne). Menzil (px): SUDEM 197, UMUT 183, METEHAN 178, AHMET 170. Ölçüm kancası `match.reachOf(f, id)`.
+- **Bot METEHAN** koşu çarpmasını hiç kullanmıyordu → 220–520 px mesafede %12 olasılıkla koşar.
+- Testler: 37.
+
+## 23. Arenalar: ANKARA / SAMSUN / ÇORUM (18 Ekim 2026)
+
+- Üç arena, hepsi **tek zemin** (masa / 2. zemin kaldırıldı; `AF_PLAT` her arenada false, kod duruyor).
+- ANKARA: yeni şehir görseli `assets/ankara_sehir.webp` (eski Anıtkabir arenası listeden çıktı). ÇORUM: `assets/corum_arena.webp`. Görseller zemin kenarı y=704'e oturacak şekilde büyütüldü (Ankara ×1,07, Çorum ×1,12).
+- Seçim: ANKARA · SAMSUN · ÇORUM · RASTGELE (`Tab`). Testler: 38.
+
+## 24. Karakterler %16 büyük (18 Ekim 2026)
+
+- `AF_BOY = 1.16` (src/10): karakter boyu (250 → ~290 px), elle verilen gövde genişlikleri, vuruş kutuları (`Jy`), ulti/mermi çizimi ve çarpışma yarıçapı bununla ölçeklenir. Zıplama hızı `rg` × √1,16 → yay ≈326 px. Görseller 560 px kaynaktan küçültüldüğü için kalite kaybı yok.
+- Hata düzeltmesi: `separateBodies` havadaki oyuncuyu y<430 ise "masa seviyesi" sayıyordu; yüksek zıplamada rakibin üstünden geçiliyordu. Artık yalnız masa varsa (`AF_PLAT`) öyle sayılır.
+- Testler: 38/38.
+
+## 25. Denge, 1. adım: ultiler, kombo azalması, bot menzili (18 Ekim 2026)
+
+Ölçüm araçları (git yoksayar, `_onizleme/`): `denge.mjs` (iki zor bot, 12 eşleşme × 25 maç, oyun döngüsü elle adımlanır), `ulti.mjs` (ulti × mesafe × savunma).
+
+- **Ultiler eşit:** tam isabet 24, korunursa en fazla 6. UMUT fotoğraf 3×8 (aynı yükseklikte, eğilerek kaçılır), SUDEM araba 24, METEHAN 12 nota × 2 (karakter hasar çarpanı ultiye uygulanmaz), AHMET motor 24 (150 ms gecikme, 1500 px/s). Ulti koruma hasarı %25, kesirler biriktirilir (`chipAcc`).
+- **Kombo hasar azalması** (`AF_COMBO_SCALE`, src/64): rakip sersemlikteyken 1.–2. vuruş %100, sonra %80/70/60/50, en az %40; ultiler azalmaz.
+- **Bot gerçek menzili kullanıyor** (src/61): yaklaşma/saldırı mesafesi görsel genişliğinden değil vuruş kutusundan. Eski hâlinde UMUT'un %89–94 baskınlığının asıl nedeni buydu.
+- **Tekme menzilleri eşit** (~216 px, `kickX`): bot simülasyonunda tekme menzilindeki 10 px fark kazanma oranını ±%30 oynatıyor.
+- METEHAN: hasar ×1,3 → ×1,2, can 175 → 165 (menzil eşitlenince %80 kazanıyordu).
+- Sonuç (300 maç): UMUT %42, SUDEM %61, METEHAN %57, AHMET %40 (başlangıç: %89/%44/%50/%17). Örnek başına ±%8 sapma.
+- 2. adım (karakter kimlikleri: can/hız/kare verisi) oyuncu testinden sonra.
+- Testler: 39.
+
+## 26. Denge: risk/ödül ultileri ve karakter kimliği (18 Ekim 2026)
+
+- **Ilke:** ultinin yazılı hasarı değil, **kullanım başına ortalama hasarı** eşit olmalı (Street Fighter risk/ödül). Güvenilir ulti az, kaçması kolay ulti çok hasar verir.
+  - METEHAN notalar 10×2 = **20** (yakında anında, en güvenilir; `AF_NOTA_SAYI`)
+  - UMUT fotoğraf 3×7 = **21** (eğilerek kaçılır)
+  - AHMET motor **25** (arkadan gelir, zıplayarak kaçılır)
+  - SUDEM araba **27** (zıplayarak kaçılır)
+  - Ölçülen ulti başına ortalama: 14,5 / 15,8 / 15,0 / 15,8.
+- **Karakter kimliği:** SUDEM can 145 (küçük hedef: vurulabilir alanı ~%10 dar), METEHAN hasar ×1,15 can 165, AHMET hasar ×1,05 can 152 (güçlü/dengeli), UMUT temel.
+- **Sonuç (720 maç, ±%5):** UMUT %45, SUDEM %50, METEHAN %52, AHMET %52.
+- Ders: 25 maçlık örnekte sapma ±%10'u geçiyor; karar için en az 60 maç/eşleşme. Hasarda ±%5 bile kazanma oranını ~%10 oynatıyor.
+- Testler: 39.
+
+## 27. Seçim ekranı: stil, zorluk, gerçek çubuklar (18 Ekim 2026)
+
+- Karakter kartındaki tanıtım yazısı (ör. "Motorcu · …") yerine Street Fighter tarzı **stil** ve **zorluk** (★): UMUT DENGELİ ★, SUDEM ÇEVİK · MENZİLLİ ★★, METEHAN TANK · SERT VURUŞ ★★, AHMET GÜÇLÜ · DENGELİ ★ (`stil`, `zorluk` — `AF_CHARS`).
+- Çubuklar artık elle yazılmış `stats` değil, gerçek değerlerden: `AF_statBars` → HIZ (yürüme ÷ saldırı yavaşlığı), GÜÇ (hasar çarpanı), CAN. MENZİL kaldırıldı (tekme menzilleri eşit).
+- Kartta portre kaldı (hareketli önizleme denendi, kalabalık durduğu için geri alındı).

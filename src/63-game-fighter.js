@@ -44,6 +44,9 @@ var Ky = class {
   dashT = 0;
   dashHit = !1;
   dashCd = 0;
+  dashChain = 0; // 3 sn içindeki art arda koşu sayısı (METEHAN)
+  dashChainT = 0;
+  bounceT = 0; // köşe çarpmasından geri sekme süresi (ms)
   projCd = 0;
   rollT = 0;
   rollDur = 700;
@@ -82,7 +85,7 @@ var Ky = class {
       (this.accent2 = r.color2),
       (this.x = e === 0 ? $h * 0.26 : $h * 0.74),
       (this.facing = e === 0 ? 1 : -1),
-      (this.maxHp = (r.mod && r.mod.hp) || 150),
+      (this.maxHp = (r.mod && r.mod.hp) || r.hp || 150),
       (this.hp = this.maxHp),
       (this.ghostHp = this.maxHp));
   }

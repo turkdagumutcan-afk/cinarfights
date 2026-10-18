@@ -36,12 +36,13 @@ function yy(e) {
     My(t, e),
     Ny(t, e),
     Py(t, e),
+    e.training && e.phase === `fight` && AF_drawTrain(t, e),
     e.flashA > 0 &&
       ((t.fillStyle = `rgba(255,255,255,${pg(e.flashA, 0, 0.92)})`), t.fillRect(0, 0, $h, 768)));
 }
 
 function by(e, t) {
-  let n = t.x > 387 && t.x < 990 && t.y <= 489,
+  let n = AF_PLAT && t.x > 387 && t.x < 990 && t.y <= 489,
     r = t.ground === `table` || n ? 429 : 704,
     i = Math.max(0, r - t.y),
     a = 0.4 * pg(1 - i / 480, 0.12, 1),

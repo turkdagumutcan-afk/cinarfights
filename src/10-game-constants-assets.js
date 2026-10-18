@@ -115,7 +115,11 @@ var tg = 1.85;
 
 var ng = 0.82;
 
-var rg = -1300;
+// Karakter boy çarpanı: görseller 560 px kaynaktan küçültülerek çizilir, büyütmek kalite kaybettirmez.
+// Boy, gövde genişliği, vuruş kutuları ve ulti görselleri bununla ölçeklenir; zıplama yüksekliği de aynı oranda artar.
+var AF_BOY = 1.16;
+
+var rg = -1300 * Math.sqrt(AF_BOY);
 
 var ig = 1e3 / 60;
 
@@ -326,10 +330,45 @@ async function Cg(e, t, n, r2, same) {
       ((sweepFrames = sw), (sweepScale = i.idle.scale * 1.75), (sweepAnchorX = 190));
     }
   }
+  // Çok kareli animasyonlar: <id>_punch0..N, _kick0..N, _run0..N (en az 2 kare varsa kullanılır).
+  // Ölçek tek karelerle aynı (idle'a göre); vuruş kutusu yine tek "punch"/"kick" (tepe) karesinden hesaplanır.
+  let seq = {};
+  for (let p of [`punch`, `kick`, `run`]) {
+    // yalnızca asset manifestinde olan kareleri iste (olmayanı istemek konsola 404 düşürür)
+    let im = await Promise.all(
+      Array.from({ length: 6 }).map((_, k) => {
+        let yol = `/assets/frames/${e}_${p}${k}.png`;
+        return window.__ANKARA_ASSETS__ && !(yol in window.__ANKARA_ASSETS__)
+          ? null
+          : bg(yol).catch(() => null);
+      }),
+    );
+    let ok = [];
+    for (let o of im) {
+      if (!o) break;
+      ok.push(o);
+    }
+    if (ok.length < 2) continue;
+    seq[p] = ok.map((o) => {
+      let w = o.naturalWidth,
+        h = o.naturalHeight,
+        rr = t * (hg[p] || 1);
+      if (same && idleBh) rr = (t * xg(o, w, h, 1, !1).bh) / idleBh;
+      return xg(o, w, h, rr, r2);
+    });
+    seq[p].peak = seq[p].reduce((b, f, k, a) => (f.bw > a[b].bw ? k : b), 0);
+  }
+  // dikey basıklık (yalnız eğilme pozları): çizimde ve vuruş/boy ölçülerinde birlikte uygulanır
+  let sy = AF_char(e).crouchSy;
+  if (sy)
+    for (let p of [`crouch`, `guardlow`])
+      i[p] && ((i[p].sy = sy), (i[p].visibleH *= sy), (i[p].tipY *= sy));
   let a = i.idle;
   return {
     frames: i,
-    halfW: Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
+    seq,
+    // gövde yarı genişliği (vuruş alanı + itişme): karakterde elle verilmişse o, yoksa idle'dan
+    halfW: AF_char(e).halfW ? AF_char(e).halfW * AF_BOY : Math.max(30, Math.min(58, a.bw * a.scale * 0.3)),
     hasRun: !!r[mg.indexOf(`run`)],
     rollFrames,
     rollScale,
@@ -357,6 +396,10 @@ function wg() {
   );
 }
 
+// UMUT'a özel takla / yer taklası / süpürme tekme: yeni tasarımda karesi yok, GEÇİCİ olarak kapalı.
+// Kod yerinde duruyor; true yapınca (eski karelerle) geri gelir.
+var AF_UMUT_OZEL = !1;
+
 var AF_CHARS = {
   umut: {
     id: `umut`,
@@ -364,10 +407,16 @@ var AF_CHARS = {
     color: `#ff2a5f`,
     color2: `#ff7aa8`,
     scale: 250,
+    same: !0,
+    halfW: 40,
+    kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
-    proj: !0,
-    roll: !0,
-    tag: `Fotoğrafçı · Hızlı yumruklar, kör edici flaş`,
+    roll: AF_UMUT_OZEL,
+    // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
+    ultAt: { x: 0.42, y: 0.66 }, // fotoğraf alt kenarı eğilen rakibin üstünde kalır
+    tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
+    stil: `DENGELİ`,
+    zorluk: 1,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
     img: () => gg(_g.p1),
@@ -383,9 +432,18 @@ var AF_CHARS = {
     color: `#00f0ff`,
     color2: `#2dd4bf`,
     scale: sg,
-    tag: `McQueen hayranı · Çevik tekmeler, oyuncak araba`,
+    same: !0,
+    halfW: 37,
+    hp: 145, // küçük hedef (vurulabilir alanı ~%10 dar), karşılığında biraz az can
+    kickX: 9, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    guard: !0,
+    proj: !0, // F: sihirli yüzük (uzak menzil)
+    crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
+    tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
+    stil: `ÇEVİK · MENZİLLİ`,
+    zorluk: 2,
     ultName: `KA-ÇOV!`,
-    ultHint: `oyuncak araba + sihirli yüzük`,
+    ultHint: `yarış arabası`,
     img: () => gg(_g.p2),
     stats: [
       [`HIZ`, 0.9],
@@ -400,11 +458,17 @@ var AF_CHARS = {
     color2: `#fff08a`,
     scale: 232,
     same: !0,
+    halfW: 42, // tank: en geniş gövde
+    kickX: 8, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    guard: !0,
     run: !0,
-    mod: { spd: 0.78, dmg: 1.3, sup: 1.25, jump: 1.03, kb: 1.15, hp: 175 },
-    tag: `Müzisyen · Hantal ama çok sert vuruyor`,
+    // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
+    mod: { spd: 0.78, dmg: 1.15, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
+    tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
+    stil: `TANK · SERT VURUŞ`,
+    zorluk: 2,
     ultName: `YILDIRIM NOTALARI`,
-    ultHint: `gitardan 3 yıldırımlı nota`,
+    ultHint: `gitardan yıldırımlı notalar`,
     img: () => gg(`/assets/metehan.png`),
     stats: [
       [`HIZ`, 0.45],
@@ -412,7 +476,63 @@ var AF_CHARS = {
       [`MENZİL`, 0.7],
     ],
   },
+  ahmet: {
+    id: `ahmet`,
+    name: `AHMET`,
+    color: `#ff7a1a`,
+    color2: `#ffb36b`,
+    scale: 252,
+    same: !0,
+    halfW: 40,
+    kickX: 16, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    // güçlü ve dengeli (Ken): vuruşları %5 sert, biraz fazla can; hız normal (720 maçlık simülasyonla ayarlandı)
+    mod: { spd: 1, dmg: 1.05, sup: 1, jump: 1, kb: 1, hp: 152 },
+    guard: !0,
+    tag: `Motorcu · Sakin, güçlü ve dengeli`,
+    stil: `GÜÇLÜ · DENGELİ`,
+    zorluk: 1,
+    ultName: `GAZA BAS!`,
+    ultHint: `arkadan gelen motor`,
+    img: () => gg(`/assets/ahmet.png`),
+    stats: [
+      [`HIZ`, 0.7],
+      [`GÜÇ`, 0.85],
+      [`MENZİL`, 0.8],
+    ],
+  },
 };
+
+// Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
+// şimdilik hiçbir arenada yok; kod duruyor, bir arenada true yapılırsa geri gelir.
+var AF_ARENAS = {
+  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1 },
+  samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
+  corum: { id: `corum`, name: `ÇORUM`, img: `/assets/corum_arena.png`, platform: !1 },
+};
+var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `random`];
+var AF_PLAT = !1; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
+
+function AF_arena(id) {
+  if (id === `random`) {
+    const k = Object.keys(AF_ARENAS);
+    return AF_ARENAS[k[(Math.random() * k.length) | 0]];
+  }
+  return AF_ARENAS[id] ?? AF_ARENAS.ankara;
+}
+
+// Seçim ekranı çubukları: elle yazılmış değil, karakterin GERÇEK oyun değerlerinden hesaplanır.
+function AF_statBars(c) {
+  const m = c.mod || {},
+    k = (v) => Math.max(0.08, Math.min(1, v)),
+    spd = (m.spd || 1) / (m.sup || 1),
+    dmg = m.dmg || 1,
+    hp = m.hp || c.hp || 150;
+  return [
+    [`HIZ`, k(0.75 * spd)],
+    [`GÜÇ`, k(0.7 + (dmg - 1) * 1.4)],
+    [`CAN`, k((hp - 100) / 80)],
+  ];
+}
 
 function AF_char(e) {
   return AF_CHARS[e] ?? AF_CHARS.umut;
