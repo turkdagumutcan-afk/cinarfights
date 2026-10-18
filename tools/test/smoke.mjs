@@ -322,6 +322,36 @@ await test('Ultiler: risk/ödül hasarı (20–27), korunursa en fazla 7', async
   return { ok: out.every(([c, a, b]) => a === bek[c] && b <= 7), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 
+// ---- Hareket komutları (↓↘→ + Yumruk) ----
+const qcf = async (p, asagi, ileri, yumruk) => { await p.down(asagi); await wait(40); await p.down(ileri); await wait(40); await p.up(asagi); await wait(30); await p.tap(yumruk, 40); await p.up(ileri); };
+await test('↓↘→ + Z: SUDEM yüzük atar (P1, sağa bakarken)', async (o) => {
+  const p = await o({ p1: 'sudem', p2: 'umut' }); await fight(p); await qcf(p, 's', 'd', 'z'); await wait(150);
+  const k = await p.evaluate(() => window.__AF_match.projectiles.map((x) => x.kind));
+  return { ok: k.includes('ringshot'), note: `mermi=${k.join(',') || 'yok'}` };
+});
+await test('↓↘→ + Num1: SUDEM yüzük atar (P2, sola bakarken)', async (o) => {
+  const p = await o({ p1: 'umut', p2: 'sudem' }); await fight(p); await qcf(p, 'ArrowDown', 'ArrowLeft', 'Numpad1'); await wait(150);
+  const k = await p.evaluate(() => window.__AF_match.projectiles.map((x) => x.kind));
+  return { ok: k.includes('ringshot'), note: `mermi=${k.join(',') || 'yok'}` };
+});
+await test('↓↘→ + Z: METEHAN koşu çarpması', async (o) => {
+  const p = await o({ p1: 'metehan', p2: 'umut' }); await fight(p); await qcf(p, 's', 'd', 'z'); await wait(60);
+  const d = await p.evaluate(() => window.__AF_match.p1.dashT);
+  return { ok: d > 0, note: `koşu=${Math.round(d)}ms` };
+});
+await test('↓↘→↓↘→ + Z: ulti (bar doluyken)', async (o) => {
+  const p = await o({ p1: 'umut', p2: 'sudem' }); await fight(p); await p.evaluate(() => window.__AF_match.giveUlti(0));
+  await p.down('s'); await wait(40); await p.down('d'); await wait(40); await p.up('s'); await wait(40); await p.up('d'); await wait(40);
+  await qcf(p, 's', 'd', 'z'); await wait(150);
+  const r = await p.evaluate(() => ({ m: window.__AF_match.p1.meter, k: window.__AF_match.projectiles.map((x) => x.kind) }));
+  return { ok: r.m === 0 && r.k.includes('photo'), note: `bar=${r.m} mermi=${r.k.join(',') || 'yok'}` };
+});
+await test('Özel hareketi olmayan UMUT: ↓↘→ + Z normal yumruk atar', async (o) => {
+  const p = await o(); await fight(p); await qcf(p, 's', 'd', 'z'); await wait(60);
+  const r = await p.evaluate(() => ({ s: window.__AF_match.p1.state, id: window.__AF_match.p1.attack?.def.id }));
+  return { ok: r.s === 'attack' && r.id === 'punch', note: `${r.s}/${r.id}` };
+});
+
 // ---- Arenalar ----
 for (const [ar, beklenen] of [['ankara', 'g1'], ['samsun', 'g1'], ['corum', 'g1']]) await test(`Arena ${ar.toUpperCase()}: tek zemin, masa yok (yere iner)`, async (o) => {
   const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });

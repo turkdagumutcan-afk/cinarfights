@@ -790,3 +790,11 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Karakter kartındaki tanıtım yazısı (ör. "Motorcu · …") yerine Street Fighter tarzı **stil** ve **zorluk** (★): UMUT DENGELİ ★, SUDEM ÇEVİK · MENZİLLİ ★★, METEHAN TANK · SERT VURUŞ ★★, AHMET GÜÇLÜ · DENGELİ ★ (`stil`, `zorluk` — `AF_CHARS`).
 - Çubuklar artık elle yazılmış `stats` değil, gerçek değerlerden: `AF_statBars` → HIZ (yürüme ÷ saldırı yavaşlığı), GÜÇ (hasar çarpanı), CAN. MENZİL kaldırıldı (tekme menzilleri eşit).
 - Kartta portre kaldı (hareketli önizleme denendi, kalabalık durduğu için geri alındı).
+
+## 28. Street Fighter hareket komutları (18 Ekim 2026)
+
+- `AF_motion` (src/64), `updateFighter` başında çağrılır. Yön geçmişi karakterin baktığı tarafa göre numpad gösterimiyle tutulur (2 ↓, 3 ↘, 6 →).
+- **↓↘→ + Yumruk** (Z ya da güçlü yumruk): özel hareket — SUDEM `projEdge` (yüzük), METEHAN `dash` (koşu). Özel hareketi olmayan karakterde normal yumruk çıkar.
+- **↓↘→↓↘→ + Yumruk**: `ultEdge` (bar 100 ise).
+- Pencereler: çeyrek daire ≤ 420 ms, çift ≤ 900 ms, son yön ile tuş arası ≤ 220 ms; ↘ atlanabilir (klavye kolaylığı). Eski tek tuşlar çalışır.
+- Testler: 44 (P1/P2 yön çevrimi, Mete koşu, çift komutla ulti, özel hareketi olmayan karakter).

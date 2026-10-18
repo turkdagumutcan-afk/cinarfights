@@ -144,3 +144,60 @@ function AF_dashImpact(g, e, n) {
     e.vx = -a * 1100;
   }
 }
+
+// ---- Street Fighter tarzı hareket komutları ----
+// Yönler karakterin baktığı tarafa göre "numpad" gösterimiyle tutulur: 2 = ↓, 3 = ↘ (aşağı-ileri), 6 = → (ileri).
+//   ↓↘→ + Yumruk          → özel hareket (SUDEM yüzük, METEHAN koşu çarpması)
+//   ↓↘→ ↓↘→ + Yumruk      → ulti (bar doluysa)
+// Klavyede kolaylık: ↘ adımı atlanabilir (↓ sonra → yeter). Eski tek tuşlar (F, C, Boşluk) da çalışır.
+var AF_QCF_MS = 420, // bir çeyrek dairenin en uzun süresi
+  AF_QCF2_MS = 900, // çift çeyrek dairenin en uzun süresi
+  AF_QCF_SON = 220; // son yön (→) ile tuş arasındaki en uzun süre
+
+function AF_yon(e, t) {
+  const ileri = e.facing > 0 ? t.right : t.left,
+    geri = e.facing > 0 ? t.left : t.right;
+  return t.down ? (ileri ? 3 : geri ? 1 : 2) : ileri ? 6 : geri ? 4 : 5;
+}
+
+// en sondan geriye: ... 2 → (3) → 6 dizisini arar; bulursa 2'nin zamanını döndürür
+function AF_qcfBul(h, son, sinir) {
+  let i = h.length - 1;
+  while (i >= 0 && h[i].d !== 6) i--;
+  if (i < 0 || h[i].t < son) return -1;
+  const t6 = h[i].t;
+  for (i--; i >= 0; i--) {
+    if (h[i].t < t6 - sinir) return -1;
+    if (h[i].d === 2) return i;
+    if (h[i].d !== 3) return -1;
+  }
+  return -1;
+}
+
+function AF_motion(e, t, r) {
+  const now = (e.mT = (e.mT || 0) + r),
+    h = (e.mh ||= []),
+    d = AF_yon(e, t);
+  (!h.length || h[h.length - 1].d !== d) && h.push({ d, t: now });
+  while (h.length && h[0].t < now - 1200) h.shift();
+  const yumruk = t.attacks[0] || t.attacks[2];
+  if (!yumruk || e.state === `ko`) return;
+  const i = AF_qcfBul(h, now - AF_QCF_SON, AF_QCF_MS);
+  if (i < 0) return;
+  const c = AF_char(e.charId),
+    yut = () => ((t.attacks[0] = !1), (t.attacks[2] = !1), (e.mh = []));
+  // çift çeyrek daire: ilk 2'den önce bir 6 ve ondan önce bir 2 daha
+  const j = AF_qcfBul(h.slice(0, i), now - AF_QCF2_MS, AF_QCF_MS);
+  if (j >= 0 && now - h[j].t <= AF_QCF2_MS && e.meter >= 100) {
+    yut();
+    t.ultEdge = !0;
+    return;
+  }
+  if (c.proj) {
+    yut();
+    t.projEdge = !0;
+  } else if (c.run) {
+    yut();
+    t.dash = !0;
+  }
+}

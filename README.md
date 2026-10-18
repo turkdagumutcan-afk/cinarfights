@@ -36,7 +36,7 @@ git clone https://github.com/turkdagumutcan-afk/cinarfights.git
 cd cinarfights
 npm install            # yalnızca testler için (Playwright); oyunu çalıştırmak için gerekmez
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
-npm test               # build + 39 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
+npm test               # build + 44 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
 
 Test tarayıcısını indirecek yer yoksa Edge ile: `$env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test`
@@ -87,6 +87,15 @@ Dosya adı öneki (`10-`, `63-`…) çalışma sırasıdır; numaraları değiş
 | ULTİ (bar dolunca) | C | Num 0 (O) |
 | Sihirli yüzük (SUDEM) | F | Num 9 (H) |
 | Koşu çarpması (METEHAN) | Boşluk | Sağ Shift / Num 7 |
+
+**Street Fighter komutları** (yönler karakterin baktığı tarafa göre; ↘ adımı klavyede atlanabilir):
+
+| Komut | Etki |
+|---|---|
+| **↓ ↘ → + Yumruk** | Özel hareket: SUDEM yüzük, METEHAN koşu çarpması |
+| **↓ ↘ → ↓ ↘ → + Yumruk** | ULTİ (bar doluyken) |
+
+P1 için ↓ = S, → = D (sola bakarken A); P2 için oklar. Tek tuşlar (F, Boşluk, C) de çalışmaya devam eder.
 
 Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü onayı · Antrenmanda **R** konumları sıfırlar
 
