@@ -174,6 +174,7 @@ var Xy = class {
   }
   updateFighter(e, t, n, r) {
     let i = r / 1e3;
+    t && this.phase === `fight` && AF_motion(e, t, r); // ↓↘→ + Yumruk komutları (src/64)
     ((e.animT += r),
       e.airFlip && !e.grounded && (e.airFlipT += r),
       e.flipLandT > 0 &&

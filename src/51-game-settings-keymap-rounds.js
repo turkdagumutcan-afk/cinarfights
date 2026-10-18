@@ -236,15 +236,16 @@ function AF_legend(pi) {
 function AF_footer(pi) {
   const k = (a) => AF_k(pi, a),
     takla = AF_UMUT_OZEL ? ` · ${k(`flip`)}+YÖN TAKLA · ${k(`sweep`)} SÜPÜRME` : ``;
-  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} YÜZÜK · ${k(`dash`)} KOŞU${takla} · ${k(`ult`)} ULTİ`;
+  return ` ${k(`left`)}/${k(`right`)} · ${k(`jump`)} ZIPLA · ${k(`down`)} EĞİL · ${k(`atk0`)} YUMRUK · ${k(`atk1`)} TEKME · ${AF_pair(k(`atk2`), k(`atk3`))} GÜÇLÜ · ${k(`guard`)} KORUMA · ${k(`proj`)} YÜZÜK · ${k(`dash`)} KOŞU${takla} · ${k(`ult`)} ULTİ · ↓↘→+YUMRUK ÖZEL · ↓↘→↓↘→+YUMRUK ULTİ`;
 }
 
 function AF_cardLines(pi, s) {
   const k = (a) => AF_k(pi, a);
+  const P = k(`atk0`);
   const ozel = s.proj
-    ? `${k(`proj`)} — sihirli yüzük (uzaktan)`
+    ? `↓↘→+${P} ya da ${k(`proj`)} — sihirli yüzük`
     : s.run
-      ? `${k(`dash`)} — koşu çarpması (zırhlı)`
+      ? `↓↘→+${P} ya da ${k(`dash`)} — koşu çarpması`
       : s.roll
         ? `${k(`flip`)}+yön takla · ${k(`sweep`)} süpürme`
         : null;
@@ -253,7 +254,7 @@ function AF_cardLines(pi, s) {
     `${k(`atk0`)} yumruk · ${k(`atk1`)} tekme · ${AF_pair(k(`atk2`), k(`atk3`))} güçlü`,
     `${k(`guard`)} — koruma (basılı tut)`,
     ozel,
-    `${k(`ult`)} — ${s.ultName} (${s.ultHint})`,
+    `↓↘→↓↘→+${P} ya da ${k(`ult`)} — ${s.ultName}`,
   ].filter(Boolean);
 }
 
