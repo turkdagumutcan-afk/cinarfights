@@ -519,6 +519,27 @@ var AF_CHARS = {
     img: () => gg(`/assets/selim.png`),
     stats: [],
   },
+  alp: {
+    id: `alp`,
+    name: `ALP`,
+    color: `#4f8cff`,
+    color2: `#a9c6ff`,
+    scale: 275, // 1.92 m: oyunun en uzunu (~%10)
+    same: !0,
+    halfW: 40,
+    // uzun menzil (Dhalsim): uzun kol/bacak -> en uzun vuruşlar; bedeli: en az can, en büyük hedef,
+    // uzun vuruşları biraz geç çıkar (ıskalarsa yakına girilip cezalandırılır)
+    kickX: 12, // tekme ~228 px (diğerleri ~216): bot simülasyonunda menzil çok etkili, avantaj küçük tutuldu
+    mod: { spd: 1, dmg: 1, sup: 1.08, jump: 1, kb: 1, hp: 140, reachX: 4 },
+    guard: !0,
+    tag: `Sakaryalı · Uzun boylu, uzun menzil`,
+    stil: `UZUN MENZİL`,
+    zorluk: 3,
+    ultName: `PUMA SALDIRISI!`,
+    ultHint: `sıçrayan siyah puma`,
+    img: () => gg(`/assets/alp.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —

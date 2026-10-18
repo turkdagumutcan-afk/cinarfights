@@ -117,6 +117,22 @@ var AF_sweepDef = {
 };
 
 var Gy = {
+  // ALP ulti: siyah puma, rakibe sıçrayıp pençe atar
+  puma: {
+    id: `puma`,
+    label: `PUMA`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 19,
+    w: 0,
+    h: 0,
+    kbx: 620,
+    kby: -420,
+    hitstun: 650,
+    meter: 0,
+  },
   // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
   cig: {
     id: `cig`,

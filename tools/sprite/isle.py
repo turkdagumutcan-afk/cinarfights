@@ -78,6 +78,19 @@ KARAKTERLER = {
         "portre": ("umut portre", "tek", {"ayri": True}),
         "foto": ("umut fotoğraf", "serit", {"n": 3, "ayri": True}),
     },
+    "alp": {
+        "idle": ("alp duruş", "tek"),
+        "crouch": ("alp eğilme", "tek", {"oran": 0.69}),  # yatay görsel: boyu idle'ın %69'una sabitlenir
+        "jump": ("alp zıplama", "tek"),
+        "punch": ("alp yumruk şeridi", "serit", {"n": 5}),
+        "kick": ("alp tekme şeridi", "serit", {"n": 5}),
+        "hurt": ("alp hasar", "tek"),
+        "guard": ("alp koruma", "tek"),
+        "guardlow": ("alp koruma eğilme", "tek"),
+        "ult": ("alp ulti", "tek"),
+        "portre": ("alp portre", "tek", {"ayri": True}),
+        "puma": ("alp puma", "serit", {"n": 2, "ayri": True}),
+    },
     "selim": {
         "idle": ("selim duruş", "tek"),
         "crouch": ("selim eğilme", "tek"),
@@ -298,7 +311,7 @@ def isle():
                     bilgi += f" (BEKLENEN {ayar['n']})"
                 if "al" in ayar:
                     kareler = [kareler[i] for i in ayar["al"]]
-            sonuc[kar][poz] = {"kareler": kareler, "kaynak_boy": img.size, "ayri": ayar.get("ayri", False), "tur": tur, "boy": ayar.get("boy", 1.0)}
+            sonuc[kar][poz] = {"kareler": kareler, "kaynak_boy": img.size, "ayri": ayar.get("ayri", False), "tur": tur, "boy": ayar.get("boy", 1.0), "oran": ayar.get("oran")}
             rapor[kar][poz] = bilgi
     return sonuc, rapor
 
@@ -310,7 +323,9 @@ def olcekle(sonuc):
     for kar, pozlar in sonuc.items():
         idle = pozlar["idle"]
         idle_h = idle["kareler"][0].height
-        idle_tuval = idle["kaynak_boy"][1]
+        # tuval büyüklüğü = sqrt(alan): dikey (1024x1536) ve yatay (1536x1024) Gemini çıktıları aynı
+        # piksel yoğunluğundadır; yükseklik yerine alan kullanmak yatay görselleri de doğru ölçekler
+        idle_tuval = (idle["kaynak_boy"][0] * idle["kaynak_boy"][1]) ** 0.5
         oran = idle_h / idle_tuval  # karakter / tuval
         olcek_rapor[kar] = {}
         for poz, v in pozlar.items():
@@ -318,9 +333,11 @@ def olcekle(sonuc):
                 continue
             if v["tur"] == "serit":
                 s = HEDEF_BOY * v["boy"] / max(k.height for k in v["kareler"])
+            elif v.get("oran"):
+                s = HEDEF_BOY * v["oran"] / v["kareler"][0].height
             else:
                 # aynı karakter-tuval oranı varsayımı
-                s = HEDEF_BOY / (oran * v["kaynak_boy"][1])
+                s = HEDEF_BOY / (oran * (v["kaynak_boy"][0] * v["kaynak_boy"][1]) ** 0.5)
             v["olcek"] = s
             v["kareler"] = [k.resize((max(1, round(k.width * s)), max(1, round(k.height * s))), Image.LANCZOS) for k in v["kareler"]]
             olcek_rapor[kar][poz] = [k.size for k in v["kareler"]]

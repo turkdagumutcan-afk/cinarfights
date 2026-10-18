@@ -816,3 +816,14 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Özel hareketi (Çanta Savurma) sonraki adımda.
 
 - **Yürüme düzeltmesi:** `AF_legParts` (src/50) bacak ayrımında küçük parçaları (< %12 genişlik) bacak saymıyor; SELİM'in anahtarlığı üçüncü bacak sanılıp çanta bacakla dönüyordu.
+
+## 31. Yeni karakter: ALP (18 Ekim 2026)
+
+- Sakaryalı, 1.92 m, oyunun en uzunu (`scale: 275`, idle ~319 px), uzun kol/bacak, boyuna göre zayıf. Stil UZUN MENZİL, zorluk ★★★, renk `#4f8cff`.
+- Bedel/ödül: tekme ~228 px (diğerleri ~216), yumruk ~164; can **140** (en az), saldırı başlangıcı ×1,08, en büyük hedef.
+- Ulti **PUMA SALDIRISI!** (`puma`, 19 hasar): siyah puma ALP'in 170 px arkasından koşar, rakibe ~300 px kala sıçrar; sıçrayışta vuruş yüksekliği en az 190·AF_BOY ve rakibin gövde ortasına kayar (`AF_pumaStep`, src/64) → zıplayanı yakalar, eğileni kaçırır, korunursa 4.
+- Bot simülasyonunda menzil aşırı etkili: tekme 238 px → %88, 216 px → %7, 228 px → %50.
+- Denge (6 karakter, 720 maç): UMUT %44, SUDEM %45, METEHAN %56, AHMET %58, SELİM %47, ALP %50; ulti başına ortalama 14,6–15,3.
+- Seçim ızgarası 4 sütun (6 karakter + RASTGELE + YAKINDA). Memleket SAKARYA.
+- Sprite aracı: tek görseller tuval **alanına** göre ölçeklenir (yatay/dikey Gemini çıktıları birlikte); `{"oran": x}` ile boy sabitlenebilir (ALP eğilme %69).
+- Testler: 45.
