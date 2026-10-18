@@ -1061,6 +1061,8 @@ var AF_CHARS = {
     // ulti mermilerinin çıkış noktası (idle boyuna oran): pozdaki en ön nokta ayakkabı olduğu için elle
     ultAt: { x: 0.42, y: 0.66 }, // fotoğraf alt kenarı eğilen rakibin üstünde kalır
     tag: `Fotoğrafçı · Hızlı yumruklar, dengeli`,
+    stil: `DENGELİ`,
+    zorluk: 1,
     ultName: `FLAŞ PATLAMASI`,
     ultHint: `flaş + uçan fotoğraflar`,
     img: () => gg(_g.p1),
@@ -1084,6 +1086,8 @@ var AF_CHARS = {
     proj: !0, // F: sihirli yüzük (uzak menzil)
     crouchSy: 0.88, // eğilme pozu yüksek çizilmiş: dikeyde %88 (≈ diğerlerinin eğilme boyu)
     tag: `McQueen hayranı · Çevik tekmeler, uzaktan yüzük`,
+    stil: `ÇEVİK · MENZİLLİ`,
+    zorluk: 2,
     ultName: `KA-ÇOV!`,
     ultHint: `yarış arabası`,
     img: () => gg(_g.p2),
@@ -1107,6 +1111,8 @@ var AF_CHARS = {
     // reach: kısa kollar için vuruş kutusu çarpanı (genişlik) ve öne kaydırma (px)
     mod: { spd: 0.78, dmg: 1.15, sup: 1.25, jump: 1.03, kb: 1.15, hp: 165, reach: 1.15, reachX: 12 },
     tag: `Müzisyen · Tank: hantal ama çok sert vuruyor`,
+    stil: `TANK · SERT VURUŞ`,
+    zorluk: 2,
     ultName: `YILDIRIM NOTALARI`,
     ultHint: `gitardan yıldırımlı notalar`,
     img: () => gg(`/assets/metehan.png`),
@@ -1129,6 +1135,8 @@ var AF_CHARS = {
     mod: { spd: 1, dmg: 1.05, sup: 1, jump: 1, kb: 1, hp: 152 },
     guard: !0,
     tag: `Motorcu · Sakin, güçlü ve dengeli`,
+    stil: `GÜÇLÜ · DENGELİ`,
+    zorluk: 1,
     ultName: `GAZA BAS!`,
     ultHint: `arkadan gelen motor`,
     img: () => gg(`/assets/ahmet.png`),
@@ -1156,6 +1164,20 @@ function AF_arena(id) {
     return AF_ARENAS[k[(Math.random() * k.length) | 0]];
   }
   return AF_ARENAS[id] ?? AF_ARENAS.ankara;
+}
+
+// Seçim ekranı çubukları: elle yazılmış değil, karakterin GERÇEK oyun değerlerinden hesaplanır.
+function AF_statBars(c) {
+  const m = c.mod || {},
+    k = (v) => Math.max(0.08, Math.min(1, v)),
+    spd = (m.spd || 1) / (m.sup || 1),
+    dmg = m.dmg || 1,
+    hp = m.hp || c.hp || 150;
+  return [
+    [`HIZ`, k(0.75 * spd)],
+    [`GÜÇ`, k(0.7 + (dmg - 1) * 1.4)],
+    [`CAN`, k((hp - 100) / 80)],
+  ];
 }
 
 function AF_char(e) {
@@ -2775,13 +2797,21 @@ function AF_Card({
           arrow(`p${e}-next-char`, nx, `▶`),
         ],
       }),
-      (0, P.jsx)(`p`, {
-        className: `mt-1 text-xs text-slate-400`,
-        children: rnd ? `Sürpriz karakter` : s.tag,
+      (0, P.jsxs)(`div`, {
+        "data-testid": `p${e}-char-style`,
+        className: `font-monox mt-1 flex items-center justify-between gap-2 text-[10px] tracking-wider`,
+        children: [
+          (0, P.jsx)(`span`, { className: `whitespace-nowrap`, style: { color: c }, children: rnd ? `SÜRPRİZ` : s.stil }),
+          !rnd &&
+            (0, P.jsx)(`span`, {
+              className: `whitespace-nowrap text-slate-400`,
+              children: `ZORLUK ${`★`.repeat(s.zorluk || 1)}${`☆`.repeat(3 - (s.zorluk || 1))}`,
+            }),
+        ],
       }),
       (0, P.jsx)(`div`, {
         className: `mt-3 space-y-1.5`,
-        children: (rnd ? [] : s.stats).map(([e, t]) =>
+        children: (rnd ? [] : AF_statBars(s)).map(([e, t]) =>
           (0, P.jsxs)(
             `div`,
             {

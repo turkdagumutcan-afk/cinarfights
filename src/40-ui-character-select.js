@@ -670,13 +670,21 @@ function AF_Card({
           arrow(`p${e}-next-char`, nx, `▶`),
         ],
       }),
-      (0, P.jsx)(`p`, {
-        className: `mt-1 text-xs text-slate-400`,
-        children: rnd ? `Sürpriz karakter` : s.tag,
+      (0, P.jsxs)(`div`, {
+        "data-testid": `p${e}-char-style`,
+        className: `font-monox mt-1 flex items-center justify-between gap-2 text-[10px] tracking-wider`,
+        children: [
+          (0, P.jsx)(`span`, { className: `whitespace-nowrap`, style: { color: c }, children: rnd ? `SÜRPRİZ` : s.stil }),
+          !rnd &&
+            (0, P.jsx)(`span`, {
+              className: `whitespace-nowrap text-slate-400`,
+              children: `ZORLUK ${`★`.repeat(s.zorluk || 1)}${`☆`.repeat(3 - (s.zorluk || 1))}`,
+            }),
+        ],
       }),
       (0, P.jsx)(`div`, {
         className: `mt-3 space-y-1.5`,
-        children: (rnd ? [] : s.stats).map(([e, t]) =>
+        children: (rnd ? [] : AF_statBars(s)).map(([e, t]) =>
           (0, P.jsxs)(
             `div`,
             {

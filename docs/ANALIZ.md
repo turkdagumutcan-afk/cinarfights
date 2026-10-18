@@ -784,3 +784,9 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Sonuç (720 maç, ±%5):** UMUT %45, SUDEM %50, METEHAN %52, AHMET %52.
 - Ders: 25 maçlık örnekte sapma ±%10'u geçiyor; karar için en az 60 maç/eşleşme. Hasarda ±%5 bile kazanma oranını ~%10 oynatıyor.
 - Testler: 39.
+
+## 27. Seçim ekranı: stil, zorluk, gerçek çubuklar (18 Ekim 2026)
+
+- Karakter kartındaki tanıtım yazısı (ör. "Motorcu · …") yerine Street Fighter tarzı **stil** ve **zorluk** (★): UMUT DENGELİ ★, SUDEM ÇEVİK · MENZİLLİ ★★, METEHAN TANK · SERT VURUŞ ★★, AHMET GÜÇLÜ · DENGELİ ★ (`stil`, `zorluk` — `AF_CHARS`).
+- Çubuklar artık elle yazılmış `stats` değil, gerçek değerlerden: `AF_statBars` → HIZ (yürüme ÷ saldırı yavaşlığı), GÜÇ (hasar çarpanı), CAN. MENZİL kaldırıldı (tekme menzilleri eşit).
+- Kartta portre kaldı (hareketli önizleme denendi, kalabalık durduğu için geri alındı).
