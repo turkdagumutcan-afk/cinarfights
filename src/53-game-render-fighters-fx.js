@@ -332,7 +332,9 @@ function AF_fxImg(t) {
             ? `metehan_nota${(t.col || 0) % 4}`
             : t.kind === `photo`
               ? `umut_foto${(t.fi || 0) % 3}`
-              : null;
+              : t.kind === `cig`
+                ? `selim_sigara${(t.fi || 0) % 3}`
+                : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
 }
 
@@ -351,7 +353,9 @@ function Ty(e, t) {
             ? [62, 0.66, !1]
             : t.kind === `note`
               ? [54, 0.5, !1]
-              : [66, 0.55, !1];
+              : t.kind === `cig`
+                ? [34, 0.6, !1]
+                : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
     (e.save(), e.translate(t.x, t.y), e.scale(n, 1));

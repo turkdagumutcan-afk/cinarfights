@@ -18,8 +18,8 @@ from PIL import Image  # noqa: E402
 
 FR = REPO / "assets" / "frames"
 FX = REPO / "assets" / "fx"
-OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut"}
-PORTRE = {"ahmet": "ahmet.webp", "mete": "metehan.webp", "sudem": "mcqueen.webp", "umut": "fotograf_canavari.webp"}
+OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut", "selim": "selim"}
+PORTRE = {"ahmet": "ahmet.webp", "mete": "metehan.webp", "sudem": "mcqueen.webp", "umut": "fotograf_canavari.webp", "selim": "selim.webp"}
 TEK = ["idle", "crouch", "jump", "hurt", "guard", "guardlow", "ult", "cast"]
 yazilan = []
 
@@ -65,13 +65,20 @@ for kar, pozlar in sonuc.items():
         webp(pozlar["run"]["kareler"][0], FR / f"{gid}_run.webp")
     webp(boyla(pozlar["portre"]["kareler"][0], 640), REPO / "assets" / PORTRE[kar])
 
-# ulti / mermi görselleri (oyunda çizim boyu ~ bunların yarısı)
-webp(boyla(sonuc["ahmet"]["motor"]["kareler"][0], 300), FX / "ahmet_motor.webp")
-webp(boyla(sonuc["sudem"]["araba"]["kareler"][0], 260), FX / "sudem_araba.webp")
-webp(boyla(sonuc["sudem"]["yuzuk"]["kareler"][0], 160), FX / "sudem_yuzuk.webp")
-for i, k in enumerate(sonuc["mete"]["nota"]["kareler"]):
-    webp(boyla(k, 120), FX / f"metehan_nota{i}.webp")
-for i, k in enumerate(sonuc["umut"]["foto"]["kareler"]):
-    webp(boyla(k, 150), FX / f"umut_foto{i}.webp")
+# ulti / mermi görselleri (oyunda çizim boyu ~ bunların yarısı); KARAKTER ile seçilenler
+if "ahmet" in sonuc:
+    webp(boyla(sonuc["ahmet"]["motor"]["kareler"][0], 300), FX / "ahmet_motor.webp")
+if "sudem" in sonuc:
+    webp(boyla(sonuc["sudem"]["araba"]["kareler"][0], 260), FX / "sudem_araba.webp")
+    webp(boyla(sonuc["sudem"]["yuzuk"]["kareler"][0], 160), FX / "sudem_yuzuk.webp")
+if "mete" in sonuc:
+    for i, k in enumerate(sonuc["mete"]["nota"]["kareler"]):
+        webp(boyla(k, 120), FX / f"metehan_nota{i}.webp")
+if "umut" in sonuc:
+    for i, k in enumerate(sonuc["umut"]["foto"]["kareler"]):
+        webp(boyla(k, 150), FX / f"umut_foto{i}.webp")
+if "selim" in sonuc:
+    for i, k in enumerate(sonuc["selim"]["sigara"]["kareler"]):
+        webp(boyla(k, 90), FX / f"selim_sigara{i}.webp")
 
 print(json.dumps({"yazilan": yazilan}, ensure_ascii=False))

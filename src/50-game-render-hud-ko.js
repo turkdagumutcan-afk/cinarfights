@@ -82,7 +82,8 @@ function AF_legParts(r) {
           pv = x;
         }
       if (st >= 0) o.push([st, pv]);
-      return o;
+      // küçük parçalar bacak sayılmaz (ör. SELİM'in çantasından sarkan anahtarlık)
+      return o.filter(([a, b]) => b - a >= r.bw * 0.12);
     };
     const bot = r.by + r.bh - 1;
     let cr = -1;

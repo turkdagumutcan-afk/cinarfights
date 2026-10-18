@@ -78,7 +78,23 @@ KARAKTERLER = {
         "portre": ("umut portre", "tek", {"ayri": True}),
         "foto": ("umut fotoğraf", "serit", {"n": 3, "ayri": True}),
     },
+    "selim": {
+        "idle": ("selim duruş", "tek"),
+        "crouch": ("selim eğilme", "tek"),
+        "jump": ("selim zıplama", "tek"),
+        "punch": ("selim yumruk şeridi", "serit", {"n": 5}),
+        "kick": ("selim tekme şeridi", "serit", {"n": 5}),
+        "hurt": ("selim hasar", "tek"),
+        "guard": ("selim koruma", "tek"),
+        "guardlow": ("selim koruma eğilme", "tek"),
+        "ult": ("selim ulti", "tek", {"diger": ["selim ulti "]}),
+        "portre": ("selim portre", "tek", {"ayri": True}),
+        "sigara": ("selim sigara", "serit", {"n": 3, "ayri": True}),
+    },
 }
+
+# klasör adı karakter id'sinden farklıysa (Türkçe büyük İ)
+KLASOR = {"selim": "SELİM"}
 
 
 def dosya_bul(klasor: Path, kok: str, diger=()):
@@ -93,7 +109,7 @@ def dosya_bul(klasor: Path, kok: str, diger=()):
             if sade.endswith(uz):
                 sade = sade[: -len(uz)]
         sade = sade.rstrip(".")
-        if sade in adaylar:
+        if sade in adaylar or sade.strip() in adaylar:
             return f
     return None
 
@@ -256,8 +272,11 @@ def isle():
     CIKTI.mkdir(parents=True, exist_ok=True)
     rapor = {}
     sonuc = {}
+    secili = [k for k in os.environ.get("KARAKTER", "").split(",") if k]  # boşsa hepsi
     for kar, pozlar in KARAKTERLER.items():
-        klasor = KAYNAK / kar.upper()
+        if secili and kar not in secili:
+            continue
+        klasor = KAYNAK / KLASOR.get(kar, kar.upper())
         sonuc[kar] = {}
         rapor[kar] = {}
         for poz, tanim in pozlar.items():

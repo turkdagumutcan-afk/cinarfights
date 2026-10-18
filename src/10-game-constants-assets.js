@@ -501,6 +501,24 @@ var AF_CHARS = {
       [`MENZİL`, 0.8],
     ],
   },
+  selim: {
+    id: `selim`,
+    name: `SELİM`,
+    color: `#a78bfa`,
+    color2: `#d4c6ff`,
+    scale: 250,
+    same: !0,
+    halfW: 40,
+    kickX: 14, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    guard: !0,
+    tag: `Ankaralı · Elleri cebinde, umursamaz`,
+    stil: `SAKİN · TEKMECİ`,
+    zorluk: 2,
+    ultName: `RA-MA-ZAAN`,
+    ultHint: `3 yanan sigara`,
+    img: () => gg(`/assets/selim.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —

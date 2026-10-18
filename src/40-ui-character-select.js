@@ -238,12 +238,12 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`, `ahmet`][(Math.random() * 4) | 0];
+  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`][(Math.random() * 5) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -722,7 +722,7 @@ function AF_Card({
 }
 
 function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
-  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `random`, 0];
+  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
       className: `anim-blink font-monox`,

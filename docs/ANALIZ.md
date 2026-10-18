@@ -804,3 +804,15 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - AHMET motoru ekran kenarı yerine **AHMET'in 160 px arkasından** çıkar (gecikme 100 ms, 1500 px/s). Rakibe ulaşma: 450 px'de 650 → 433 ms, 800 px'de 883 → 667 ms (SUDEM arabasına yakın).
 - Araçlar ~%30 büyük: çizim (motor 170, araba 136 px yükseklik), çarpışma yarıçapı (motor 68, araba 62) ve merkez yüksekliği (52 px). Zıplayarak kaçmak hâlâ mümkün ama zamanlama ister.
 - Denge (720 maç): araba daha sık isabet ettiği için hasarı 27 → **24**; UMUT can 150 → **153**. Sonuç: UMUT %42, SUDEM %50, METEHAN %52, AHMET %56; ulti başına ortalama 14,7–15,0.
+
+## 30. Yeni karakter: SELİM (18 Ekim 2026)
+
+- Ankaralı, tamamen siyah giyimli, kulaklıklı; elleri cebinde tekme atar, korumada sırt çantasını kalkan yapar. Stil SAKİN · TEKMECİ, renk `#a78bfa`.
+- Değerler temel (can 150, hasar ×1); tekme menzili `kickX: 14` ile ~216 px (herkesle eşit).
+- Ulti **RA-MA-ZAAN** (`cig`, 3 × 7 = 21): baş / göğüs / diz hizasında arka arkaya üç sigara. Eğilme ya da zıplama yalnız bir kısmını kaçırır; asıl savunma koruma (5 hasar geçer).
+- Görseller `tools/sprite` ile (`KARAKTER=selim` ortam değişkeniyle yalnız seçilen karakter işlenir; klasör `SELİM`).
+- Seçim ekranında "YAKINDA" kutusunun yerine. Memleket ANKARA.
+- Denge (5 karakter, 720 maç): UMUT %45, SUDEM %52, METEHAN %57, AHMET %51, SELİM %45; ulti başına ortalama 15,0–15,4.
+- Özel hareketi (Çanta Savurma) sonraki adımda.
+
+- **Yürüme düzeltmesi:** `AF_legParts` (src/50) bacak ayrımında küçük parçaları (< %12 genişlik) bacak saymıyor; SELİM'in anahtarlığı üçüncü bacak sanılıp çanta bacakla dönüyordu.

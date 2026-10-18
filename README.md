@@ -1,7 +1,7 @@
 # ÇINAR FIGHTS
 
 Tarayıcıda çalışan, tek klavyede iki oyunculu retro arcade dövüş oyunu (eski adı ANKARA FIGHTER).
-**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı), **METEHAN** (müzisyen) ve **AHMET** (motorcu)
+**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı), **METEHAN** (müzisyen), **AHMET** (motorcu) ve **SELİM** (Ankaralı, elleri cebinde)
 **ANKARA, SAMSUN ve ÇORUM** arenalarında **en iyi 3 raunt** (2 raunt kazanan maçı alır, her raunt 99 saniye) karşı karşıya.
 Modlar: **1VSBOT**, **1VS1** (tek klavye) ve **ANTRENMAN** (kuklaya karşı).
 
@@ -100,7 +100,8 @@ P1 için ↓ = S, → = D (sola bakarken A); P2 için oklar. Tek tuşlar (F, Bo�
 Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü onayı · Antrenmanda **R** konumları sıfırlar
 
 **Ultiler:** UMUT **FLAŞ PATLAMASI** (3 fotoğraf, eğilerek kaçılır) · SUDEM **KA-ÇOV!** (yarış arabası, zıplayarak kaçılır) ·
-METEHAN **YILDIRIM NOTALARI** (yakında anında) · AHMET **GAZA BAS!** (arkadan gelen motor, zıplayarak kaçılır).
+METEHAN **YILDIRIM NOTALARI** (yakında anında) · AHMET **GAZA BAS!** (arkadan gelen motor, zıplayarak kaçılır) ·
+SELİM **RA-MA-ZAAN** (baş, göğüs ve diz hizasında 3 sigara; en iyi savunma koruma).
 Kaçması kolay ulti daha çok hasar verir; ulti başına ortalama hasar dördünde eşittir.
 
 > UMUT'un takla / yer taklası / süpürme hareketi yeni çizimler gelene kadar **geçici olarak kapalı**.

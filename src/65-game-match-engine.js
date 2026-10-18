@@ -716,6 +716,17 @@ var Xy = class {
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
+          : e.charId === `selim`
+            ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
+              // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
+              ([0.78, 0.5, 0.22].forEach((h, k) =>
+                this.projectiles.push({
+                  ...i(`cig`, e.y - e.spr.frames.idle.visibleH * h, 1050, 0, 26, 40 + k * 110, 0),
+                  fi: k,
+                }),
+              ),
+              (this.announce = { text: `RA-MA-ZAAN!`, t: 0, dur: 900, size: 64, color: `#a78bfa` }),
+              X.zapCast())
           : e.charId === `ahmet`
             ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
               (this.projectiles.push({

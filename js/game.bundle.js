@@ -1147,6 +1147,24 @@ var AF_CHARS = {
       [`MENZİL`, 0.8],
     ],
   },
+  selim: {
+    id: `selim`,
+    name: `SELİM`,
+    color: `#a78bfa`,
+    color2: `#d4c6ff`,
+    scale: 250,
+    same: !0,
+    halfW: 40,
+    kickX: 14, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    guard: !0,
+    tag: `Ankaralı · Elleri cebinde, umursamaz`,
+    stil: `SAKİN · TEKMECİ`,
+    zorluk: 2,
+    ultName: `RA-MA-ZAAN`,
+    ultHint: `3 yanan sigara`,
+    img: () => gg(`/assets/selim.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
@@ -1388,6 +1406,9 @@ var AF_FX = {},
     `umut_foto0`,
     `umut_foto1`,
     `umut_foto2`,
+    `selim_sigara0`,
+    `selim_sigara1`,
+    `selim_sigara2`,
   ],
   AF_fxP = null;
 
@@ -2366,12 +2387,12 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`, `ahmet`][(Math.random() * 4) | 0];
+  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`][(Math.random() * 5) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -2850,7 +2871,7 @@ function AF_Card({
 }
 
 function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
-  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `random`, 0];
+  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
       className: `anim-blink font-monox`,
@@ -3428,7 +3449,8 @@ function AF_legParts(r) {
           pv = x;
         }
       if (st >= 0) o.push([st, pv]);
-      return o;
+      // küçük parçalar bacak sayılmaz (ör. SELİM'in çantasından sarkan anahtarlık)
+      return o.filter(([a, b]) => b - a >= r.bw * 0.12);
     };
     const bot = r.by + r.bh - 1;
     let cr = -1;
@@ -4457,7 +4479,9 @@ function AF_fxImg(t) {
             ? `metehan_nota${(t.col || 0) % 4}`
             : t.kind === `photo`
               ? `umut_foto${(t.fi || 0) % 3}`
-              : null;
+              : t.kind === `cig`
+                ? `selim_sigara${(t.fi || 0) % 3}`
+                : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
 }
 
@@ -4476,7 +4500,9 @@ function Ty(e, t) {
             ? [62, 0.66, !1]
             : t.kind === `note`
               ? [54, 0.5, !1]
-              : [66, 0.55, !1];
+              : t.kind === `cig`
+                ? [34, 0.6, !1]
+                : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
     (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
@@ -5235,6 +5261,22 @@ var AF_sweepDef = {
 };
 
 var Gy = {
+  // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
+  cig: {
+    id: `cig`,
+    label: `SİGARA`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 7,
+    w: 0,
+    h: 0,
+    kbx: 280,
+    kby: -120,
+    hitstun: 420,
+    meter: 0,
+  },
   photo: {
     id: `photo`,
     label: `FOTOĞRAF`,
@@ -6422,6 +6464,17 @@ var Xy = class {
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
+          : e.charId === `selim`
+            ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
+              // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
+              ([0.78, 0.5, 0.22].forEach((h, k) =>
+                this.projectiles.push({
+                  ...i(`cig`, e.y - e.spr.frames.idle.visibleH * h, 1050, 0, 26, 40 + k * 110, 0),
+                  fi: k,
+                }),
+              ),
+              (this.announce = { text: `RA-MA-ZAAN!`, t: 0, dur: 900, size: 64, color: `#a78bfa` }),
+              X.zapCast())
           : e.charId === `ahmet`
             ? // GAZA BAS!: sürücüsüz motor ekranın AHMET'in arkasındaki kenarından gaz vererek gelir
               (this.projectiles.push({

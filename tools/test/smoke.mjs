@@ -161,9 +161,9 @@ if (!TAKLA_ACIK) await test('Yer taklası kapalı: UMUT D+D ile takla ATMAZ', as
 
 // ---- Yeni tasarım (Ekim 2026): 4 karakter, çok kareli yumruk/tekme, özel hareketler ----
 const fight = (p) => p.evaluate(async () => { const m = window.__AF_match; for (let i = 0; i < 80 && m.phase !== 'fight'; i++) await new Promise((r) => setTimeout(r, 100)); return m.phase; });
-await test('4 karakter yükleniyor, yumruk/tekme kare dizileri var', async (o) => {
+await test('5 karakter yükleniyor, yumruk/tekme kare dizileri var', async (o) => {
   const out = [];
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
     const p = await o({ p1: a, p2: b });
     out.push(...(await p.evaluate(() => [window.__AF_match.p1, window.__AF_match.p2].map((f) => `${f.charId}:${f.spr.seq.punch?.length || 0}/${f.spr.seq.kick?.length || 0}`))));
     if (p.errors.length) return { ok: false, note: p.errors[0] };
@@ -270,7 +270,7 @@ await test('Aynı anda yumruk: P1 önceliği yok, ikisi de vurur (10 deneme)', a
 // ---- Denge (18 Ekim) ----
 await test('Gövde genişlikleri: METEHAN en geniş, kimse 36 px altında değil', async (o) => {
   const w = {};
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
     const p = await o({ p1: a, p2: b });
     Object.assign(w, await p.evaluate(() => Object.fromEntries([window.__AF_match.p1, window.__AF_match.p2].map((f) => [f.charId, Math.round(f.halfW)]))));
     await p.close();
@@ -280,7 +280,7 @@ await test('Gövde genişlikleri: METEHAN en geniş, kimse 36 px altında değil
 });
 await test('Tekme menzilleri eşit (±4 px), görsel farkı dengeyi bozmuyor', async (o) => {
   const r = {};
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
     const p = await o({ p1: a, p2: b });
     Object.assign(r, await p.evaluate(() => {
       const m = window.__AF_match;
@@ -301,9 +301,9 @@ await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   return { ok: kostu, note: kostu ? 'koştu' : '25 sn içinde koşmadı' };
 });
 
-await test('Ultiler: risk/ödül hasarı (20–27), korunursa en fazla 7', async (o) => {
+await test('Ultiler: risk/ödül hasarı (20–25), korunursa en fazla 7', async (o) => {
   const out = [];
-  for (const c of ['umut', 'sudem', 'metehan', 'ahmet']) {
+  for (const c of ['umut', 'sudem', 'metehan', 'ahmet', 'selim']) {
     const p = await o({ p1: c, p2: c === 'umut' ? 'sudem' : 'umut' });
     out.push(await p.evaluate((c) => {
       const m = window.__AF_match; m.disposed = !0;
@@ -319,7 +319,7 @@ await test('Ultiler: risk/ödül hasarı (20–27), korunursa en fazla 7', async
     }, c));
     await p.close();
   }
-  const bek = { umut: 21, sudem: 24, metehan: 20, ahmet: 25 };
+  const bek = { umut: 21, sudem: 24, metehan: 20, ahmet: 25, selim: 21 };
   return { ok: out.every(([c, a, b]) => a === bek[c] && b <= 7), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 
