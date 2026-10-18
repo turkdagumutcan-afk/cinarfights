@@ -409,6 +409,7 @@ var AF_CHARS = {
     scale: 250,
     same: !0,
     halfW: 40,
+    hp: 153, // dengeli temel; 720 maçlık simülasyonda %38 kaldığı için +3 can
     kickX: 3, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
     guard: !0,
     roll: AF_UMUT_OZEL,
@@ -499,6 +500,24 @@ var AF_CHARS = {
       [`GÜÇ`, 0.85],
       [`MENZİL`, 0.8],
     ],
+  },
+  selim: {
+    id: `selim`,
+    name: `SELİM`,
+    color: `#a78bfa`,
+    color2: `#d4c6ff`,
+    scale: 250,
+    same: !0,
+    halfW: 40,
+    kickX: 14, // tekme menzili herkeste ~216 px (görsel farkı kapatır)
+    guard: !0,
+    tag: `Ankaralı · Elleri cebinde, umursamaz`,
+    stil: `SAKİN · TEKMECİ`,
+    zorluk: 2,
+    ultName: `RA-MA-ZAAN`,
+    ultHint: `3 yanan sigara`,
+    img: () => gg(`/assets/selim.png`),
+    stats: [],
   },
 };
 

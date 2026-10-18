@@ -32,6 +32,9 @@ var AF_FX = {},
     `umut_foto0`,
     `umut_foto1`,
     `umut_foto2`,
+    `selim_sigara0`,
+    `selim_sigara1`,
+    `selim_sigara2`,
   ],
   AF_fxP = null;
 

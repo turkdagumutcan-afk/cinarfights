@@ -117,6 +117,22 @@ var AF_sweepDef = {
 };
 
 var Gy = {
+  // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
+  cig: {
+    id: `cig`,
+    label: `SİGARA`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 7,
+    w: 0,
+    h: 0,
+    kbx: 280,
+    kby: -120,
+    hitstun: 420,
+    meter: 0,
+  },
   photo: {
     id: `photo`,
     label: `FOTOĞRAF`,
@@ -139,7 +155,7 @@ var Gy = {
     startup: 0,
     active: 0,
     recovery: 0,
-    damage: 27,
+    damage: 24,
     w: 0,
     h: 0,
     kbx: 520,
