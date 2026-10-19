@@ -5,6 +5,7 @@ window.__ANKARA_ASSETS__ = {
   "/assets/samsun_arena.png": "assets/samsun_arena.webp?v=1",
   "/assets/ankara_sehir.png": "assets/ankara_sehir.webp?v=1",
   "/assets/corum_arena.png": "assets/corum_arena.webp?v=1",
+  "/assets/sakarya_arena.png": "assets/sakarya_arena.webp?v=1",
   "/assets/selim.png": "assets/selim.webp?v=1",
   "/assets/alp.png": "assets/alp.webp?v=1",
   "/assets/frames/alp_idle.png": "assets/frames/alp_idle.webp?v=1",

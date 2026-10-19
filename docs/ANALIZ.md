@@ -827,3 +827,8 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Seçim ızgarası 4 sütun (6 karakter + RASTGELE + YAKINDA). Memleket SAKARYA.
 - Sprite aracı: tek görseller tuval **alanına** göre ölçeklenir (yatay/dikey Gemini çıktıları birlikte); `{"oran": x}` ile boy sabitlenebilir (ALP eğilme %69).
 - Testler: 45.
+
+## 32. Arena: SAKARYA (19 Ekim 2026)
+
+- Sapanca Gölü sabah sisiyle, solda Justinianus Köprüsü (Beşköprü), iskele ve kayıklar, sağda sarı Ford Puma Gen-E. Tek zemin. `assets/sakarya_arena.webp` (×1,073, sağa yaslı kırpma: araba kesilmesin).
+- Seçim: ANKARA · SAMSUN · ÇORUM · SAKARYA · RASTGELE. Testler: 46.
