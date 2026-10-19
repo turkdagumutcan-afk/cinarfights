@@ -1,0 +1,32 @@
+/* Ek yardımcı sınıflar: css/styles.css derlenmiş Tailwind'dir ve yalnızca o gün kullanılan
+   sınıfları içerir. Yeni ekranlarda (seçim, arena, VS) gereken eksik sınıflar burada.
+   Yeni bir Tailwind sınıfı kullanıp ekranda etkisini görmezsen buraya ekle. */
+.h-svh { height: 100svh; }
+.min-h-\[600px\] { min-height: 600px; }
+.top-4 { top: 1rem; }
+.left-4 { left: 1rem; }
+.bottom-3 { bottom: .75rem; }
+.bottom-\[5\%\] { bottom: 5%; }
+.z-30 { z-index: 30; }
+.mt-0\.5 { margin-top: .125rem; }
+.gap-1\.5 { gap: .375rem; }
+.py-0\.5 { padding-top: .125rem; padding-bottom: .125rem; }
+.px-8 { padding-left: 2rem; padding-right: 2rem; }
+.w-9 { width: 2.25rem; }
+.w-40 { width: 10rem; }
+.h-2 { height: .5rem; }
+.space-y-1 > :not(:last-child) { margin-bottom: .25rem; }
+.items-end { align-items: flex-end; }
+.rounded-sm { border-radius: .125rem; }
+.text-5xl { font-size: 3rem; line-height: 1; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-\[11px\] { font-size: 11px; }
+.text-slate-200 { color: #e2e8f0; }
+.text-amber-200 { color: #fde68a; }
+.text-cyan-100 { color: #cffafe; }
+.tracking-\[0\.2em\] { letter-spacing: .2em; }
+.tracking-\[0\.25em\] { letter-spacing: .25em; }
+.bg-black\/50 { background-color: rgb(0 0 0 / .5); }
+.bg-black\/60 { background-color: rgb(0 0 0 / .6); }
+.bg-black\/70 { background-color: rgb(0 0 0 / .7); }
+.border-white\/20 { border-color: rgb(255 255 255 / .2); }

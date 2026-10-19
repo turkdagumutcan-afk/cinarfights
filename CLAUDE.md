@@ -7,6 +7,7 @@ Tarayıcıda 2 kişilik retro dövüş oyunu (React 19 + Canvas 2D, 1376×768). 
 - `js/game.bundle.js` **ÜRETİLİR**. Asla elle düzenleme, asla okuma. `npm run build` yazar (ve `index.html`'e `?v=<hash>` koyar).
 - `00-vendor-*`, `30-vendor-*` üçüncü taraf kütüphane (ham minify): **okuma, düzenleme**.
 - `assets/`, `css/styles.css` ikili/derlenmiş: okuma. Görsel adları `js/assets.js`'te.
+- Yeni Tailwind sınıfı derlenmiş CSS`te yoksa etkisizdir: `css/ek.css`e ekle.
 - Dökümanlar: `docs/ANALIZ.md` (özellikle §16–17), `README.md`, kurulum ve iş akışı: `docs/KURULUM.md`.
 
 | Dosya | İçerik |

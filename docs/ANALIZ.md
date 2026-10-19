@@ -832,3 +832,18 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 
 - Sapanca Gölü sabah sisiyle, solda Justinianus Köprüsü (Beşköprü), iskele ve kayıklar, sağda sarı Ford Puma Gen-E. Tek zemin. `assets/sakarya_arena.webp` (×1,073, sağa yaslı kırpma: araba kesilmesin).
 - Seçim: ANKARA · SAMSUN · ÇORUM · SAKARYA · RASTGELE. Testler: 46.
+
+## 33. Street Fighter V tarzı seçim, arena seçimi ve VS ekranı (19 Ekim 2026)
+
+- Akış: **KARAKTER SEÇİMİ → ARENA SEÇİMİ → VS (yüklenme çubuklu) → dövüş**.
+- Karakter seçimi (`gy`, src/40): arka plan `assets/ui/secim_bg` (Türkiye hologram haritalı arena), solda P1 / sağda P2 büyük yarı vücut pozlar (`assets/ui/secim_<id>`, P2 aynalanır, iç kenar maskeyle kaybolur), altta karakter ızgarası. Kartta ad, stil, OYNANIŞ yıldızları, memleket, HIZ/GÜÇ/CAN, ulti komutu. Bileşenler `AF_SelPose`, `AF_SelSide`.
+- Arena seçimi (`/arena`, `AF_ArenaSelect`): çerçeve `assets/ui/arena_bg` (1376×768), yuvalar yüzde konumla; ◀ ▶ / A D ile değişir, Z / Num1 / Enter onaylar, ESC karakter seçimine döner. Bilgi satırları `AF_ARENA_BILGI`.
+- VS (`AF_VsScreen`, src/70): bulanık arena + kırmızı/mavi yarılar, iki poz kayarak gelir, alevli `assets/ui/vs` logo, arena adı, `AF_VS_MS`=2600 ms yüklenme çubuğu; maç bu süre bitince başlar. Testler `&vs=0` ile atlar.
+- Görseller ChatGPT/Gemini ile üretildi (kaynak `cınarfight tasarımlar/ARAYÜZ`); seçim arka planı hafif pikselleştirildi.
+- **css/ek.css:** `css/styles.css` derlenmiş Tailwind'dir ve yalnız o gün kullanılan sınıfları içerir; yeni sınıflar `ek.css`'e eklenir (yoksa öğe görünmez — ör. `h-svh`).
+
+## 34. ANKARA arenasında yağmur (19 Ekim 2026)
+
+- Arena ayarı `rain: true` (`AF_ARENAS.ankara`). `AF_rain` (src/50): arka katman (240 ince damla, dövüşçülerin arkasında, sahneyi hafif karartır, zeminde sıçramalar) + ön katman (75 kalın damla, dövüşçülerin önünde). Rüzgârla hafif eğik; gerçek zamanla akar. 60 FPS korunuyor.
+- Arena seçiminde ANKARA hava durumu: Yağmurlu.
+- Arka plandaki araç **EGO körüklü otobüs** oldu (ChatGPT düzenlemesi, turuncu tabela okunmaz; zemin kenarı aynı, `ankara_sehir.webp?v=2`).

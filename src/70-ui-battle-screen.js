@@ -19,6 +19,88 @@ function Zy(e, t, n) {
   );
 }
 
+// ---- VS ekranı (Mortal Kombat tarzı): iki seçim pozu, alevli VS, arena adı ve yüklenme çubuğu ----
+var AF_VS_MS = 2600;
+
+function AF_VsScreen({ a, b, arena }) {
+  const A = AF_ARENAS[arena] || AF_ARENAS.ankara,
+    bilgi = (typeof AF_ARENA_BILGI !== `undefined` && AF_ARENA_BILGI[arena]) || [``],
+    poz = (c, L) =>
+      (0, P.jsx)(Qh.img, {
+        src: gg(`/assets/ui/secim_${c.id}.png`),
+        alt: ``,
+        draggable: !1,
+        initial: { opacity: 0, x: L ? -260 : 260, scaleX: L ? 1 : -1 },
+        animate: { opacity: 1, x: 0, scaleX: L ? 1 : -1 },
+        transition: { duration: 0.45, ease: `easeOut` },
+        style: {
+          position: `absolute`,
+          bottom: 0,
+          [L ? `left` : `right`]: `2%`,
+          height: `80%`,
+          imageRendering: `pixelated`,
+          WebkitMaskImage: `linear-gradient(to right, #000 80%, transparent 99%)`,
+          maskImage: `linear-gradient(to right, #000 80%, transparent 99%)`,
+          filter: `drop-shadow(0 0 16px ${c.color})`,
+        },
+      }),
+    ad = (c, L) =>
+      (0, P.jsx)(Qh.div, {
+        className: `font-display font-black tracking-wide`,
+        initial: { opacity: 0, y: -30 },
+        animate: { opacity: 1, y: 0 },
+        transition: { delay: 0.3, duration: 0.3 },
+        style: { position: `absolute`, top: `4%`, [L ? `left` : `right`]: `3%`, fontSize: `min(6vw, 9vh)`, color: c.color, textShadow: `4px 4px 0 #000, 0 0 24px ${c.color}` },
+        children: c.name,
+      });
+  return (0, P.jsxs)(`div`, {
+    "data-testid": `vs-screen`,
+    className: `scanlines absolute inset-0 z-30 overflow-hidden bg-black`,
+    children: [
+      (0, P.jsx)(`div`, {
+        style: { position: `absolute`, inset: `-20px`, backgroundImage: `url(${gg(A.img)})`, backgroundSize: `cover`, backgroundPosition: `center`, filter: `blur(6px) brightness(.45)` },
+      }),
+      (0, P.jsx)(`div`, {
+        style: { position: `absolute`, inset: 0, background: `linear-gradient(105deg, rgba(150,10,40,.55) 0%, rgba(150,10,40,.55) 49%, rgba(10,50,140,.55) 51%, rgba(10,50,140,.55) 100%)` },
+      }),
+      poz(a, !0),
+      poz(b, !1),
+      ad(a, !0),
+      ad(b, !1),
+      (0, P.jsx)(Qh.img, {
+        src: gg(`/assets/ui/vs.png`),
+        alt: `VS`,
+        draggable: !1,
+        initial: { opacity: 0, scale: 2.6, rotate: -8 },
+        animate: { opacity: 1, scale: 1, rotate: 0 },
+        transition: { delay: 0.35, duration: 0.35, ease: `backOut` },
+        style: { position: `absolute`, left: `50%`, top: `46%`, width: `min(34vw, 52vh)`, marginLeft: `calc(min(34vw, 52vh) / -2)`, transform: `translateY(-50%)`, imageRendering: `pixelated`, filter: `drop-shadow(0 0 22px #ff7a00)` },
+      }),
+      (0, P.jsxs)(`div`, {
+        className: `absolute bottom-[5%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2`,
+        children: [
+          (0, P.jsx)(`p`, {
+            className: `font-display font-black tracking-[0.25em] text-white`,
+            style: { fontSize: `min(1.8vw, 3vh)`, textShadow: `2px 2px 0 #000` },
+            children: `${A.name}${bilgi[0] ? ` · ${bilgi[0]}` : ``}`,
+          }),
+          (0, P.jsx)(`div`, {
+            style: { width: `min(30vw, 420px)`, height: 14, border: `2px solid #ffc850`, borderRadius: 7, background: `rgba(0,0,0,.6)`, overflow: `hidden` },
+            children: (0, P.jsx)(Qh.div, {
+              "data-testid": `vs-loading`,
+              initial: { width: `0%` },
+              animate: { width: `100%` },
+              transition: { duration: AF_VS_MS / 1e3, ease: `linear` },
+              style: { height: `100%`, background: `linear-gradient(90deg, #ff7a00, #ffd24a)` },
+            }),
+          }),
+          (0, P.jsx)(`p`, { className: `font-monox text-[11px] tracking-[0.4em] text-amber-200`, children: `YÜKLENİYOR` }),
+        ],
+      }),
+    ],
+  });
+}
+
 function Qy() {
   let e = (0, N.useRef)(null),
     t = (0, N.useRef)(null),
@@ -36,6 +118,8 @@ function Qy() {
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
+    // VS ekranı (dövüş öncesi, yüklenme çubuklu); testler &vs=0 ile atlar
+    vsOn = l.get(`vs`) !== `0`,
     d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}&arena=${l.get(`arena`) || `ankara`}`;
   // Antrenman: R ile konumları ve canları sıfırla
   (0, N.useEffect)(() => {
@@ -50,7 +134,7 @@ function Qy() {
     let i = !1,
       o = null;
     return (
-      Eg(af1.id, af2.id, ar).then((e) => {
+      Promise.all([Eg(af1.id, af2.id, ar), new Promise((k) => setTimeout(k, vsOn ? AF_VS_MS : 0))]).then(([e]) => {
         i ||
           ((o = new Xy(
             n,
@@ -289,13 +373,15 @@ function Qy() {
           }),
         }),
       !n &&
-        (0, P.jsx)(`div`, {
-          className: `absolute inset-0 z-10 flex items-center justify-center bg-black`,
-          children: (0, P.jsx)(`p`, {
-            className: `font-monox animate-pulse text-sm tracking-[0.4em] text-cyan-300`,
-            children: `YÜKLENİYOR...`,
-          }),
-        }),
+        (vsOn
+          ? (0, P.jsx)(AF_VsScreen, { a: af1, b: af2, arena: ar })
+          : (0, P.jsx)(`div`, {
+              className: `absolute inset-0 z-10 flex items-center justify-center bg-black`,
+              children: (0, P.jsx)(`p`, {
+                className: `font-monox animate-pulse text-sm tracking-[0.4em] text-cyan-300`,
+                children: `YÜKLENİYOR...`,
+              }),
+            })),
     ],
   });
 }
@@ -307,6 +393,7 @@ function $y() {
         children: [
           (0, P.jsx)(Xn, { path: `/`, element: (0, P.jsx)(kg, {}) }),
           (0, P.jsx)(Xn, { path: `/select`, element: (0, P.jsx)(gy, {}) }),
+          (0, P.jsx)(Xn, { path: `/arena`, element: (0, P.jsx)(AF_ArenaSelect, {}) }),
           (0, P.jsx)(Xn, { path: `/battle`, element: (0, P.jsx)(Qy, {}) }),
           (0, P.jsx)(Xn, { path: `*`, element: (0, P.jsx)(Yn, { to: `/`, replace: !0 }) }),
         ],
