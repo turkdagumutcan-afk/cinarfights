@@ -841,3 +841,8 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - VS (`AF_VsScreen`, src/70): bulanık arena + kırmızı/mavi yarılar, iki poz kayarak gelir, alevli `assets/ui/vs` logo, arena adı, `AF_VS_MS`=2600 ms yüklenme çubuğu; maç bu süre bitince başlar. Testler `&vs=0` ile atlar.
 - Görseller ChatGPT/Gemini ile üretildi (kaynak `cınarfight tasarımlar/ARAYÜZ`); seçim arka planı hafif pikselleştirildi.
 - **css/ek.css:** `css/styles.css` derlenmiş Tailwind'dir ve yalnız o gün kullanılan sınıfları içerir; yeni sınıflar `ek.css`'e eklenir (yoksa öğe görünmez — ör. `h-svh`).
+
+## 34. ANKARA arenasında yağmur (19 Ekim 2026)
+
+- Arena ayarı `rain: true` (`AF_ARENAS.ankara`). `AF_rain` (src/50): arka katman (240 ince damla, dövüşçülerin arkasında, sahneyi hafif karartır, zeminde sıçramalar) + ön katman (75 kalın damla, dövüşçülerin önünde). Rüzgârla hafif eğik; gerçek zamanla akar. 60 FPS korunuyor.
+- Arena seçiminde ANKARA hava durumu: Yağmurlu.

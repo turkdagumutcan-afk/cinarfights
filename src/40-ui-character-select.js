@@ -1341,7 +1341,7 @@ function gy() {
 // ---- Arena seçimi (Street Fighter V "STAGE SELECT" tarzı) ----
 // Çerçeve görseli assets/ui/arena_bg (1376x768); önizleme / başlık / ad yuvaları yüzde konumla oturur.
 var AF_ARENA_BILGI = {
-  ankara: [`Başkent`, `Akşam`, `Açık`],
+  ankara: [`Başkent`, `Akşam`, `Yağmurlu`],
   samsun: [`Karadeniz kıyısı`, `Gün batımı`, `Açık`],
   corum: [`Hitit diyarı`, `Gün batımı`, `Açık`],
   sakarya: [`Sapanca Gölü`, `Sabah`, `Sisli`],

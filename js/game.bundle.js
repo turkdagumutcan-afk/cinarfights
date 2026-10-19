@@ -1191,7 +1191,7 @@ var AF_CHARS = {
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
 // şimdilik hiçbir arenada yok; kod duruyor, bir arenada true yapılırsa geri gelir.
 var AF_ARENAS = {
-  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1 },
+  ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1, rain: !0 },
   samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
   corum: { id: `corum`, name: `ÇORUM`, img: `/assets/corum_arena.png`, platform: !1 },
   sakarya: { id: `sakarya`, name: `SAKARYA`, img: `/assets/sakarya_arena.png`, platform: !1 },
@@ -3514,7 +3514,7 @@ function gy() {
 // ---- Arena seçimi (Street Fighter V "STAGE SELECT" tarzı) ----
 // Çerçeve görseli assets/ui/arena_bg (1376x768); önizleme / başlık / ad yuvaları yüzde konumla oturur.
 var AF_ARENA_BILGI = {
-  ankara: [`Başkent`, `Akşam`, `Açık`],
+  ankara: [`Başkent`, `Akşam`, `Yağmurlu`],
   samsun: [`Karadeniz kıyısı`, `Gün batımı`, `Açık`],
   corum: [`Hitit diyarı`, `Gün batımı`, `Açık`],
   sakarya: [`Sapanca Gölü`, `Sabah`, `Sisli`],
@@ -3703,12 +3703,14 @@ function yy(e) {
   (t.save(),
     t.translate(n, r),
     t.drawImage(e.assets.bg, 0, 0, $h, 768),
+    e.arena && e.arena.rain && AF_rain(t, 0),
     by(t, e.p1),
     by(t, e.p2),
     xy(t, e.p2),
     xy(t, e.p1));
   for (let n of e.projectiles) Ty(t, n);
-  (Ey(t, e.lensFlashes),
+  (e.arena && e.arena.rain && AF_rain(t, 1),
+    Ey(t, e.lensFlashes),
     Dy(t, e.sparks),
     Oy(t, e.dmgs),
     e.showBoxes && Sy(t, e),
@@ -3995,6 +3997,67 @@ function AF_koClamp(t) {
   f(g.hl, b);
   return pg(t.x, 8 - mn, $h - 8 - mx);
 }
+
+// ---- Yağmur (ANKARA arenası, `rain: true`) ----
+// İki katman: 0 = arka (dövüşçülerin arkasında, ince ve soluk), 1 = ön (dövüşçülerin önünde, az ve parlak).
+// Gerçek zamanla akar (duraklatmada da), zemine (y 704) değen damla küçük bir sıçrama bırakır.
+var AF_RAIN = null;
+
+function AF_rain(g, kat) {
+  const simdi = performance.now();
+  if (!AF_RAIN) {
+    const mk = (n, hiz, boy, alfa) =>
+      Array.from({ length: n }, () => ({ x: Math.random() * ($h + 200), y: Math.random() * 768, v: hiz * (0.8 + Math.random() * 0.4), l: boy * (0.7 + Math.random() * 0.6), a: alfa }));
+    AF_RAIN = { t: simdi, k: [mk(240, 950, 18, 0.38), mk(75, 1400, 30, 0.62)], s: [] };
+  }
+  const R = AF_RAIN;
+  // süre bir kez (arka katmanda) ölçülür; ön katman aynı kareyi kullanır
+  kat === 0 && ((R.dt = Math.min(0.05, (simdi - R.t) / 1e3)), (R.t = simdi));
+  const dt = R.dt || 0;
+  const egim = 0.18, // rüzgâr: damlalar hafif sola eğik düşer
+    d = R.k[kat];
+  g.save();
+  if (kat === 0) {
+    g.fillStyle = `rgba(20,30,55,0.22)`; // yağmurlu hava: sahne biraz kararır
+    g.fillRect(0, 0, $h, 768);
+  }
+  g.lineCap = `round`;
+  for (const p of d) {
+    p.y += p.v * dt;
+    p.x -= p.v * egim * dt;
+    const zemin = kat === 0 ? 704 : 768;
+    if (p.y > zemin) {
+      kat === 0 && Math.random() < 0.6 && R.s.push({ x: p.x, y: 704 + Math.random() * 40, t: 0 });
+      p.y = -p.l - Math.random() * 120;
+      p.x = Math.random() * ($h + 200);
+    }
+    p.x < -40 && (p.x += $h + 200);
+    g.strokeStyle = `rgba(185,205,235,${p.a})`;
+    g.lineWidth = kat === 0 ? 1 : 2;
+    g.beginPath();
+    g.moveTo(p.x, p.y);
+    g.lineTo(p.x + p.l * egim, p.y - p.l);
+    g.stroke();
+  }
+  if (kat === 0) {
+    // zemindeki sıçramalar
+    g.strokeStyle = `rgba(200,220,245,0.55)`;
+    g.lineWidth = 1.2;
+    for (const s of R.s) {
+      s.t += dt;
+      const r = 2 + s.t * 40;
+      g.globalAlpha = Math.max(0, 1 - s.t / 0.25);
+      g.beginPath();
+      g.ellipse(s.x, s.y, r, r * 0.3, 0, Math.PI, Math.PI * 2);
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    R.s = R.s.filter((s) => s.t < 0.25);
+    R.s.length > 120 && R.s.splice(0, R.s.length - 120);
+  }
+  g.restore();
+}
+
 
 // 51-game-settings-keymap-rounds.js — Ayar deposu, varsayılan tuş haritası, tuş etiketleri, raunt metinleri.
 // Dosya sırası = çalışma sırası (tools/build.mjs sıralı birleştirir).
