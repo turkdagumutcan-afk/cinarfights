@@ -161,9 +161,9 @@ if (!TAKLA_ACIK) await test('Yer taklası kapalı: UMUT D+D ile takla ATMAZ', as
 
 // ---- Yeni tasarım (Ekim 2026): 4 karakter, çok kareli yumruk/tekme, özel hareketler ----
 const fight = (p) => p.evaluate(async () => { const m = window.__AF_match; for (let i = 0; i < 80 && m.phase !== 'fight'; i++) await new Promise((r) => setTimeout(r, 100)); return m.phase; });
-await test('5 karakter yükleniyor, yumruk/tekme kare dizileri var', async (o) => {
+await test('6 karakter yükleniyor, yumruk/tekme kare dizileri var', async (o) => {
   const out = [];
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'alp']]) {
     const p = await o({ p1: a, p2: b });
     out.push(...(await p.evaluate(() => [window.__AF_match.p1, window.__AF_match.p2].map((f) => `${f.charId}:${f.spr.seq.punch?.length || 0}/${f.spr.seq.kick?.length || 0}`))));
     if (p.errors.length) return { ok: false, note: p.errors[0] };
@@ -270,17 +270,17 @@ await test('Aynı anda yumruk: P1 önceliği yok, ikisi de vurur (10 deneme)', a
 // ---- Denge (18 Ekim) ----
 await test('Gövde genişlikleri: METEHAN en geniş, kimse 36 px altında değil', async (o) => {
   const w = {};
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'alp']]) {
     const p = await o({ p1: a, p2: b });
     Object.assign(w, await p.evaluate(() => Object.fromEntries([window.__AF_match.p1, window.__AF_match.p2].map((f) => [f.charId, Math.round(f.halfW)]))));
     await p.close();
   }
-  const ok = Object.values(w).every((v) => v >= 36) && w.metehan === Math.max(...Object.values(w));
+  const ok = Object.values(w).every((v) => v >= 36) && w.metehan >= Math.max(...Object.values(w));
   return { ok, note: Object.entries(w).map(([k, v]) => `${k}=${v}`).join(' ') };
 });
-await test('Tekme menzilleri eşit (±4 px), görsel farkı dengeyi bozmuyor', async (o) => {
+await test('Tekme menzilleri eşit (±4 px), ALP en uzun', async (o) => {
   const r = {};
-  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'umut']]) {
+  for (const [a, b] of [['umut', 'sudem'], ['metehan', 'ahmet'], ['selim', 'alp']]) {
     const p = await o({ p1: a, p2: b });
     Object.assign(r, await p.evaluate(() => {
       const m = window.__AF_match;
@@ -288,8 +288,8 @@ await test('Tekme menzilleri eşit (±4 px), görsel farkı dengeyi bozmuyor', a
     }));
     await p.close();
   }
-  const v = Object.values(r);
-  return { ok: Math.max(...v) - Math.min(...v) <= 4, note: Object.entries(r).map(([k, v]) => `${k}=${v}`).join(' ') };
+  const v = Object.entries(r).filter(([k]) => k !== 'alp').map(([, x]) => x);
+  return { ok: Math.max(...v) - Math.min(...v) <= 4 && r.alp > Math.max(...v) + 10, note: Object.entries(r).map(([k, v]) => `${k}=${v}`).join(' ') };
 });
 await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   const p = await o({ mode: 'bot', p1: 'umut', p2: 'metehan' }); await fight(p);
@@ -301,9 +301,9 @@ await test('Bot METEHAN koşu çarpmasını kullanıyor', async (o) => {
   return { ok: kostu, note: kostu ? 'koştu' : '25 sn içinde koşmadı' };
 });
 
-await test('Ultiler: risk/ödül hasarı (20–25), korunursa en fazla 7', async (o) => {
+await test('Ultiler: risk/ödül hasarı (19–25), korunursa en fazla 7', async (o) => {
   const out = [];
-  for (const c of ['umut', 'sudem', 'metehan', 'ahmet', 'selim']) {
+  for (const c of ['umut', 'sudem', 'metehan', 'ahmet', 'selim', 'alp']) {
     const p = await o({ p1: c, p2: c === 'umut' ? 'sudem' : 'umut' });
     out.push(await p.evaluate((c) => {
       const m = window.__AF_match; m.disposed = !0;
@@ -319,7 +319,7 @@ await test('Ultiler: risk/ödül hasarı (20–25), korunursa en fazla 7', async
     }, c));
     await p.close();
   }
-  const bek = { umut: 21, sudem: 24, metehan: 20, ahmet: 25, selim: 21 };
+  const bek = { umut: 21, sudem: 24, metehan: 20, ahmet: 25, selim: 21, alp: 19 };
   return { ok: out.every(([c, a, b]) => a === bek[c] && b <= 7), note: out.map(([c, a, b]) => `${c}=${a}/${b}`).join(' ') };
 });
 
@@ -353,8 +353,24 @@ await test('Özel hareketi olmayan UMUT: ↓↘→ + Z normal yumruk atar', asyn
   return { ok: r.s === 'attack' && r.id === 'punch', note: `${r.s}/${r.id}` };
 });
 
+await test('ALP puma: zıplayan rakibi yakalar, eğilen rakibin üstünden geçer', async (o) => {
+  const p = await o({ p1: 'alp', p2: 'umut' });
+  const r = await p.evaluate(() => {
+    const m = window.__AF_match; m.disposed = !0;
+    const bos = () => ({ left: !1, right: !1, down: !1, jumpEdge: !1, dropEdge: !1, attacks: [!1, !1, !1, !1], ultEdge: !1, projEdge: !1, rollEdge: 0, sweepEdge: !1, flipPress: !1, dirPress: 0, flip: !1, guard: !1, dash: !1 });
+    const dene = (sav) => {
+      for (const f of [m.p1, m.p2]) { f.hp = f.maxHp; f.state = 'idle'; f.attack = null; f.vx = 0; f.vy = 0; f.y = 704; f.ground = 'g1'; f.gp = 100; }
+      m.projectiles = []; m.p1.x = 300; m.p2.x = 750; m.p1.facing = 1; m.p2.facing = -1; m.p1.meter = 100; const h0 = m.p2.hp;
+      for (let k = 0; k < 240; k++) { const a = bos(), b = bos(); k === 0 && (a.ultEdge = !0); sav === 'egil' && (b.down = !0); sav === 'zipla' && k === 6 && (b.jumpEdge = !0); m.input.consume = () => ({ p1: a, p2: b, pauseEdge: !1, boxesEdge: !1 }); m.step(1e3 / 60); }
+      return h0 - m.p2.hp;
+    };
+    return { zipla: dene('zipla'), egil: dene('egil') };
+  });
+  return { ok: r.zipla > 0 && r.egil === 0, note: `zıplayan ${r.zipla} hasar, eğilen ${r.egil}` };
+});
+
 // ---- Arenalar ----
-for (const [ar, beklenen] of [['ankara', 'g1'], ['samsun', 'g1'], ['corum', 'g1']]) await test(`Arena ${ar.toUpperCase()}: tek zemin, masa yok (yere iner)`, async (o) => {
+for (const [ar, beklenen] of [['ankara', 'g1'], ['samsun', 'g1'], ['corum', 'g1'], ['sakarya', 'g1']]) await test(`Arena ${ar.toUpperCase()}: tek zemin, masa yok (yere iner)`, async (o) => {
   const p = await o({ pre: undefined, mode: '2p', p1: 'umut', p2: 'sudem', arena: ar });
   await p.evaluate(() => { const m = window.__AF_match, a = m.p1; a.x = 690; a.y = 300; a.vy = 0; a.ground = null; a.state = 'air'; m.p2.x = 1250; });
   await wait(1200);

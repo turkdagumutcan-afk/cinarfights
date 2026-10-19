@@ -18,8 +18,8 @@ from PIL import Image  # noqa: E402
 
 FR = REPO / "assets" / "frames"
 FX = REPO / "assets" / "fx"
-OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut", "selim": "selim"}
-PORTRE = {"ahmet": "ahmet.webp", "mete": "metehan.webp", "sudem": "mcqueen.webp", "umut": "fotograf_canavari.webp", "selim": "selim.webp"}
+OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut", "selim": "selim", "alp": "alp"}
+PORTRE = {"ahmet": "ahmet.webp", "mete": "metehan.webp", "sudem": "mcqueen.webp", "umut": "fotograf_canavari.webp", "selim": "selim.webp", "alp": "alp.webp"}
 TEK = ["idle", "crouch", "jump", "hurt", "guard", "guardlow", "ult", "cast"]
 yazilan = []
 
@@ -77,6 +77,9 @@ if "mete" in sonuc:
 if "umut" in sonuc:
     for i, k in enumerate(sonuc["umut"]["foto"]["kareler"]):
         webp(boyla(k, 150), FX / f"umut_foto{i}.webp")
+if "alp" in sonuc:
+    for i, k in enumerate(sonuc["alp"]["puma"]["kareler"]):
+        webp(boyla(k, 220), FX / f"alp_puma{i}.webp")
 if "selim" in sonuc:
     for i, k in enumerate(sonuc["selim"]["sigara"]["kareler"]):
         webp(boyla(k, 90), FX / f"selim_sigara{i}.webp")

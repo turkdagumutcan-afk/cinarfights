@@ -201,3 +201,17 @@ function AF_motion(e, t, r) {
     t.dash = !0;
   }
 }
+
+// ---- ALP ulti: siyah puma ----
+// Yerde koşar (vuruş noktası alçak); rakibe ~300 px kala sıçrar. Sıçrayışta vuruş yüksekliği rakibin
+// gövde ortasına doğru kayar ama en az 190*AF_BOY px olur: zıplayan rakibi de yakalar, eğilen rakibin
+// üstünden geçer. Doğru cevap: zamanında eğilmek ya da korumak.
+function AF_pumaStep(n, hedef, ms) {
+  const hb = hedef.hurtbox(),
+    ileri = Math.sign(n.vx) * (hedef.x - n.x);
+  if (!n.leap && ileri > 0 && ileri < 300) ((n.leap = !0), X.jump && X.jump());
+  if (!n.leap) return;
+  const merkez = n.y - (hb.y + hb.h / 2),
+    hedefY = Math.max(190 * AF_BOY, merkez);
+  n.hy += (hedefY - n.hy) * Math.min(1, ms / 70);
+}

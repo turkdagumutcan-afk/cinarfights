@@ -1165,6 +1165,27 @@ var AF_CHARS = {
     img: () => gg(`/assets/selim.png`),
     stats: [],
   },
+  alp: {
+    id: `alp`,
+    name: `ALP`,
+    color: `#4f8cff`,
+    color2: `#a9c6ff`,
+    scale: 275, // 1.92 m: oyunun en uzunu (~%10)
+    same: !0,
+    halfW: 40,
+    // uzun menzil (Dhalsim): uzun kol/bacak -> en uzun vuruşlar; bedeli: en az can, en büyük hedef,
+    // uzun vuruşları biraz geç çıkar (ıskalarsa yakına girilip cezalandırılır)
+    kickX: 12, // tekme ~228 px (diğerleri ~216): bot simülasyonunda menzil çok etkili, avantaj küçük tutuldu
+    mod: { spd: 1, dmg: 1, sup: 1.08, jump: 1, kb: 1, hp: 140, reachX: 4 },
+    guard: !0,
+    tag: `Sakaryalı · Uzun boylu, uzun menzil`,
+    stil: `UZUN MENZİL`,
+    zorluk: 3,
+    ultName: `PUMA SALDIRISI!`,
+    ultHint: `sıçrayan siyah puma`,
+    img: () => gg(`/assets/alp.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
@@ -1173,8 +1194,9 @@ var AF_ARENAS = {
   ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1 },
   samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
   corum: { id: `corum`, name: `ÇORUM`, img: `/assets/corum_arena.png`, platform: !1 },
+  sakarya: { id: `sakarya`, name: `SAKARYA`, img: `/assets/sakarya_arena.png`, platform: !1 },
 };
-var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `random`];
+var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `sakarya`, `random`];
 var AF_PLAT = !1; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
 
 function AF_arena(id) {
@@ -1409,6 +1431,8 @@ var AF_FX = {},
     `selim_sigara0`,
     `selim_sigara1`,
     `selim_sigara2`,
+    `alp_puma0`,
+    `alp_puma1`,
   ],
   AF_fxP = null;
 
@@ -2387,12 +2411,12 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA`, alp: `SAKARYA` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`][(Math.random() * 5) | 0];
+  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`][(Math.random() * 6) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -2871,7 +2895,7 @@ function AF_Card({
 }
 
 function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
-  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `random`];
+  const cells = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `random`, 0];
   const tag = (txt, col, side) =>
     (0, P.jsx)(`span`, {
       className: `anim-blink font-monox`,
@@ -2894,7 +2918,7 @@ function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
     "data-testid": `char-grid`,
     style: {
       display: `grid`,
-      gridTemplateColumns: `repeat(3, 92px)`,
+      gridTemplateColumns: `repeat(4, 92px)`,
       gap: 10,
       justifyContent: `center`,
       padding: `14px 8px 4px`,
@@ -4481,7 +4505,9 @@ function AF_fxImg(t) {
               ? `umut_foto${(t.fi || 0) % 3}`
               : t.kind === `cig`
                 ? `selim_sigara${(t.fi || 0) % 3}`
-                : null;
+                : t.kind === `puma`
+                  ? `alp_puma${t.leap ? 1 : 0}`
+                  : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
 }
 
@@ -4502,10 +4528,12 @@ function Ty(e, t) {
               ? [54, 0.5, !1]
               : t.kind === `cig`
                 ? [34, 0.6, !1]
-                : [66, 0.55, !1];
+                : t.kind === `puma`
+                  ? [t.leap ? 118 : 96, 0.62, !0]
+                  : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
-    (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
+    (e.save(), e.translate(t.x, t.y - (t.kind === `puma` ? Math.max(0, t.hy - 70) : 0)), e.scale(n, 1));
     t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
     t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
     (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());
@@ -5261,6 +5289,22 @@ var AF_sweepDef = {
 };
 
 var Gy = {
+  // ALP ulti: siyah puma, rakibe sıçrayıp pençe atar
+  puma: {
+    id: `puma`,
+    label: `PUMA`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 19,
+    w: 0,
+    h: 0,
+    kbx: 620,
+    kby: -420,
+    hitstun: 650,
+    meter: 0,
+  },
   // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
   cig: {
     id: `cig`,
@@ -5744,6 +5788,20 @@ function AF_motion(e, t, r) {
     yut();
     t.dash = !0;
   }
+}
+
+// ---- ALP ulti: siyah puma ----
+// Yerde koşar (vuruş noktası alçak); rakibe ~300 px kala sıçrar. Sıçrayışta vuruş yüksekliği rakibin
+// gövde ortasına doğru kayar ama en az 190*AF_BOY px olur: zıplayan rakibi de yakalar, eğilen rakibin
+// üstünden geçer. Doğru cevap: zamanında eğilmek ya da korumak.
+function AF_pumaStep(n, hedef, ms) {
+  const hb = hedef.hurtbox(),
+    ileri = Math.sign(n.vx) * (hedef.x - n.x);
+  if (!n.leap && ileri > 0 && ileri < 300) ((n.leap = !0), X.jump && X.jump());
+  if (!n.leap) return;
+  const merkez = n.y - (hb.y + hb.h / 2),
+    hedefY = Math.max(190 * AF_BOY, merkez);
+  n.hy += (hedefY - n.hy) * Math.min(1, ms / 70);
 }
 
 // 65-game-match-engine.js — Maç motoru (Xy): güncelleme döngüsü, saldırı çözümü, separateBodies, çizim.
@@ -6464,6 +6522,15 @@ var Xy = class {
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
+          : e.charId === `alp`
+            ? // PUMA SALDIRISI: siyah puma ALP'in arkasından koşar, rakibe yaklaşınca sıçrar (AF_pumaStep, src/64)
+              (this.projectiles.push({
+                ...i(`puma`, e.y - 2, 1250, 0, 50, 120, 0),
+                x: e.x - e.facing * 170,
+                hy: 70,
+              }),
+              (this.announce = { text: `PUMA SALDIRISI!`, t: 0, dur: 900, size: 58, color: `#4f8cff` }),
+              X.zapCast())
           : e.charId === `selim`
             ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
               // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
@@ -6563,8 +6630,9 @@ var Xy = class {
           }));
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
+      n.kind === `puma` && AF_pumaStep(n, i, e);
       if (i.state !== `ko`) {
-        let e = n.kind === `car` || n.kind === `motor` ? n.y - 52 * AF_BOY : n.y,
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 52 * AF_BOY : n.kind === `puma` ? n.y - n.hy : n.y,
           t = Yy(n.x, e, n.r * AF_BOY, i.hurtbox());
         t &&
           ((n.dead = !0),

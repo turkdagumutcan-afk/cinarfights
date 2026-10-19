@@ -334,7 +334,9 @@ function AF_fxImg(t) {
               ? `umut_foto${(t.fi || 0) % 3}`
               : t.kind === `cig`
                 ? `selim_sigara${(t.fi || 0) % 3}`
-                : null;
+                : t.kind === `puma`
+                  ? `alp_puma${t.leap ? 1 : 0}`
+                  : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
 }
 
@@ -355,10 +357,12 @@ function Ty(e, t) {
               ? [54, 0.5, !1]
               : t.kind === `cig`
                 ? [34, 0.6, !1]
-                : [66, 0.55, !1];
+                : t.kind === `puma`
+                  ? [t.leap ? 118 : 96, 0.62, !0]
+                  : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
-    (e.save(), e.translate(t.x, t.y), e.scale(n, 1));
+    (e.save(), e.translate(t.x, t.y - (t.kind === `puma` ? Math.max(0, t.hy - 70) : 0)), e.scale(n, 1));
     t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
     t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
     (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());

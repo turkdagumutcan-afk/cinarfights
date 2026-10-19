@@ -716,6 +716,15 @@ var Xy = class {
             X.shutter(0.08),
             X.shutter(0.17),
             X.shutter(0.26))
+          : e.charId === `alp`
+            ? // PUMA SALDIRISI: siyah puma ALP'in arkasından koşar, rakibe yaklaşınca sıçrar (AF_pumaStep, src/64)
+              (this.projectiles.push({
+                ...i(`puma`, e.y - 2, 1250, 0, 50, 120, 0),
+                x: e.x - e.facing * 170,
+                hy: 70,
+              }),
+              (this.announce = { text: `PUMA SALDIRISI!`, t: 0, dur: 900, size: 58, color: `#4f8cff` }),
+              X.zapCast())
           : e.charId === `selim`
             ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
               // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
@@ -815,8 +824,9 @@ var Xy = class {
           }));
       let r = n.owner === 0 ? this.p1 : this.p2,
         i = n.owner === 0 ? this.p2 : this.p1;
+      n.kind === `puma` && AF_pumaStep(n, i, e);
       if (i.state !== `ko`) {
-        let e = n.kind === `car` || n.kind === `motor` ? n.y - 52 * AF_BOY : n.y,
+        let e = n.kind === `car` || n.kind === `motor` ? n.y - 52 * AF_BOY : n.kind === `puma` ? n.y - n.hy : n.y,
           t = Yy(n.x, e, n.r * AF_BOY, i.hurtbox());
         t &&
           ((n.dead = !0),

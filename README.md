@@ -1,8 +1,8 @@
 # ÇINAR FIGHTS
 
 Tarayıcıda çalışan, tek klavyede iki oyunculu retro arcade dövüş oyunu (eski adı ANKARA FIGHTER).
-**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı), **METEHAN** (müzisyen), **AHMET** (motorcu) ve **SELİM** (Ankaralı, elleri cebinde)
-**ANKARA, SAMSUN ve ÇORUM** arenalarında **en iyi 3 raunt** (2 raunt kazanan maçı alır, her raunt 99 saniye) karşı karşıya.
+**UMUT** (fotoğrafçı), **SUDEM** (McQueen hayranı), **METEHAN** (müzisyen), **AHMET** (motorcu), **SELİM** (Ankaralı, elleri cebinde) ve **ALP** (Sakaryalı, oyunun en uzunu)
+**ANKARA, SAMSUN, ÇORUM ve SAKARYA** arenalarında **en iyi 3 raunt** (2 raunt kazanan maçı alır, her raunt 99 saniye) karşı karşıya.
 Modlar: **1VSBOT**, **1VS1** (tek klavye) ve **ANTRENMAN** (kuklaya karşı).
 
 ## Çalıştırma
@@ -36,7 +36,7 @@ git clone https://github.com/turkdagumutcan-afk/cinarfights.git
 cd cinarfights
 npm install            # yalnızca testler için (Playwright); oyunu çalıştırmak için gerekmez
 npm run build          # src/*.js → js/game.bundle.js (+ index.html'e ?v= önbellek etiketi)
-npm test               # build + 44 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
+npm test               # build + 46 gerçek tarayıcı testi (ilk seferde: npx playwright install chromium)
 ```
 
 Test tarayıcısını indirecek yer yoksa Edge ile: `$env:CHROMIUM_PATH="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; npm test`
@@ -101,7 +101,8 @@ Genel: **ESC/P** duraklat · **F2** hitbox görünümü · **Enter/Space** menü
 
 **Ultiler:** UMUT **FLAŞ PATLAMASI** (3 fotoğraf, eğilerek kaçılır) · SUDEM **KA-ÇOV!** (yarış arabası, zıplayarak kaçılır) ·
 METEHAN **YILDIRIM NOTALARI** (yakında anında) · AHMET **GAZA BAS!** (arkadan gelen motor, zıplayarak kaçılır) ·
-SELİM **RA-MA-ZAAN** (baş, göğüs ve diz hizasında 3 sigara; en iyi savunma koruma).
+SELİM **RA-MA-ZAAN** (baş, göğüs ve diz hizasında 3 sigara; en iyi savunma koruma) ·
+ALP **PUMA SALDIRISI!** (siyah puma koşar ve sıçrar; zıplayanı yakalar, zamanında eğilen kurtulur).
 Kaçması kolay ulti daha çok hasar verir; ulti başına ortalama hasar dördünde eşittir.
 
 > UMUT'un takla / yer taklası / süpürme hareketi yeni çizimler gelene kadar **geçici olarak kapalı**.
@@ -124,7 +125,7 @@ Başlık ekranında **AYARLAR** (veya **3** tuşu) ve maç sırasında **ESC →
 - **Street Fighter II tarzı:** ortada Türkiye haritası (memleketler: UMUT ve SUDEM Ankara, METEHAN Samsun, AHMET Çorum), altında karakter ızgarası, kartta dönen portre. Kartta karakterin **stili** (DENGELİ, TANK…), **zorluk** yıldızları ve gerçek değerlerden hesaplanan **HIZ / GÜÇ / CAN** çubukları.
 - **Fare:** kutuya sol tık → P1, sağ tık veya Shift+tık → P2 · **?** rastgele karakter
 - **A / D** — P1 karakteri · **◄ / ►** — P2 (veya bot / kukla) karakteri
-- **Tab** — arena: ANKARA / SAMSUN / ÇORUM / RASTGELE
+- **Tab** — arena: ANKARA / SAMSUN / ÇORUM / SAKARYA / RASTGELE
 - **1 / 2 / 3** — bot zorluğu (1VSBOT)
 - **Z** — P1 hazır · **Num 1 / J** — P2 hazır · **Enter** — başlat · **ESC / ◀ GERİ** — önce hazırı iptal, sonra ana menü
 
