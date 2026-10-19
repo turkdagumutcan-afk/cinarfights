@@ -3,7 +3,7 @@
 window.__ANKARA_ASSETS__ = {
   "/assets/ankara_map.png": "assets/ankara_map.webp",
   "/assets/samsun_arena.png": "assets/samsun_arena.webp?v=1",
-  "/assets/ankara_sehir.png": "assets/ankara_sehir.webp?v=1",
+  "/assets/ankara_sehir.png": "assets/ankara_sehir.webp?v=2",
   "/assets/corum_arena.png": "assets/corum_arena.webp?v=1",
   "/assets/sakarya_arena.png": "assets/sakarya_arena.webp?v=1",
   "/assets/selim.png": "assets/selim.webp?v=1",

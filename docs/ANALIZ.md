@@ -846,3 +846,4 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 
 - Arena ayarı `rain: true` (`AF_ARENAS.ankara`). `AF_rain` (src/50): arka katman (240 ince damla, dövüşçülerin arkasında, sahneyi hafif karartır, zeminde sıçramalar) + ön katman (75 kalın damla, dövüşçülerin önünde). Rüzgârla hafif eğik; gerçek zamanla akar. 60 FPS korunuyor.
 - Arena seçiminde ANKARA hava durumu: Yağmurlu.
+- Arka plandaki araç **EGO körüklü otobüs** oldu (ChatGPT düzenlemesi, turuncu tabela okunmaz; zemin kenarı aynı, `ankara_sehir.webp?v=2`).
