@@ -3068,6 +3068,171 @@ function AF_Grid({ p1c, p2c, r1, r2, bot, dummy, onPick }) {
   });
 }
 
+
+// ---- Street Fighter V tarzı seçim ekranı (piksel) ----
+// Büyük yarı vücut seçim pozları: assets/ui/secim_<id>.webp (sağa bakar; P2 için aynalanır)
+function AF_SelPose({ side, id, ready, color }) {
+  const L = side === 1,
+    rnd = id === `random`;
+  return (0, P.jsx)(`div`, {
+    style: {
+      position: `absolute`,
+      bottom: 0,
+      [L ? `left` : `right`]: `1%`,
+      height: `min(84vh, 680px)`,
+      width: `min(40vw, 520px)`,
+      pointerEvents: `none`,
+      zIndex: 1,
+      display: `flex`,
+      alignItems: `flex-end`,
+      justifyContent: L ? `flex-start` : `flex-end`,
+    },
+    children: rnd
+      ? (0, P.jsx)(`span`, {
+          style: {
+            fontSize: `min(40vh, 320px)`,
+            lineHeight: 1,
+            fontWeight: 900,
+            color: `#ffd24a`,
+            textShadow: `6px 6px 0 #000, 0 0 30px #ffd24a88`,
+            fontFamily: `"Outfit Variable", Outfit, sans-serif`,
+            margin: `0 12%`,
+          },
+          children: `?`,
+        })
+      : (0, P.jsx)(
+          Qh.img,
+          {
+            src: gg(`/assets/ui/secim_${id}.png`),
+            alt: ``,
+            draggable: !1,
+            "data-testid": `p${side}-pose`,
+            initial: { opacity: 0, x: L ? -90 : 90, scaleX: L ? 1 : -1 },
+            animate: { opacity: 1, x: 0, scaleX: L ? 1 : -1 },
+            transition: { duration: 0.28, ease: `easeOut` },
+            style: {
+              height: `100%`,
+              width: `auto`,
+              imageRendering: `pixelated`,
+              // ekranın ortasına bakan kenar yumuşak kaybolur (kollar/saçlar kesik görünmez)
+              WebkitMaskImage: `linear-gradient(to right, #000 78%, transparent 99%)`,
+              maskImage: `linear-gradient(to right, #000 78%, transparent 99%)`,
+              filter: ready ? `drop-shadow(0 0 14px ${color}) brightness(1.08)` : `drop-shadow(0 0 6px #000)`,
+            },
+          },
+          id,
+        ),
+  });
+}
+
+function AF_SelSide({ side, id, ready, isBot, dummy, onPrev, onNext, onReady, canSwitch }) {
+  const L = side === 1,
+    rnd = id === `random`,
+    s = rnd ? null : AF_char(id),
+    c = rnd ? `#ffd24a` : s.color,
+    pc = L ? `#ff2a5f` : `#00c8ff`;
+  const arrow = (tid, fn, txt) =>
+    (0, P.jsx)(`button`, {
+      type: `button`,
+      "data-testid": tid,
+      onClick: fn,
+      disabled: !canSwitch,
+      className: `font-display rounded border border-white/20 bg-black/50 px-2 py-0.5 text-sm font-black hover:bg-white/10 disabled:opacity-30`,
+      style: { color: c },
+      children: txt,
+    });
+  const yildiz = (n) => `★`.repeat(n || 1) + `☆`.repeat(3 - (n || 1));
+  const ult = s ? `↓↘→↓↘→ ya da ${AF_k(side - 1, `ult`, !0)} — ${s.ultName}` : `Karakter dövüş başında belli olur`;
+  return (0, P.jsxs)(`div`, {
+    "data-testid": `p${side}-card`,
+    style: {
+      position: `absolute`,
+      bottom: 18,
+      [L ? `left` : `right`]: 26,
+      width: 340,
+      textAlign: L ? `left` : `right`,
+      zIndex: 4,
+    },
+    children: [
+      (0, P.jsxs)(`div`, {
+        className: `flex items-center gap-2`,
+        style: { justifyContent: L ? `flex-start` : `flex-end` },
+        children: [
+          (0, P.jsx)(`span`, {
+            className: `font-monox text-xs font-bold tracking-widest`,
+            style: { color: pc, textShadow: `1px 1px 0 #000` },
+            children: isBot ? (dummy ? `KUKLA` : `BOT`) : `${side}P`,
+          }),
+          (0, P.jsx)(`span`, {
+            "data-testid": `p${side}-ready-indicator`,
+            className: `font-monox rounded border px-2 py-0.5 text-[10px] tracking-widest`,
+            style: { borderColor: c, color: ready ? `#06070f` : c, background: ready ? c : `rgba(0,0,0,.55)` },
+            children: ready ? `HAZIR ✓` : `BEKLİYOR`,
+          }),
+        ],
+      }),
+      (0, P.jsxs)(`div`, {
+        className: `flex items-center gap-3`,
+        style: { justifyContent: `flex-start`, flexDirection: L ? `row` : `row-reverse` },
+        children: [
+          (0, P.jsx)(`h2`, {
+            "data-testid": `p${side}-char-name`,
+            className: `font-display text-5xl font-black tracking-wide`,
+            style: { color: c, textShadow: `3px 3px 0 #000, 0 0 22px ${c}88` },
+            children: rnd ? `RASTGELE` : s.name,
+          }),
+          // P2 satırı ters dizildiği için okların sırası da ters verilir (ekranda yine ◀ ▶)
+          ...(L
+            ? [arrow(`p${side}-prev-char`, onPrev, `◀`), arrow(`p${side}-next-char`, onNext, `▶`)]
+            : [arrow(`p${side}-next-char`, onNext, `▶`), arrow(`p${side}-prev-char`, onPrev, `◀`)]),
+        ],
+      }),
+      (0, P.jsx)(`p`, {
+        "data-testid": `p${side}-char-style`,
+        className: `font-monox text-[11px] tracking-widest`,
+        style: { color: `#e2e8f0`, textShadow: `1px 1px 0 #000` },
+        children: rnd ? `SÜRPRİZ` : `${s.stil} · OYNANIŞ ${yildiz(s.zorluk)} · ${AF_HOME[s.id] || ``}`,
+      }),
+      !rnd &&
+        (0, P.jsx)(`div`, {
+          className: `mt-2 space-y-1`,
+          children: AF_statBars(s).map(([e, t]) =>
+            (0, P.jsxs)(
+              `div`,
+              {
+                className: `font-monox flex items-center gap-2 text-[10px]`,
+                style: { flexDirection: L ? `row` : `row-reverse` },
+                children: [
+                  (0, P.jsx)(`span`, { className: `w-9 text-slate-300`, style: { textShadow: `1px 1px 0 #000` }, children: e }),
+                  (0, P.jsx)(`div`, {
+                    className: `h-2 flex-1 rounded-sm bg-black/70`,
+                    style: { border: `1px solid #ffffff22`, transform: L ? `none` : `scaleX(-1)` },
+                    children: (0, P.jsx)(`div`, { className: `h-full rounded-sm`, style: { width: `${t * 100}%`, background: c } }),
+                  }),
+                ],
+              },
+              e,
+            ),
+          ),
+        }),
+      (0, P.jsx)(`p`, {
+        className: `font-monox mt-2 text-[10px] text-slate-300`,
+        style: { textShadow: `1px 1px 0 #000` },
+        children: ult,
+      }),
+      (0, P.jsx)(uy, {
+        "data-testid": `p${side}-ready-button`,
+        variant: ready ? `default` : `outline`,
+        disabled: isBot,
+        className: `font-display mt-2 w-40 font-bold tracking-widest disabled:opacity-80`,
+        style: ready ? { background: c, color: `#06070f` } : { borderColor: c, color: c, background: `rgba(0,0,0,.55)` },
+        onClick: onReady,
+        children: isBot ? (dummy ? `KUKLA HAZIR ✓` : `BOT HAZIR ✓`) : ready ? `HAZIR ✓` : `HAZIR`,
+      }),
+    ],
+  });
+}
+
 var AF_DIFFS = [
   [`easy`, `KOLAY`, `#3ddc84`],
   [`normal`, `NORMAL`, `#ffd24a`],
@@ -3105,8 +3270,8 @@ function gy() {
     setR1(!0);
     setR2(!0);
     window.setTimeout(
-      () => nav(`/battle?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}&arena=${t.ar}`),
-      650,
+      () => nav(`/arena?mode=${train ? `training` : t.bot ? `bot` : `2p`}&p1=${a}&p2=${b}&diff=${t.df}&arena=${t.ar}`),
+      450,
     );
   }, [nav]);
   const ready1 = (0, N.useCallback)(() => {
@@ -3201,8 +3366,6 @@ function gy() {
       ].includes(e.code) && e.preventDefault();
       e.code === `Escape` || e.code === `Backspace`
         ? (e.preventDefault(), back())
-        : e.code === `Tab`
-        ? (e.preventDefault(), asel(AF_ARENA_SEL[(AF_ARENA_SEL.indexOf(rf.current.ar) + 1) % AF_ARENA_SEL.length]))
         : e.code === `KeyZ`
         ? ready1()
         : e.code === `Numpad1` || e.code === `KeyJ`
@@ -3226,166 +3389,292 @@ function gy() {
     window.addEventListener(`keydown`, h);
     return () => window.removeEventListener(`keydown`, h);
   }, [ready1, ready2, start, mv1, mv2, dsel, asel, bot, back]);
-  const mp = (id, ready, isBot) => ({ id, rand: id === `random`, ready, bot: isBot, dummy: isBot && train });
   return (0, P.jsxs)(`div`, {
     "data-testid": `select-screen`,
-    className: `scanlines relative min-h-svh overflow-hidden bg-[#06070f] px-4 py-6 text-white`,
+    className: `scanlines relative h-svh min-h-[600px] overflow-hidden bg-[#06070f] text-white`,
     children: [
       (0, P.jsx)(`div`, {
-        className: `pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,240,255,0.08),transparent_55%)]`,
+        style: {
+          position: `absolute`,
+          inset: 0,
+          backgroundImage: `url(${gg(`/assets/ui/secim_bg.png`)})`,
+          backgroundSize: `cover`,
+          backgroundPosition: `50% 35%`,
+          imageRendering: `pixelated`,
+        },
+      }),
+      (0, P.jsx)(`div`, {
+        className: `pointer-events-none absolute inset-0`,
+        style: { background: `linear-gradient(to bottom, rgba(6,7,15,.15) 0%, rgba(6,7,15,0) 40%, rgba(6,7,15,.85) 100%)` },
+      }),
+      (0, P.jsx)(AF_SelPose, { side: 1, id: p1c, ready: r1, color: p1c === `random` ? `#ffd24a` : AF_char(p1c).color }),
+      (0, P.jsx)(AF_SelPose, { side: 2, id: p2c, ready: r2, color: p2c === `random` ? `#ffd24a` : AF_char(p2c).color }),
+      (0, P.jsx)(`button`, {
+        type: `button`,
+        "data-testid": `select-back-button`,
+        onClick: back,
+        className: `font-display absolute left-4 top-4 z-10 rounded-lg border-2 border-[#272744] bg-black/60 px-4 py-2 text-sm font-black tracking-wider text-slate-200 transition-colors hover:border-cyan-300 hover:text-white`,
+        children: `◀ GERİ`,
       }),
       (0, P.jsxs)(`div`, {
-        className: `relative z-10 mx-auto max-w-7xl`,
+        className: `absolute left-1/2 top-3 z-10 -translate-x-1/2 text-center`,
         children: [
-          (0, P.jsx)(`button`, {
-            type: `button`,
-            "data-testid": `select-back-button`,
-            onClick: back,
-            className: `font-display absolute left-0 top-0 rounded-lg border-2 border-[#272744] bg-black/55 px-4 py-2 text-sm font-black tracking-wider text-slate-200 transition-colors hover:border-cyan-300 hover:text-white`,
-            children: `◀ GERİ`,
+          (0, P.jsx)(`h1`, {
+            className: `neon-cyan font-display text-3xl font-black tracking-wide`,
+            style: { textShadow: `3px 3px 0 #000, 0 0 18px #00f0ff` },
+            children: `KARAKTER SEÇİMİ`,
           }),
-          (0, P.jsxs)(`div`, {
-            className: `text-center`,
-            children: [
-              (0, P.jsx)(`h1`, {
-                className: `neon-cyan font-display text-3xl font-black tracking-wide sm:text-4xl`,
-                children: `DÖVÜŞÇÜ SEÇİMİ`,
-              }),
-              (0, P.jsxs)(`p`, {
-                "data-testid": `select-mode-label`,
-                className: `font-monox mt-1 text-xs tracking-[0.3em] text-slate-400`,
-                children: [
-                  train ? `ANTRENMAN · KUKLAYA KARŞI` : bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`,
-                  train ? ` · SÜRE YOK · CAN DOLAR` : ` · 99 SANİYE · EN İYİ 3 RAUNT`,
-                ],
-              }),
-            ],
+          (0, P.jsx)(`p`, {
+            "data-testid": `select-mode-label`,
+            className: `font-monox mt-0.5 text-[11px] tracking-[0.3em] text-slate-200`,
+            style: { textShadow: `1px 1px 0 #000` },
+            children:
+              (train ? `ANTRENMAN · KUKLAYA KARŞI` : bot ? `1 OYUNCU · BOTA KARŞI` : `2 OYUNCU · YEREL`) +
+              (train ? ` · SÜRE YOK` : ` · EN İYİ 3 RAUNT`),
           }),
-          (0, P.jsxs)(`div`, {
-            className: `mt-6 flex flex-col items-stretch justify-center gap-4 lg:flex-row`,
-            children: [
-              (0, P.jsx)(AF_Card, {
-                side: 1,
-                charId: p1c,
-                onPrev: () => mv1(-1),
-                onNext: () => mv1(1),
-                ready: r1,
-                onReady: ready1,
-                isBot: !1,
-                canSwitch: !r1,
-              }),
-              (0, P.jsxs)(`div`, {
-                className: `flex flex-1 flex-col items-center justify-start gap-2`,
-                children: [
-                  (0, P.jsx)(AF_Map, { p1: mp(p1c, r1, !1), p2: mp(p2c, r2, bot) }),
-                  (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
-                  (0, P.jsxs)(`div`, {
-                    "data-testid": `arena-picker`,
-                    className: `flex flex-col items-center gap-2`,
-                    children: [
-                      (0, P.jsx)(`p`, {
-                        className: `font-monox text-[10px] tracking-[0.3em] text-slate-500`,
-                        children: `ARENA · TAB`,
-                      }),
-                      (0, P.jsx)(`div`, {
-                        className: `flex gap-2`,
-                        children: AF_ARENA_SEL.map((id) =>
-                          (0, P.jsx)(
-                            uy,
-                            {
-                              "data-testid": `arena-${id}`,
-                              variant: ar === id ? `default` : `outline`,
-                              size: `sm`,
-                              onClick: () => asel(id),
-                              className: `font-display font-bold tracking-widest`,
-                              style: ar === id ? { background: `#00f0ff`, color: `#06070f` } : { borderColor: `#272744`, color: `#cbd5e1` },
-                              children: id === `random` ? `RASTGELE` : AF_ARENAS[id].name,
-                            },
-                            id,
-                          ),
-                        ),
-                      }),
-                    ],
-                  }),
-                  bot &&
-                    !train &&
-                    (0, P.jsxs)(`div`, {
-                      "data-testid": `difficulty-picker`,
-                      className: `flex flex-col items-center gap-2`,
-                      children: [
-                        (0, P.jsx)(`p`, {
-                          className: `font-monox text-[10px] tracking-[0.3em] text-slate-500`,
-                          children: `BOT ZORLUĞU · 1/2/3`,
-                        }),
-                        (0, P.jsx)(`div`, {
-                          className: `flex gap-2`,
-                          children: AF_DIFFS.map(([e, t, n]) =>
-                            (0, P.jsx)(
-                              uy,
-                              {
-                                "data-testid": `diff-${e}`,
-                                variant: df === e ? `default` : `outline`,
-                                size: `sm`,
-                                onClick: () => dsel(e),
-                                className: `font-display font-bold tracking-widest`,
-                                style:
-                                  df === e
-                                    ? { background: n, color: `#06070f` }
-                                    : { borderColor: n, color: n },
-                                children: t,
-                              },
-                              e,
-                            ),
-                          ),
-                        }),
-                      ],
-                    }),
-                  p1c === p2c &&
-                    p1c !== `random` &&
-                    (0, P.jsx)(`p`, {
-                      className: `font-monox text-[10px] tracking-widest text-amber-300/80`,
-                      children: `AYNA MAÇI — P2 farklı renk tonuyla dövüşür`,
-                    }),
-                  (0, P.jsx)(`p`, {
-                    "data-testid": `select-status`,
-                    className: `font-monox text-center text-sm text-slate-300`,
-                    children: d
-                      ? `DÖVÜŞ BAŞLIYOR...`
-                      : train
-                        ? `KARAKTER: A/D (SEN) · ◄/► (KUKLA) · HAZIR OL: Z · ESC GERİ`
-                        : bot
-                        ? `KARAKTER: A/D (SEN) · ◄/► (BOT) · HAZIR OL: Z`
-                        : `KARAKTER: A/D (P1) · ◄/► (P2) · HAZIR: Z / NUM 1`,
-                  }),
-                  (0, P.jsx)(`p`, {
-                    className: `font-monox text-center text-[10px] tracking-wider text-slate-500`,
-                    children: `Kutuya tıkla: P1 · sağ tık veya Shift+tık: P2 · ? = rastgele`,
-                  }),
-                  (0, P.jsx)(uy, {
-                    "data-testid": `select-fight-button`,
-                    size: `lg`,
-                    onClick: start,
-                    className: `font-display px-10 text-xl font-black tracking-widest`,
-                    children: train ? `ANTRENMAN ▶` : `DÖVÜŞ! ▶`,
-                  }),
-                ],
-              }),
-              (0, P.jsx)(AF_Card, {
-                side: 2,
-                charId: p2c,
-                onPrev: () => mv2(-1),
-                onNext: () => mv2(1),
-                ready: r2,
-                onReady: ready2,
-                isBot: bot,
-                dummy: train,
-                canSwitch: bot ? !0 : !r2,
-              }),
-            ],
+        ],
+      }),
+      (0, P.jsx)(AF_SelSide, {
+        side: 1,
+        id: p1c,
+        ready: r1,
+        isBot: !1,
+        onPrev: () => mv1(-1),
+        onNext: () => mv1(1),
+        onReady: ready1,
+        canSwitch: !r1,
+      }),
+      (0, P.jsx)(AF_SelSide, {
+        side: 2,
+        id: p2c,
+        ready: r2,
+        isBot: bot,
+        dummy: train,
+        onPrev: () => mv2(-1),
+        onNext: () => mv2(1),
+        onReady: ready2,
+        canSwitch: bot ? !0 : !r2,
+      }),
+      (0, P.jsxs)(`div`, {
+        className: `absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5`,
+        children: [
+          (0, P.jsx)(AF_Grid, { p1c, p2c, r1, r2, bot, dummy: train, onPick: pick }),
+          bot &&
+            !train &&
+            (0, P.jsxs)(`div`, {
+              "data-testid": `difficulty-picker`,
+              className: `flex items-center gap-2`,
+              children: [
+                (0, P.jsx)(`span`, { className: `font-monox text-[10px] tracking-[0.2em] text-slate-300`, children: `BOT · 1/2/3` }, `b`),
+                ...AF_DIFFS.map(([e, t, n]) =>
+                  (0, P.jsx)(
+                    uy,
+                    {
+                      "data-testid": `diff-${e}`,
+                      variant: df === e ? `default` : `outline`,
+                      size: `sm`,
+                      onClick: () => dsel(e),
+                      className: `font-display h-7 px-3 font-bold tracking-widest`,
+                      style: df === e ? { background: n, color: `#06070f` } : { borderColor: n, color: n, background: `rgba(0,0,0,.55)` },
+                      children: t,
+                    },
+                    e,
+                  ),
+                ),
+              ],
+            }),
+          p1c === p2c &&
+            p1c !== `random` &&
+            (0, P.jsx)(`p`, {
+              className: `font-monox text-[10px] tracking-widest text-amber-300`,
+              children: `AYNA MAÇI — P2 farklı renk tonuyla`,
+            }),
+          (0, P.jsx)(`p`, {
+            "data-testid": `select-status`,
+            className: `font-monox text-center text-[11px] text-slate-200`,
+            style: { textShadow: `1px 1px 0 #000` },
+            children: d
+              ? `ARENA SEÇİMİNE GEÇİLİYOR...`
+              : bot
+                ? `A/D SEN · ◄/► ${train ? `KUKLA` : `BOT`} · Z HAZIR · ESC GERİ`
+                : `A/D P1 · ◄/► P2 · HAZIR: Z / NUM 1 · ESC GERİ`,
+          }),
+          (0, P.jsx)(uy, {
+            "data-testid": `select-fight-button`,
+            onClick: start,
+            className: `font-display h-9 px-8 text-lg font-black tracking-widest`,
+            children: `DEVAM ▶`,
           }),
         ],
       }),
     ],
+  });
+}
+
+// ---- Arena seçimi (Street Fighter V "STAGE SELECT" tarzı) ----
+// Çerçeve görseli assets/ui/arena_bg (1376x768); önizleme / başlık / ad yuvaları yüzde konumla oturur.
+var AF_ARENA_BILGI = {
+  ankara: [`Başkent`, `Akşam`, `Açık`],
+  samsun: [`Karadeniz kıyısı`, `Gün batımı`, `Açık`],
+  corum: [`Hitit diyarı`, `Gün batımı`, `Açık`],
+  sakarya: [`Sapanca Gölü`, `Sabah`, `Sisli`],
+};
+
+function AF_ArenaSelect() {
+  const nav = wn(),
+    [q] = Zr(),
+    ilk = AF_ARENA_SEL.indexOf(q.get(`arena`) || `ankara`),
+    [ix, setIx] = (0, N.useState)(ilk < 0 ? 0 : ilk),
+    lock = (0, N.useRef)(!1),
+    rf = (0, N.useRef)(ix);
+  rf.current = ix;
+  const qs = (ar) =>
+    `mode=${q.get(`mode`) || `2p`}&p1=${q.get(`p1`) || `umut`}&p2=${q.get(`p2`) || `sudem`}&diff=${q.get(`diff`) || `normal`}&arena=${ar}`;
+  const mv = (0, N.useCallback)((d) => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    setIx((v) => (v + d + AF_ARENA_SEL.length) % AF_ARENA_SEL.length);
+  }, []);
+  const ok = (0, N.useCallback)(() => {
+    if (lock.current) return;
+    lock.current = !0;
+    X.ensure();
+    X.uiClick();
+    const id = AF_ARENA_SEL[rf.current],
+      ar = id === `random` ? AF_arena(`random`).id : id;
+    nav(`/battle?${qs(ar)}`);
+  }, [nav]);
+  const geri = (0, N.useCallback)(() => {
+    if (lock.current) return;
+    X.ensure();
+    X.uiClick();
+    nav(`/select?${qs(AF_ARENA_SEL[rf.current])}`);
+  }, [nav]);
+  (0, N.useEffect)(() => {
+    const h = (e) => {
+      [`ArrowLeft`, `ArrowRight`, `Numpad1`, `Space`].includes(e.code) && e.preventDefault();
+      e.code === `KeyA` || e.code === `ArrowLeft`
+        ? mv(-1)
+        : e.code === `KeyD` || e.code === `ArrowRight`
+          ? mv(1)
+          : [`KeyZ`, `Numpad1`, `KeyJ`, `Enter`, `Space`].includes(e.code)
+            ? ok()
+            : (e.code === `Escape` || e.code === `Backspace`) && (e.preventDefault(), geri());
+    };
+    window.addEventListener(`keydown`, h);
+    return () => window.removeEventListener(`keydown`, h);
+  }, [mv, ok, geri]);
+  const id = AF_ARENA_SEL[ix],
+    rnd = id === `random`,
+    A = rnd ? null : AF_ARENAS[id],
+    bilgi = rnd ? [`Sürpriz`, `?`, `?`] : AF_ARENA_BILGI[id] || [``, ``, ``],
+    pct = (v) => `${v}%`;
+  return (0, P.jsx)(`div`, {
+    "data-testid": `arena-screen`,
+    className: `scanlines flex h-svh items-center justify-center overflow-hidden bg-[#06070f] text-white`,
+    children: (0, P.jsxs)(`div`, {
+      style: { position: `relative`, width: `min(100vw, calc(100svh * 1.7917))`, aspectRatio: `1376 / 768` },
+      children: [
+        (0, P.jsx)(`img`, {
+          src: gg(`/assets/ui/arena_bg.png`),
+          alt: ``,
+          draggable: !1,
+          style: { position: `absolute`, inset: 0, width: `100%`, height: `100%`, imageRendering: `pixelated` },
+        }),
+        (0, P.jsx)(`div`, {
+          style: { position: `absolute`, left: pct(19.6), top: pct(14.4), width: pct(60.9), height: pct(41.4), overflow: `hidden`, background: `#0a1238` },
+          children: rnd
+            ? (0, P.jsx)(`div`, {
+                className: `flex h-full w-full items-center justify-center`,
+                style: { fontSize: `min(16vw, 22vh)`, fontWeight: 900, color: `#ffd24a`, textShadow: `6px 6px 0 #000` },
+                children: `?`,
+              })
+            : (0, P.jsx)(
+                Qh.img,
+                {
+                  src: gg(A.img),
+                  alt: ``,
+                  draggable: !1,
+                  "data-testid": `arena-preview`,
+                  initial: { opacity: 0, scale: 1.06 },
+                  animate: { opacity: 1, scale: 1 },
+                  transition: { duration: 0.25 },
+                  style: { width: `100%`, height: `100%`, objectFit: `cover`, imageRendering: `pixelated` },
+                },
+                id,
+              ),
+        }),
+        (0, P.jsx)(`div`, {
+          className: `font-display flex items-center justify-center font-black tracking-[0.3em]`,
+          style: { position: `absolute`, left: pct(25), top: pct(3.5), width: pct(50), height: pct(8), fontSize: `min(2.4vw, 4.2vh)`, color: `#ffe9a8`, textShadow: `2px 2px 0 #000, 0 0 12px #ffb000` },
+          children: `ARENA SEÇİMİ`,
+        }),
+        (0, P.jsxs)(`div`, {
+          className: `flex flex-col items-center justify-center`,
+          style: { position: `absolute`, left: pct(25), top: pct(58.3), width: pct(50), height: pct(7.2) },
+          children: [
+            (0, P.jsx)(`div`, {
+              "data-testid": `arena-name`,
+              className: `font-display font-black tracking-widest`,
+              style: { fontSize: `min(2.6vw, 4.6vh)`, lineHeight: 1, color: `#fff`, textShadow: `3px 3px 0 #000, 0 0 14px #00f0ff` },
+              children: rnd ? `RASTGELE` : `${A.name} · ${bilgi[0]}`,
+            }),
+            (0, P.jsx)(`div`, {
+              className: `font-monox tracking-widest text-cyan-100`,
+              style: { fontSize: `min(1vw, 1.8vh)`, marginTop: 3, textShadow: `1px 1px 0 #000` },
+              children: `Saat: ${bilgi[1]}  ·  Hava: ${bilgi[2]}`,
+            }),
+          ],
+        }),
+        (0, P.jsx)(`div`, {
+          "data-testid": `arena-cards`,
+          className: `flex items-end justify-center`,
+          style: { position: `absolute`, left: 0, right: 0, top: pct(69), height: pct(24), gap: `1.1%` },
+          children: AF_ARENA_SEL.map((a, k) => {
+            const sec = k === ix,
+              r = a === `random`;
+            return (0, P.jsx)(
+              `button`,
+              {
+                type: `button`,
+                "data-testid": `arena-${a}`,
+                onClick: () => (sec ? ok() : (X.ensure(), X.uiClick(), setIx(k))),
+                style: {
+                  width: `7.4%`,
+                  height: sec ? `100%` : `82%`,
+                  border: `3px solid ${sec ? `#00f0ff` : `#2a3358`}`,
+                  borderRadius: 4,
+                  boxShadow: sec ? `0 0 18px #00f0ff, 0 0 4px #fff` : `none`,
+                  background: r ? `radial-gradient(circle, #3a2a00, #120c00)` : `url(${gg(AF_ARENAS[a].img)}) center / cover no-repeat`,
+                  filter: sec ? `none` : `brightness(.5) saturate(.7)`,
+                  transition: `all .15s`,
+                  cursor: `pointer`,
+                  position: `relative`,
+                  imageRendering: `pixelated`,
+                  color: `#ffd24a`,
+                  fontSize: `min(3vw, 5vh)`,
+                  fontWeight: 900,
+                },
+                children: r
+                  ? `?`
+                  : (0, P.jsx)(`span`, {
+                      className: `font-monox`,
+                      style: { position: `absolute`, left: 0, right: 0, bottom: 2, fontSize: `min(.8vw, 1.4vh)`, color: `#fff`, background: `rgba(0,0,0,.7)`, letterSpacing: `.1em` },
+                      children: AF_ARENAS[a].name,
+                    }),
+              },
+              a,
+            );
+          }),
+        }),
+        (0, P.jsx)(`p`, {
+          className: `font-monox text-center tracking-widest text-slate-300`,
+          style: { position: `absolute`, left: 0, right: 0, bottom: pct(1.5), fontSize: `min(1vw, 1.8vh)`, textShadow: `1px 1px 0 #000` },
+          children: `◀ ▶ / A D SEÇ  ·  Z / NUM 1 / ENTER ONAYLA  ·  ESC KARAKTER SEÇİMİ`,
+        }),
+      ],
+    }),
   });
 }
 
@@ -6908,6 +7197,88 @@ function Zy(e, t, n) {
   );
 }
 
+// ---- VS ekranı (Mortal Kombat tarzı): iki seçim pozu, alevli VS, arena adı ve yüklenme çubuğu ----
+var AF_VS_MS = 2600;
+
+function AF_VsScreen({ a, b, arena }) {
+  const A = AF_ARENAS[arena] || AF_ARENAS.ankara,
+    bilgi = (typeof AF_ARENA_BILGI !== `undefined` && AF_ARENA_BILGI[arena]) || [``],
+    poz = (c, L) =>
+      (0, P.jsx)(Qh.img, {
+        src: gg(`/assets/ui/secim_${c.id}.png`),
+        alt: ``,
+        draggable: !1,
+        initial: { opacity: 0, x: L ? -260 : 260, scaleX: L ? 1 : -1 },
+        animate: { opacity: 1, x: 0, scaleX: L ? 1 : -1 },
+        transition: { duration: 0.45, ease: `easeOut` },
+        style: {
+          position: `absolute`,
+          bottom: 0,
+          [L ? `left` : `right`]: `2%`,
+          height: `80%`,
+          imageRendering: `pixelated`,
+          WebkitMaskImage: `linear-gradient(to right, #000 80%, transparent 99%)`,
+          maskImage: `linear-gradient(to right, #000 80%, transparent 99%)`,
+          filter: `drop-shadow(0 0 16px ${c.color})`,
+        },
+      }),
+    ad = (c, L) =>
+      (0, P.jsx)(Qh.div, {
+        className: `font-display font-black tracking-wide`,
+        initial: { opacity: 0, y: -30 },
+        animate: { opacity: 1, y: 0 },
+        transition: { delay: 0.3, duration: 0.3 },
+        style: { position: `absolute`, top: `4%`, [L ? `left` : `right`]: `3%`, fontSize: `min(6vw, 9vh)`, color: c.color, textShadow: `4px 4px 0 #000, 0 0 24px ${c.color}` },
+        children: c.name,
+      });
+  return (0, P.jsxs)(`div`, {
+    "data-testid": `vs-screen`,
+    className: `scanlines absolute inset-0 z-30 overflow-hidden bg-black`,
+    children: [
+      (0, P.jsx)(`div`, {
+        style: { position: `absolute`, inset: `-20px`, backgroundImage: `url(${gg(A.img)})`, backgroundSize: `cover`, backgroundPosition: `center`, filter: `blur(6px) brightness(.45)` },
+      }),
+      (0, P.jsx)(`div`, {
+        style: { position: `absolute`, inset: 0, background: `linear-gradient(105deg, rgba(150,10,40,.55) 0%, rgba(150,10,40,.55) 49%, rgba(10,50,140,.55) 51%, rgba(10,50,140,.55) 100%)` },
+      }),
+      poz(a, !0),
+      poz(b, !1),
+      ad(a, !0),
+      ad(b, !1),
+      (0, P.jsx)(Qh.img, {
+        src: gg(`/assets/ui/vs.png`),
+        alt: `VS`,
+        draggable: !1,
+        initial: { opacity: 0, scale: 2.6, rotate: -8 },
+        animate: { opacity: 1, scale: 1, rotate: 0 },
+        transition: { delay: 0.35, duration: 0.35, ease: `backOut` },
+        style: { position: `absolute`, left: `50%`, top: `46%`, width: `min(34vw, 52vh)`, marginLeft: `calc(min(34vw, 52vh) / -2)`, transform: `translateY(-50%)`, imageRendering: `pixelated`, filter: `drop-shadow(0 0 22px #ff7a00)` },
+      }),
+      (0, P.jsxs)(`div`, {
+        className: `absolute bottom-[5%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2`,
+        children: [
+          (0, P.jsx)(`p`, {
+            className: `font-display font-black tracking-[0.25em] text-white`,
+            style: { fontSize: `min(1.8vw, 3vh)`, textShadow: `2px 2px 0 #000` },
+            children: `${A.name}${bilgi[0] ? ` · ${bilgi[0]}` : ``}`,
+          }),
+          (0, P.jsx)(`div`, {
+            style: { width: `min(30vw, 420px)`, height: 14, border: `2px solid #ffc850`, borderRadius: 7, background: `rgba(0,0,0,.6)`, overflow: `hidden` },
+            children: (0, P.jsx)(Qh.div, {
+              "data-testid": `vs-loading`,
+              initial: { width: `0%` },
+              animate: { width: `100%` },
+              transition: { duration: AF_VS_MS / 1e3, ease: `linear` },
+              style: { height: `100%`, background: `linear-gradient(90deg, #ff7a00, #ffd24a)` },
+            }),
+          }),
+          (0, P.jsx)(`p`, { className: `font-monox text-[11px] tracking-[0.4em] text-amber-200`, children: `YÜKLENİYOR` }),
+        ],
+      }),
+    ],
+  });
+}
+
 function Qy() {
   let e = (0, N.useRef)(null),
     t = (0, N.useRef)(null),
@@ -6925,6 +7296,8 @@ function Qy() {
     af1 = AF_char(l.get(`p1`) || `umut`),
     af2 = AF_char(l.get(`p2`) || `sudem`),
     afd = [`easy`, `normal`, `hard`].includes(l.get(`diff`)) ? l.get(`diff`) : `normal`,
+    // VS ekranı (dövüş öncesi, yüklenme çubuklu); testler &vs=0 ile atlar
+    vsOn = l.get(`vs`) !== `0`,
     d = `?mode=${tr ? `training` : u ? `bot` : `2p`}&p1=${af1.id}&p2=${af2.id}&diff=${afd}&arena=${l.get(`arena`) || `ankara`}`;
   // Antrenman: R ile konumları ve canları sıfırla
   (0, N.useEffect)(() => {
@@ -6939,7 +7312,7 @@ function Qy() {
     let i = !1,
       o = null;
     return (
-      Eg(af1.id, af2.id, ar).then((e) => {
+      Promise.all([Eg(af1.id, af2.id, ar), new Promise((k) => setTimeout(k, vsOn ? AF_VS_MS : 0))]).then(([e]) => {
         i ||
           ((o = new Xy(
             n,
@@ -7178,13 +7551,15 @@ function Qy() {
           }),
         }),
       !n &&
-        (0, P.jsx)(`div`, {
-          className: `absolute inset-0 z-10 flex items-center justify-center bg-black`,
-          children: (0, P.jsx)(`p`, {
-            className: `font-monox animate-pulse text-sm tracking-[0.4em] text-cyan-300`,
-            children: `YÜKLENİYOR...`,
-          }),
-        }),
+        (vsOn
+          ? (0, P.jsx)(AF_VsScreen, { a: af1, b: af2, arena: ar })
+          : (0, P.jsx)(`div`, {
+              className: `absolute inset-0 z-10 flex items-center justify-center bg-black`,
+              children: (0, P.jsx)(`p`, {
+                className: `font-monox animate-pulse text-sm tracking-[0.4em] text-cyan-300`,
+                children: `YÜKLENİYOR...`,
+              }),
+            })),
     ],
   });
 }
@@ -7196,6 +7571,7 @@ function $y() {
         children: [
           (0, P.jsx)(Xn, { path: `/`, element: (0, P.jsx)(kg, {}) }),
           (0, P.jsx)(Xn, { path: `/select`, element: (0, P.jsx)(gy, {}) }),
+          (0, P.jsx)(Xn, { path: `/arena`, element: (0, P.jsx)(AF_ArenaSelect, {}) }),
           (0, P.jsx)(Xn, { path: `/battle`, element: (0, P.jsx)(Qy, {}) }),
           (0, P.jsx)(Xn, { path: `*`, element: (0, P.jsx)(Yn, { to: `/`, replace: !0 }) }),
         ],

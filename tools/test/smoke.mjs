@@ -21,7 +21,7 @@ async function open({ p1 = 'umut', p2 = 'sudem', mode = '2p', pre, arena = 'anka
   page.on('pageerror', (e) => page.errors.push('pageerror: ' + e.message));
   page.on('console', (m) => m.type() === 'error' && page.errors.push('console: ' + m.text()));
   if (pre) await page.addInitScript(pre);
-  await page.goto(`${base}/index.html#/battle?mode=${mode}&p1=${p1}&p2=${p2}&diff=normal&arena=${arena}`, { waitUntil: 'load' });
+  await page.goto(`${base}/index.html#/battle?mode=${mode}&p1=${p1}&p2=${p2}&diff=normal&arena=${arena}&vs=0`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__AF_match?.phase === 'fight', null, { timeout: 20000 });
   await page.evaluate(() => {
     window.__tr = [];
