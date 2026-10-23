@@ -854,3 +854,9 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Açılış + ana menü (src/21):** arka plan `assets/ui/menu_bg` (8 kişilik grup, çınar, gün batımı). Açılışta "BAŞLAMAK İÇİN BİR TUŞA BAS"; tuşa basınca sağdan JoJo ASB "Mode Select" düzeninde eğik, düz renkli butonlar kayar (beyaz çerçeve, sert gölge, neon/parlama yok; seçili buton krem renkli + ok). Logo ve alt açıklama yok. Açılış oturumda bir kez gösterilir (`AF_TITLE_SEEN`), menüde ESC açılışa döner. 1–5 kısayolları korundu.
 - **Karakter seçimi (src/40):** solda 1P, sağda 2P büyük kart (arkasında memleket arenası, ortalı portre, isim karakter renginde, memleket · stil, HIZ/GÜÇ/CAN), ortada üstte RASTGELE, altında 4+4 ızgara (ZUZU ve DUCE "YAKINDA" kilitli). Altta ok biçimli tuş şeridi. Yeni tuşlar: W/S ve ▲/▼ dikey gezinme, X (2P: NUM 2) rastgele, ENTER = 1P seç. Izgaradaki yüz kırpması `AF_YUZ` (`_onizleme/yuz_merkez.py` ile hesaplanır).
 - **Portreler:** 8 seçim portresi doğal ışıkla yenilendi (`assets/ui/secim_<id>.webp`; SUDEM menüdeki görünümüyle eşlendi). Seçim arka planı şimdilik menü sahnesinin bulanık hali; ileride değişecek.
+
+## 36. Harita seçimi yeni yerleşim (24 Ekim 2026)
+
+- Başlık "HARİTA SEÇİMİ". Üstte büyük vitrin: solda önceki, ortada seçili, sağda sonraki harita (yan kartlar 3B açılı ve karartılmış). Altında seçili haritanın adı + saat/hava bilgisi.
+- Altta eşit boy kartlar (ANKARA, SAMSUN, ÇORUM, SAKARYA, ?); seçili olan yukarı kalkar, ENTER ile onaylanınca bir kez zıplar ve dövüşe geçilir.
+- En altta ok biçimli tuş şeridi: ◄ ÖNCEKİ · ENTER SEÇ · ► SONRAKİ · ESC GERİ. Arka plan seçim ekranıyla aynı (bulanık menü sahnesi).
