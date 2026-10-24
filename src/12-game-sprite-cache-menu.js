@@ -37,6 +37,8 @@ var AF_FX = {},
     `selim_sigara2`,
     `alp_puma0`,
     `alp_puma1`,
+    `duce_yildiz`,
+    `zuzu_tarot`,
   ],
   AF_fxP = null;
 

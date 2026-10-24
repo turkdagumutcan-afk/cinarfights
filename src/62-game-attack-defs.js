@@ -133,6 +133,38 @@ var Gy = {
     hitstun: 650,
     meter: 0,
   },
+  // DUCE ulti: rakibin konumuna düşen 3 gümüş yıldız (yer değiştirerek kaçılır)
+  star: {
+    id: `star`,
+    label: `YILDIZ`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 7,
+    w: 0,
+    h: 0,
+    kbx: 160,
+    kby: -260,
+    hitstun: 420,
+    meter: 0,
+  },
+  // ZUZU ulti: tek dev tarot kartı (yüksekten -> eğil, alçaktan -> zıpla)
+  tarot: {
+    id: `tarot`,
+    label: `KADER KARTI`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 21,
+    w: 0,
+    h: 0,
+    kbx: 560,
+    kby: -360,
+    hitstun: 620,
+    meter: 0,
+  },
   // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
   cig: {
     id: `cig`,

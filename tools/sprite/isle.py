@@ -104,6 +104,30 @@ KARAKTERLER = {
         "portre": ("selim portre", "tek", {"ayri": True}),
         "sigara": ("selim sigara", "serit", {"n": 3, "ayri": True}),
     },
+    "duce": {
+        "idle": ("duce duruş", "tek"),
+        "crouch": ("duce eğilme", "tek"),
+        "jump": ("duce zıplama", "tek"),
+        "punch": ("duce yumruk şeridi", "serit", {"n": 5}),
+        "kick": ("duce tekme şeridi", "serit", {"n": 5}),
+        "hurt": ("duce hasar", "tek"),
+        "guard": ("duce koruma", "tek"),
+        "guardlow": ("duce koruma eğilme", "tek"),
+        "ult": ("duce ulti", "tek"),
+        "yildiz": ("duce yildiz", "tek", {"ayri": True}),
+    },
+    "zuzu": {
+        "idle": ("zuzu duruş", "tek"),
+        "crouch": ("zuzu eğilme", "tek"),
+        "jump": ("zuzu zıplama", "tek"),
+        "punch": ("zuzu yumruk şeridi", "serit", {"n": 5}),
+        "kick": ("zuzu tekme şeridi", "serit", {"n": 5}),
+        "hurt": ("zuzu hasar", "tek", {"oran": 0.97}),  # görselde küçük kalıyor: idle boyuna yakın sabitlenir
+        "guard": ("zuzu koruma", "tek"),
+        "guardlow": ("zuzu koruma eğilme", "tek"),
+        "ult": ("zuzu ulti", "tek", {"oran": 1.13}),  # kol havada: gövde idle ile aynı boyda olsun diye bbox idle'dan uzun
+        "tarot": ("zuzu tarot", "tek", {"ayri": True}),
+    },
 }
 
 # klasör adı karakter id'sinden farklıysa (Türkçe büyük İ)
@@ -419,6 +443,8 @@ def onizleme_sayfasi(sonuc):
 
 
 def efekt_sayfasi(sonuc):
+    if not all(k in sonuc for k in ("ahmet", "mete", "sudem", "umut")):
+        return  # KARAKTER ile seçili işlemede bu sayfa atlanır
     parcalar = []
     for kar, ad in (("ahmet", "portre"), ("mete", "portre"), ("sudem", "portre"), ("umut", "portre")):
         k = sonuc[kar][ad]["kareler"][0]

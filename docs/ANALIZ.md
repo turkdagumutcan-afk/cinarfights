@@ -14,7 +14,7 @@
 
 ANKARA FIGHTER, Street Fighter tarzı 2 boyutlu bir dövüş oyunudur. Oyun artık **çok dosyalı** bir yapıdadır (`index.html`, `css/styles.css`, `js/game.bundle.js`, `js/assets.js`, `assets/`). Sprite işleme sırasında canvas piksel okuması yaptığı için `file://` ile açılamaz, **yerel sunucu** gerekir (`oyunu-baslat.bat` bunu otomatik yapar). Orijinal tek dosyalık sürümde kod, stiller ve görseller (base64 17 PNG) tek HTML içine gömülüydü.
 
-İki karakter vardır: **UMUT** (fotoğrafçı) ve **SUDEM** (McQueen hayranı). Arka plan Ankara temalıdır (`ankara_map.png`) ve sahnede üzerine zıplanabilen bir **masa platformu** bulunur. Oyun ya bota karşı (1 oyuncu) ya da aynı klavyede yerel 2 oyuncu olarak oynanır.
+ÇINAR FIGHTS, 16-bit piksel sanatıyla çizilmiş 2D retro bir dövüş oyunudur: bir arkadaş grubunun altı üyesi (**UMUT, SUDEM, METEHAN, AHMET, SELİM, ALP**) her biri kendi stili ve ultisiyle **ANKARA, SAMSUN, ÇORUM ve SAKARYA** arenalarında en iyi 3 rauntta kapışır. Akış: **ana menü → karakter seçimi (oyuncu + rakip) → arena seçimi → VS ekranı → dövüş**. Modlar: **1VSBOT** (rakip botu ve zorluğunu oyuncu seçer), **1VS1** (tek klavye) ve **ANTRENMAN** (kuklaya karşı). (İlk sürümde yalnız UMUT ve SUDEM vardı ve Ankara arenasında bir masa platformu bulunuyordu; aşağıdaki eski bölümler o dönemi anlatır.)
 
 ---
 
@@ -847,3 +847,24 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Arena ayarı `rain: true` (`AF_ARENAS.ankara`). `AF_rain` (src/50): arka katman (240 ince damla, dövüşçülerin arkasında, sahneyi hafif karartır, zeminde sıçramalar) + ön katman (75 kalın damla, dövüşçülerin önünde). Rüzgârla hafif eğik; gerçek zamanla akar. 60 FPS korunuyor.
 - Arena seçiminde ANKARA hava durumu: Yağmurlu.
 - Arka plandaki araç **EGO körüklü otobüs** oldu (ChatGPT düzenlemesi, turuncu tabela okunmaz; zemin kenarı aynı, `ankara_sehir.webp?v=2`).
+
+## 35. Bot seçimi, yeni açılış/menü ve karakter seçimi (24 Ekim 2026)
+
+- **Bot seçimi:** 1VSBOT ve antrenmanda rakip artık hep SUDEM değil. P1 önce kendini seçip Z ile onaylar, sonra A/D rakibi (bot/kukla) gezer, Z ile onaylar. ESC sırayla rakip onayını, P1 onayını kaldırır, sonra menüye döner.
+- **Açılış + ana menü (src/21):** arka plan `assets/ui/menu_bg` (8 kişilik grup, çınar, gün batımı). Açılışta "BAŞLAMAK İÇİN BİR TUŞA BAS"; tuşa basınca sağdan JoJo ASB "Mode Select" düzeninde eğik, düz renkli butonlar kayar (beyaz çerçeve, sert gölge, neon/parlama yok; seçili buton krem renkli + ok). Logo ve alt açıklama yok. Açılış oturumda bir kez gösterilir (`AF_TITLE_SEEN`), menüde ESC açılışa döner. 1–5 kısayolları korundu.
+- **Karakter seçimi (src/40):** solda 1P, sağda 2P büyük kart (arkasında memleket arenası, ortalı portre, isim karakter renginde, memleket · stil, HIZ/GÜÇ/CAN), ortada üstte RASTGELE, altında 4+4 ızgara (ZUZU ve DUCE "YAKINDA" kilitli). Altta ok biçimli tuş şeridi. Yeni tuşlar: W/S ve ▲/▼ dikey gezinme, X (2P: NUM 2) rastgele, ENTER = 1P seç. Izgaradaki yüz kırpması `AF_YUZ` (`_onizleme/yuz_merkez.py` ile hesaplanır).
+- **Portreler:** 8 seçim portresi doğal ışıkla yenilendi (`assets/ui/secim_<id>.webp`; SUDEM menüdeki görünümüyle eşlendi). Seçim arka planı şimdilik menü sahnesinin bulanık hali; ileride değişecek.
+
+## 36. Harita seçimi yeni yerleşim (24 Ekim 2026)
+
+- Başlık "HARİTA SEÇİMİ". Üstte büyük vitrin: solda önceki, ortada seçili, sağda sonraki harita (yan kartlar 3B açılı ve karartılmış). Altında seçili haritanın adı + saat/hava bilgisi.
+- Altta eşit boy kartlar (ANKARA, SAMSUN, ÇORUM, SAKARYA, ?); seçili olan yukarı kalkar, ENTER ile onaylanınca bir kez zıplar ve dövüşe geçilir.
+- En altta ok biçimli tuş şeridi: ◄ ÖNCEKİ · ENTER SEÇ · ► SONRAKİ · ESC GERİ. Arka plan seçim ekranıyla aynı (bulanık menü sahnesi).
+
+## 37. Yeni karakterler: DUCE ve ZUZU (25 Ekim 2026)
+
+- **DUCE** (Kayseri): oyunun en kısası (scale 226 ≈ 1.57 m), `SERT · YAKIN DÖVÜŞ`, zorluk ★★★. Küçük hedef (halfW 36), kısa menzil, hafif hızlı; can 140. Ulti **YILDIZ YAĞMURU**: rakibin o anki konumuna sırayla 3 gümüş yıldız düşer; her yıldız önce yerde kırmızı parlayan bir gölge gösterir (`AF_STAR_UYARI`=520 ms tepki payı), yer değiştirerek kaçılır. Yıldız 7 hasar.
+- **ZUZU** (Ankara): `ÇEVİK · BÜYÜCÜ`, zorluk ★★. Dansçı gibi çevik; tekmesi uzun (kickX 56 — görsel dar ölçüldüğü için büyük sabit), can 156, dmg ×1.02. Ulti **KADER KARTI**: tek dev tarot kartı üst gövde hizasında döner, eğilerek kaçılır (21 hasar). Kullanıcı notu: biraz ağır hissettiriyor, ileride kişiye özel yeteneklerle dengelenecek.
+- **Denge (ODAK simülasyonu, 14×ikili):** DUCE %52, ZUZU %53. 46/46 test geçti.
+- **Seçim ekranı:** ikisinin "YAKINDA" kilidi kalktı (`AF_YAKINDA={}`), `AF_SEL`'e eklendi; ızgara yüz kırpması `AF_YUZ`'e eklendi.
+- **Sprite işleme:** `tools/sprite/isle.py` ve `aktar.py`'a duce/zuzu tanımları eklendi; eski portresi olmayan karakterlerde seçim portresinden oyun portresi üretilir. Ulti/mermi görselleri `assets/fx/duce_yildiz.webp`, `assets/fx/zuzu_tarot.webp`.

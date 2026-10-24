@@ -18,7 +18,7 @@ from PIL import Image  # noqa: E402
 
 FR = REPO / "assets" / "frames"
 FX = REPO / "assets" / "fx"
-OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut", "selim": "selim", "alp": "alp"}
+OYUN_ID = {"ahmet": "ahmet", "mete": "metehan", "sudem": "sudem", "umut": "umut", "selim": "selim", "alp": "alp", "duce": "duce", "zuzu": "zuzu"}
 PORTRE = {"ahmet": "ahmet.webp", "mete": "metehan.webp", "sudem": "mcqueen.webp", "umut": "fotograf_canavari.webp", "selim": "selim.webp", "alp": "alp.webp"}
 TEK = ["idle", "crouch", "jump", "hurt", "guard", "guardlow", "ult", "cast"]
 yazilan = []
@@ -63,7 +63,10 @@ for kar, pozlar in sonuc.items():
         for i, k in enumerate(pozlar["run"]["kareler"]):
             webp(k, FR / f"{gid}_run{i}.webp")
         webp(pozlar["run"]["kareler"][0], FR / f"{gid}_run.webp")
-    webp(boyla(pozlar["portre"]["kareler"][0], 640), REPO / "assets" / PORTRE[kar])
+    if "portre" in pozlar:
+        webp(boyla(pozlar["portre"]["kareler"][0], 640), REPO / "assets" / PORTRE[kar])
+    else:  # eski portre yok (DUCE, ZUZU): seçim portresinden üret
+        webp(boyla(Image.open(REPO / "assets" / "ui" / f"secim_{gid}.webp"), 640), REPO / "assets" / f"{gid}.webp")
 
 # ulti / mermi görselleri (oyunda çizim boyu ~ bunların yarısı); KARAKTER ile seçilenler
 if "ahmet" in sonuc:
@@ -83,5 +86,9 @@ if "alp" in sonuc:
 if "selim" in sonuc:
     for i, k in enumerate(sonuc["selim"]["sigara"]["kareler"]):
         webp(boyla(k, 90), FX / f"selim_sigara{i}.webp")
+if "duce" in sonuc:
+    webp(boyla(sonuc["duce"]["yildiz"]["kareler"][0], 160), FX / "duce_yildiz.webp")
+if "zuzu" in sonuc:
+    webp(boyla(sonuc["zuzu"]["tarot"]["kareler"][0], 200), FX / "zuzu_tarot.webp")
 
 print(json.dumps({"yazilan": yazilan}, ensure_ascii=False))
