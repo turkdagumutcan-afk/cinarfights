@@ -202,6 +202,9 @@ function AF_motion(e, t, r) {
   }
 }
 
+// DUCE ulti: yıldız düşmeden önce yerde parlayan gölgenin süresi (ms) — tepki payı
+var AF_STAR_UYARI = 520;
+
 // ---- ALP ulti: siyah puma ----
 // Yerde koşar (vuruş noktası alçak); rakibe ~300 px kala sıçrar. Sıçrayışta vuruş yüksekliği rakibin
 // gövde ortasına doğru kayar ama en az 190*AF_BOY px olur: zıplayan rakibi de yakalar, eğilen rakibin

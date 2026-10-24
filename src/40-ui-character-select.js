@@ -238,12 +238,13 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA`, alp: `SAKARYA` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA`, alp: `SAKARYA`, duce: `KAYSERİ`, zuzu: `ANKARA` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `zuzu`, `duce`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`][(Math.random() * 6) | 0];
+  const k = AF_SEL.filter((c) => c !== `random`);
+  return k[(Math.random() * k.length) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -1067,7 +1068,7 @@ function AF_SelSide({ side, id, ready, isBot, dummy, onPrev, onNext, onReady, ca
 
 // ---- Karakter seçimi (yeni yerleşim): solda 1P kartı, sağda 2P kartı, ortada RASTGELE + 4+4 ızgara ----
 // Kart arkasında karakterin memleket arenası; çerçeve dili ana menüyle aynı (krem çerçeve, sert gölge).
-var AF_YAKINDA = { zuzu: `ZUZU`, duce: `DUCE` };
+var AF_YAKINDA = {}; // kilitli ("YAKINDA") karakterler: { id: `AD` }
 var AF_GRID_UST = [`umut`, `sudem`, `metehan`, `ahmet`];
 var AF_GRID_ALT = [`selim`, `alp`, `zuzu`, `duce`];
 var AF_HOME_ARENA = { ANKARA: `ankara`, SAMSUN: `samsun`, ÇORUM: `corum`, SAKARYA: `sakarya` };
@@ -1081,8 +1082,8 @@ var AF_YUZ = {
   ahmet: [180, 58, 7],
   selim: [180, 78, 8],
   alp: [180, 72, 7],
-  zuzu: [220, 44, 8],
-  duce: [220, 60, 8],
+  zuzu: [180, 46, 6],
+  duce: [145, 56, 11],
 };
 var AF_SERT = `drop-shadow(5px 6px 0 rgba(10,6,18,.8))`;
 

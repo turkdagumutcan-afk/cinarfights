@@ -540,6 +540,48 @@ var AF_CHARS = {
     img: () => gg(`/assets/alp.png`),
     stats: [],
   },
+  duce: {
+    id: `duce`,
+    name: `DUCE`,
+    color: `#e0213a`,
+    color2: `#ff8a9a`,
+    scale: 226, // 1.57 m: oyunun en kısası (UMUT'un ~%90'ı)
+    same: !0,
+    halfW: 36, // küçük hedef
+    kickX: 10,
+    // kısa ve sert: hızlı, yakına girince sert vurur; bedeli: kısa menzil, biraz az can (simülasyonla ayarlanır)
+    mod: { spd: 1.03, dmg: 1, sup: 1, jump: 1, kb: 1, hp: 140, reachX: -4 },
+    guard: !0,
+    ultAt: { x: 0.2, y: 1.05 }, // yıldızlar kaldırdığı elden çıkar
+    tag: `Kayserili · Kısa boylu, soğuk ve sert`,
+    stil: `SERT · YAKIN DÖVÜŞ`,
+    zorluk: 3,
+    ultName: `YILDIZ YAĞMURU`,
+    ultHint: `rakibin üstüne düşen yıldızlar`,
+    img: () => gg(`/assets/duce.png`),
+    stats: [],
+  },
+  zuzu: {
+    id: `zuzu`,
+    name: `ZUZU`,
+    color: `#d4a017`,
+    color2: `#ffd76a`,
+    scale: 246,
+    same: !0,
+    halfW: 39,
+    kickX: 56, // tekme görseli dar ölçüldüğü için büyük (diğerleri gibi ~216 px menzil)
+    // çevik dansçı: hızlı yürür ve zıplar; vuruşları biraz hafif
+    mod: { spd: 1.08, dmg: 1.02, sup: 1, jump: 1.06, kb: 1, hp: 156 },
+    guard: !0,
+    ultAt: { x: 0.55, y: 0.62 },
+    tag: `Tarot büyücüsü · Enerjik, dans eder gibi dövüşür`,
+    stil: `ÇEVİK · BÜYÜCÜ`,
+    zorluk: 2,
+    ultName: `KADER KARTI`,
+    ultHint: `yüksekten ya da alçaktan gelen dev tarot kartı`,
+    img: () => gg(`/assets/zuzu.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —

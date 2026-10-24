@@ -860,3 +860,11 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - Başlık "HARİTA SEÇİMİ". Üstte büyük vitrin: solda önceki, ortada seçili, sağda sonraki harita (yan kartlar 3B açılı ve karartılmış). Altında seçili haritanın adı + saat/hava bilgisi.
 - Altta eşit boy kartlar (ANKARA, SAMSUN, ÇORUM, SAKARYA, ?); seçili olan yukarı kalkar, ENTER ile onaylanınca bir kez zıplar ve dövüşe geçilir.
 - En altta ok biçimli tuş şeridi: ◄ ÖNCEKİ · ENTER SEÇ · ► SONRAKİ · ESC GERİ. Arka plan seçim ekranıyla aynı (bulanık menü sahnesi).
+
+## 37. Yeni karakterler: DUCE ve ZUZU (25 Ekim 2026)
+
+- **DUCE** (Kayseri): oyunun en kısası (scale 226 ≈ 1.57 m), `SERT · YAKIN DÖVÜŞ`, zorluk ★★★. Küçük hedef (halfW 36), kısa menzil, hafif hızlı; can 140. Ulti **YILDIZ YAĞMURU**: rakibin o anki konumuna sırayla 3 gümüş yıldız düşer; her yıldız önce yerde kırmızı parlayan bir gölge gösterir (`AF_STAR_UYARI`=520 ms tepki payı), yer değiştirerek kaçılır. Yıldız 7 hasar.
+- **ZUZU** (Ankara): `ÇEVİK · BÜYÜCÜ`, zorluk ★★. Dansçı gibi çevik; tekmesi uzun (kickX 56 — görsel dar ölçüldüğü için büyük sabit), can 156, dmg ×1.02. Ulti **KADER KARTI**: tek dev tarot kartı üst gövde hizasında döner, eğilerek kaçılır (21 hasar). Kullanıcı notu: biraz ağır hissettiriyor, ileride kişiye özel yeteneklerle dengelenecek.
+- **Denge (ODAK simülasyonu, 14×ikili):** DUCE %52, ZUZU %53. 46/46 test geçti.
+- **Seçim ekranı:** ikisinin "YAKINDA" kilidi kalktı (`AF_YAKINDA={}`), `AF_SEL`'e eklendi; ızgara yüz kırpması `AF_YUZ`'e eklendi.
+- **Sprite işleme:** `tools/sprite/isle.py` ve `aktar.py`'a duce/zuzu tanımları eklendi; eski portresi olmayan karakterlerde seçim portresinden oyun portresi üretilir. Ulti/mermi görselleri `assets/fx/duce_yildiz.webp`, `assets/fx/zuzu_tarot.webp`.

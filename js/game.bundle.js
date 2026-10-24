@@ -1186,6 +1186,48 @@ var AF_CHARS = {
     img: () => gg(`/assets/alp.png`),
     stats: [],
   },
+  duce: {
+    id: `duce`,
+    name: `DUCE`,
+    color: `#e0213a`,
+    color2: `#ff8a9a`,
+    scale: 226, // 1.57 m: oyunun en kısası (UMUT'un ~%90'ı)
+    same: !0,
+    halfW: 36, // küçük hedef
+    kickX: 10,
+    // kısa ve sert: hızlı, yakına girince sert vurur; bedeli: kısa menzil, biraz az can (simülasyonla ayarlanır)
+    mod: { spd: 1.03, dmg: 1, sup: 1, jump: 1, kb: 1, hp: 140, reachX: -4 },
+    guard: !0,
+    ultAt: { x: 0.2, y: 1.05 }, // yıldızlar kaldırdığı elden çıkar
+    tag: `Kayserili · Kısa boylu, soğuk ve sert`,
+    stil: `SERT · YAKIN DÖVÜŞ`,
+    zorluk: 3,
+    ultName: `YILDIZ YAĞMURU`,
+    ultHint: `rakibin üstüne düşen yıldızlar`,
+    img: () => gg(`/assets/duce.png`),
+    stats: [],
+  },
+  zuzu: {
+    id: `zuzu`,
+    name: `ZUZU`,
+    color: `#d4a017`,
+    color2: `#ffd76a`,
+    scale: 246,
+    same: !0,
+    halfW: 39,
+    kickX: 56, // tekme görseli dar ölçüldüğü için büyük (diğerleri gibi ~216 px menzil)
+    // çevik dansçı: hızlı yürür ve zıplar; vuruşları biraz hafif
+    mod: { spd: 1.08, dmg: 1.02, sup: 1, jump: 1.06, kb: 1, hp: 156 },
+    guard: !0,
+    ultAt: { x: 0.55, y: 0.62 },
+    tag: `Tarot büyücüsü · Enerjik, dans eder gibi dövüşür`,
+    stil: `ÇEVİK · BÜYÜCÜ`,
+    zorluk: 2,
+    ultName: `KADER KARTI`,
+    ultHint: `yüksekten ya da alçaktan gelen dev tarot kartı`,
+    img: () => gg(`/assets/zuzu.png`),
+    stats: [],
+  },
 };
 
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
@@ -1433,6 +1475,8 @@ var AF_FX = {},
     `selim_sigara2`,
     `alp_puma0`,
     `alp_puma1`,
+    `duce_yildiz`,
+    `zuzu_tarot`,
   ],
   AF_fxP = null;
 
@@ -2513,12 +2557,13 @@ function hy({
   });
 }
 
-var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA`, alp: `SAKARYA` };
+var AF_HOME = { umut: `ANKARA`, sudem: `ANKARA`, metehan: `SAMSUN`, ahmet: `ÇORUM`, selim: `ANKARA`, alp: `SAKARYA`, duce: `KAYSERİ`, zuzu: `ANKARA` };
 
-var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `random`];
+var AF_SEL = [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`, `zuzu`, `duce`, `random`];
 
 function AF_pick() {
-  return [`umut`, `sudem`, `metehan`, `ahmet`, `selim`, `alp`][(Math.random() * 6) | 0];
+  const k = AF_SEL.filter((c) => c !== `random`);
+  return k[(Math.random() * k.length) | 0];
 }
 
 function AF_Map({ p1, p2 }) {
@@ -3342,7 +3387,7 @@ function AF_SelSide({ side, id, ready, isBot, dummy, onPrev, onNext, onReady, ca
 
 // ---- Karakter seçimi (yeni yerleşim): solda 1P kartı, sağda 2P kartı, ortada RASTGELE + 4+4 ızgara ----
 // Kart arkasında karakterin memleket arenası; çerçeve dili ana menüyle aynı (krem çerçeve, sert gölge).
-var AF_YAKINDA = { zuzu: `ZUZU`, duce: `DUCE` };
+var AF_YAKINDA = {}; // kilitli ("YAKINDA") karakterler: { id: `AD` }
 var AF_GRID_UST = [`umut`, `sudem`, `metehan`, `ahmet`];
 var AF_GRID_ALT = [`selim`, `alp`, `zuzu`, `duce`];
 var AF_HOME_ARENA = { ANKARA: `ankara`, SAMSUN: `samsun`, ÇORUM: `corum`, SAKARYA: `sakarya` };
@@ -3356,8 +3401,8 @@ var AF_YUZ = {
   ahmet: [180, 58, 7],
   selim: [180, 78, 8],
   alp: [180, 72, 7],
-  zuzu: [220, 44, 8],
-  duce: [220, 60, 8],
+  zuzu: [180, 46, 6],
+  duce: [145, 56, 11],
 };
 var AF_SERT = `drop-shadow(5px 6px 0 rgba(10,6,18,.8))`;
 
@@ -5405,12 +5450,39 @@ function AF_fxImg(t) {
                 ? `selim_sigara${(t.fi || 0) % 3}`
                 : t.kind === `puma`
                   ? `alp_puma${t.leap ? 1 : 0}`
-                  : null;
+                  : t.kind === `star`
+                    ? `duce_yildiz`
+                    : t.kind === `tarot`
+                      ? `zuzu_tarot`
+                      : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
+}
+
+// DUCE yıldızı düşmeden önce: hedefin ayağında parlayan yıldız gölgesi (uyarı)
+function AF_starWarn(e, t) {
+  const p = 1 - Math.max(0, t.uyari) / AF_STAR_UYARI,
+    a = 0.55 + 0.45 * Math.abs(Math.sin(t.t * 0.03));
+  e.save();
+  e.translate(t.x, 700);
+  e.scale(1, 0.32);
+  e.globalAlpha = a;
+  e.shadowColor = `#ff3355`;
+  e.shadowBlur = 22;
+  e.fillStyle = `#fff4f6`;
+  e.beginPath();
+  for (let k = 0; k < 10; k++) {
+    const r = (k % 2 ? 26 : 66) * (0.6 + 0.4 * p),
+      q = -Math.PI / 2 + (k * Math.PI) / 5;
+    e.lineTo(Math.cos(q) * r, Math.sin(q) * r);
+  }
+  e.closePath();
+  e.fill();
+  e.restore();
 }
 
 function Ty(e, t) {
   if (t.delay > 0) return;
+  if (t.kind === `star` && t.uyari > 0) return AF_starWarn(e, t);
   let n = Math.sign(t.vx) || 1;
   const im = AF_fxImg(t);
   if (im) {
@@ -5428,12 +5500,17 @@ function Ty(e, t) {
                 ? [34, 0.6, !1]
                 : t.kind === `puma`
                   ? [t.leap ? 118 : 96, 0.62, !0]
-                  : [66, 0.55, !1];
+                  : t.kind === `star`
+                    ? [96, 0.5, !1]
+                    : t.kind === `tarot`
+                      ? [112, 0.5, !1]
+                      : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
     (e.save(), e.translate(t.x, t.y - (t.kind === `puma` ? Math.max(0, t.hy - 70) : 0)), e.scale(n, 1));
     t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
     t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
+    t.kind === `tarot` && e.rotate(t.rot);
     (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());
     return;
   }
@@ -6203,6 +6280,38 @@ var Gy = {
     hitstun: 650,
     meter: 0,
   },
+  // DUCE ulti: rakibin konumuna düşen 3 gümüş yıldız (yer değiştirerek kaçılır)
+  star: {
+    id: `star`,
+    label: `YILDIZ`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 7,
+    w: 0,
+    h: 0,
+    kbx: 160,
+    kby: -260,
+    hitstun: 420,
+    meter: 0,
+  },
+  // ZUZU ulti: tek dev tarot kartı (yüksekten -> eğil, alçaktan -> zıpla)
+  tarot: {
+    id: `tarot`,
+    label: `KADER KARTI`,
+    pose: `ult`,
+    startup: 0,
+    active: 0,
+    recovery: 0,
+    damage: 21,
+    w: 0,
+    h: 0,
+    kbx: 560,
+    kby: -360,
+    hitstun: 620,
+    meter: 0,
+  },
   // SELİM ulti: 3 yanan sigara (baş / göğüs / diz hizasında)
   cig: {
     id: `cig`,
@@ -6687,6 +6796,9 @@ function AF_motion(e, t, r) {
     t.dash = !0;
   }
 }
+
+// DUCE ulti: yıldız düşmeden önce yerde parlayan gölgenin süresi (ms) — tepki payı
+var AF_STAR_UYARI = 520;
 
 // ---- ALP ulti: siyah puma ----
 // Yerde koşar (vuruş noktası alçak); rakibe ~300 px kala sıçrar. Sıçrayışta vuruş yüksekliği rakibin
@@ -7429,6 +7541,34 @@ var Xy = class {
               }),
               (this.announce = { text: `PUMA SALDIRISI!`, t: 0, dur: 900, size: 58, color: `#4f8cff` }),
               X.zapCast())
+          : e.charId === `duce`
+            ? // YILDIZ YAĞMURU: rakibin o anki konumuna sırayla 3 yıldız düşer; her biri önce yerde
+              // parlayan bir gölge gösterir (AF_STAR_UYARI ms) — yer değiştiren kaçar
+              ([0, 1, 2].forEach((k) =>
+                this.projectiles.push({
+                  ...i(`star`, -60, 0, 0, 34, 260 + k * 380, 0),
+                  fi: k,
+                  hedef: !0,
+                }),
+              ),
+              (this.flashA = Math.max(this.flashA, 0.3)),
+              (this.announce = { text: `YILDIZ YAĞMURU!`, t: 0, dur: 900, size: 58, color: `#e0213a` }),
+              X.zapCast())
+          : e.charId === `zuzu`
+            ? // KADER KARTI: tek dev tarot kartı üst gövde hizasında uçar, eğilerek kaçılır
+              (this.projectiles.push({
+                ...i(
+                  `tarot`,
+                  e.y - e.spr.frames.idle.visibleH * 0.74, // üst gövde hizasında: eğilerek kaçılır
+                  900,
+                  0,
+                  40,
+                  80,
+                  7,
+                ),
+              }),
+              (this.announce = { text: `KADER KARTI!`, t: 0, dur: 900, size: 58, color: `#d4a017` }),
+              X.zapCast())
           : e.charId === `selim`
             ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
               // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
@@ -7472,6 +7612,15 @@ var Xy = class {
         n.delay -= e;
         continue;
       }
+      if (n.kind === `star` && n.hedef) {
+        const h = n.owner === 0 ? this.p2 : this.p1;
+        ((n.x = h.x), (n.y = -60), (n.hedef = !1), (n.uyari = AF_STAR_UYARI), (n.vy = 0));
+      }
+      if (n.kind === `star` && n.uyari > 0) {
+        ((n.uyari -= e), (n.t += e));
+        continue;
+      }
+      n.kind === `star` && (n.vy = Math.min(1900, (n.vy || 0) + 5200 * t));
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
       else if (n.kind === `car` || n.kind === `motor`) {
@@ -7546,6 +7695,10 @@ var Xy = class {
                 ? `#ff3b2f`
                 : n.kind === `motor`
                   ? `#ff7a1a`
+                : n.kind === `star`
+                  ? `#e8e8f0`
+                : n.kind === `tarot`
+                  ? `#ffd76a`
                 : n.kind === `flash`
                   ? `#8ad8ff`
                   : `#ffe27a`,
@@ -7557,6 +7710,10 @@ var Xy = class {
             this.shake(6, 110),
             this.burst(t.x, t.y, 6, Math.sign(n.vx), Math.random() < 0.5 ? `#8ad8ff` : `#c06cff`)));
       }
+      n.kind === `star` &&
+        !n.dead &&
+        n.y >= 700 &&
+        ((n.dead = !0), this.burst(n.x, 700, 14, 0, `#e8e8f0`), this.shake(4, 90));
       (n.x < -120 || n.x > 1496 || n.y > 900 || n.y < -200) && (n.dead = !0);
     }
     this.projectiles = this.projectiles.filter((e) => !e.dead);

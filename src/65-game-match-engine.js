@@ -725,6 +725,34 @@ var Xy = class {
               }),
               (this.announce = { text: `PUMA SALDIRISI!`, t: 0, dur: 900, size: 58, color: `#4f8cff` }),
               X.zapCast())
+          : e.charId === `duce`
+            ? // YILDIZ YAĞMURU: rakibin o anki konumuna sırayla 3 yıldız düşer; her biri önce yerde
+              // parlayan bir gölge gösterir (AF_STAR_UYARI ms) — yer değiştiren kaçar
+              ([0, 1, 2].forEach((k) =>
+                this.projectiles.push({
+                  ...i(`star`, -60, 0, 0, 34, 260 + k * 380, 0),
+                  fi: k,
+                  hedef: !0,
+                }),
+              ),
+              (this.flashA = Math.max(this.flashA, 0.3)),
+              (this.announce = { text: `YILDIZ YAĞMURU!`, t: 0, dur: 900, size: 58, color: `#e0213a` }),
+              X.zapCast())
+          : e.charId === `zuzu`
+            ? // KADER KARTI: tek dev tarot kartı üst gövde hizasında uçar, eğilerek kaçılır
+              (this.projectiles.push({
+                ...i(
+                  `tarot`,
+                  e.y - e.spr.frames.idle.visibleH * 0.74, // üst gövde hizasında: eğilerek kaçılır
+                  900,
+                  0,
+                  40,
+                  80,
+                  7,
+                ),
+              }),
+              (this.announce = { text: `KADER KARTI!`, t: 0, dur: 900, size: 58, color: `#d4a017` }),
+              X.zapCast())
           : e.charId === `selim`
             ? // RA-MA-ZAAN: üç sigara arka arkaya, baş / göğüs / diz hizasında — tek bir kaçış yolu yok,
               // korumak ya da araya girmek gerekir; karşılığında tanesi az hasar verir
@@ -768,6 +796,15 @@ var Xy = class {
         n.delay -= e;
         continue;
       }
+      if (n.kind === `star` && n.hedef) {
+        const h = n.owner === 0 ? this.p2 : this.p1;
+        ((n.x = h.x), (n.y = -60), (n.hedef = !1), (n.uyari = AF_STAR_UYARI), (n.vy = 0));
+      }
+      if (n.kind === `star` && n.uyari > 0) {
+        ((n.uyari -= e), (n.t += e));
+        continue;
+      }
+      n.kind === `star` && (n.vy = Math.min(1900, (n.vy || 0) + 5200 * t));
       if (((n.t += e), (n.x += n.vx * t), (n.rot += n.vr * t), n.kind === `ring`))
         n.y = n.baseY + Math.sin(n.t * 0.012) * 16;
       else if (n.kind === `car` || n.kind === `motor`) {
@@ -842,6 +879,10 @@ var Xy = class {
                 ? `#ff3b2f`
                 : n.kind === `motor`
                   ? `#ff7a1a`
+                : n.kind === `star`
+                  ? `#e8e8f0`
+                : n.kind === `tarot`
+                  ? `#ffd76a`
                 : n.kind === `flash`
                   ? `#8ad8ff`
                   : `#ffe27a`,
@@ -853,6 +894,10 @@ var Xy = class {
             this.shake(6, 110),
             this.burst(t.x, t.y, 6, Math.sign(n.vx), Math.random() < 0.5 ? `#8ad8ff` : `#c06cff`)));
       }
+      n.kind === `star` &&
+        !n.dead &&
+        n.y >= 700 &&
+        ((n.dead = !0), this.burst(n.x, 700, 14, 0, `#e8e8f0`), this.shake(4, 90));
       (n.x < -120 || n.x > 1496 || n.y > 900 || n.y < -200) && (n.dead = !0);
     }
     this.projectiles = this.projectiles.filter((e) => !e.dead);

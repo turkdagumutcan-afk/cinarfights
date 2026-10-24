@@ -336,12 +336,39 @@ function AF_fxImg(t) {
                 ? `selim_sigara${(t.fi || 0) % 3}`
                 : t.kind === `puma`
                   ? `alp_puma${t.leap ? 1 : 0}`
-                  : null;
+                  : t.kind === `star`
+                    ? `duce_yildiz`
+                    : t.kind === `tarot`
+                      ? `zuzu_tarot`
+                      : null;
   return k && AF_FX[k] ? AF_FX[k] : null;
+}
+
+// DUCE yıldızı düşmeden önce: hedefin ayağında parlayan yıldız gölgesi (uyarı)
+function AF_starWarn(e, t) {
+  const p = 1 - Math.max(0, t.uyari) / AF_STAR_UYARI,
+    a = 0.55 + 0.45 * Math.abs(Math.sin(t.t * 0.03));
+  e.save();
+  e.translate(t.x, 700);
+  e.scale(1, 0.32);
+  e.globalAlpha = a;
+  e.shadowColor = `#ff3355`;
+  e.shadowBlur = 22;
+  e.fillStyle = `#fff4f6`;
+  e.beginPath();
+  for (let k = 0; k < 10; k++) {
+    const r = (k % 2 ? 26 : 66) * (0.6 + 0.4 * p),
+      q = -Math.PI / 2 + (k * Math.PI) / 5;
+    e.lineTo(Math.cos(q) * r, Math.sin(q) * r);
+  }
+  e.closePath();
+  e.fill();
+  e.restore();
 }
 
 function Ty(e, t) {
   if (t.delay > 0) return;
+  if (t.kind === `star` && t.uyari > 0) return AF_starWarn(e, t);
   let n = Math.sign(t.vx) || 1;
   const im = AF_fxImg(t);
   if (im) {
@@ -359,12 +386,17 @@ function Ty(e, t) {
                 ? [34, 0.6, !1]
                 : t.kind === `puma`
                   ? [t.leap ? 118 : 96, 0.62, !0]
-                  : [66, 0.55, !1];
+                  : t.kind === `star`
+                    ? [96, 0.5, !1]
+                    : t.kind === `tarot`
+                      ? [112, 0.5, !1]
+                      : [66, 0.55, !1];
     const H = h * AF_BOY,
       w = (im.width * H) / im.height;
     (e.save(), e.translate(t.x, t.y - (t.kind === `puma` ? Math.max(0, t.hy - 70) : 0)), e.scale(n, 1));
     t.kind === `note` && e.rotate(Math.sin(t.t * 0.014 + (t.col || 0)) * 0.3);
     t.kind === `photo` && e.rotate(Math.sin(t.t * 0.012 + (t.fi || 0)) * 0.25);
+    t.kind === `tarot` && e.rotate(t.rot);
     (e.drawImage(im, -w * ax, zemin ? -H : -H / 2, w, H), e.restore());
     return;
   }
