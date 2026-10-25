@@ -587,17 +587,18 @@ var AF_CHARS = {
 // Arenalar: hepsi tek zemin (y 704). platform: ortadaki masa (x 387-990, üstü y 429) —
 // şimdilik hiçbir arenada yok; kod duruyor, bir arenada true yapılırsa geri gelir.
 var AF_ARENAS = {
+  test: { id: `test`, name: `TEST ZEMİNİ`, img: AF_testArenaImage(), platform: !1, test: !0 },
   ankara: { id: `ankara`, name: `ANKARA`, img: `/assets/ankara_sehir.png`, platform: !1, rain: !0 },
   samsun: { id: `samsun`, name: `SAMSUN`, img: `/assets/samsun_arena.png`, platform: !1 },
   corum: { id: `corum`, name: `ÇORUM`, img: `/assets/corum_arena.png`, platform: !1 },
   sakarya: { id: `sakarya`, name: `SAKARYA`, img: `/assets/sakarya_arena.png`, platform: !1 },
 };
-var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `sakarya`, `random`];
+var AF_ARENA_SEL = [`ankara`, `samsun`, `corum`, `sakarya`, `test`, `random`];
 var AF_PLAT = !1; // o anki maçın arenasında masa var mı (maç motoru ayarlar)
 
 function AF_arena(id) {
   if (id === `random`) {
-    const k = Object.keys(AF_ARENAS);
+    const k = Object.keys(AF_ARENAS).filter((id) => !AF_ARENAS[id].test);
     return AF_ARENAS[k[(Math.random() * k.length) | 0]];
   }
   return AF_ARENAS[id] ?? AF_ARENAS.ankara;

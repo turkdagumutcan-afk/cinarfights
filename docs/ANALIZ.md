@@ -868,3 +868,10 @@ Test kancası: `window.__AF_match` (çalışan maç nesnesi; yalnızca testler/h
 - **Denge (ODAK simülasyonu, 14×ikili):** DUCE %52, ZUZU %53. 46/46 test geçti.
 - **Seçim ekranı:** ikisinin "YAKINDA" kilidi kalktı (`AF_YAKINDA={}`), `AF_SEL`'e eklendi; ızgara yüz kırpması `AF_YUZ`'e eklendi.
 - **Sprite işleme:** `tools/sprite/isle.py` ve `aktar.py`'a duce/zuzu tanımları eklendi; eski portresi olmayan karakterlerde seçim portresinden oyun portresi üretilir. Ulti/mermi görselleri `assets/fx/duce_yildiz.webp`, `assets/fx/zuzu_tarot.webp`.
+
+## 38. Ortak test zemini — 25 Ekim 2026
+
+- Harita seçiminde **TEST ZEMİNİ**: lacivert yüzeyler, perspektif ızgarası, merkez ve y=704 temas çizgisi. Rastgele arena havuzuna dahil değildir; 1VS1, bot ve antrenmanda seçilebilir.
+- `src/13-game-test-arena.js` görseli Canvas ile bir kez üretir; harita kartı, VS ve maç aynı görseli kullanır. Yeni ikili asset gerekmez.
+- Mevcut karakter tasarımları ve fizik değişmedi. Sekiz karakterin bu arenada yüklenmesi, yönleri ve y=704 zemini tarayıcıda kontrol edildi. Test arenası için iniş regresyon testi eklendi.
+- Sonraki ayrı iş: idle, yürüme, saldırı ve nakavt karelerinde gerçek ayak temasını görsel olarak değerlendirmek. `ground=g1` tek başına bütün ayakkabı tabanlarının temasta olduğunu kanıtlamaz.

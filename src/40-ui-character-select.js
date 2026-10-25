@@ -1710,6 +1710,7 @@ var AF_ARENA_BILGI = {
   samsun: [`Karadeniz kıyısı`, `Gün batımı`, `Açık`],
   corum: [`Hitit diyarı`, `Gün batımı`, `Açık`],
   sakarya: [`Sapanca Gölü`, `Sabah`, `Sisli`],
+  test: [`Ölçek kontrolü`, `Sabit ışık`, `Izgara`],
 };
 
 function AF_ArenaSelect() {
