@@ -16,3 +16,6 @@ node_modules/
 
 # Sprite önizleme çıktısı (tools/sprite/isle.py)
 _onizleme/
+
+# Codex kişisel ayarları (yerel yollar, hook)
+.codex/
