@@ -19,3 +19,6 @@ _onizleme/
 
 # Codex kişisel ayarları (yerel yollar, hook)
 .codex/
+
+# Ajanlar arası yerel devir notu (Codex <-> Claude)
+DEVIR.md
