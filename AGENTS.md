@@ -41,12 +41,34 @@ Karakterler: UMUT, SUDEM, METEHAN, AHMET, SELİM, ALP (`src/10` `AF_CHARS`). UMU
 ## Okunmayacak dosyalar (iki ajan için de)
 `js/game.bundle.js`, `src/00-vendor-*`, `src/30-vendor-*`, `assets/**`, `css/styles.css`, `node_modules/**`, `*.bak*`. Claude'da `.claude/settings.json` bunları engeller; Codex'te engel yok, bu kurala elle uy.
 
-## İki ajanla çalışma (ChatGPT Plus / Codex + Claude Code)
-- Varsayılan işçi **Codex**. Claude Code ikinci görüş, zor fizik/çarpışma hatası ve kod incelemesi için.
-- Aynı anda aynı dalda iki ajan çalışmaz. Her iş kendi dalında; dalı devralan önce `git status` + `git log main..HEAD` bakar.
-- Devir notu = commit mesajı + PR açıklaması: ne yapıldı, ne test edildi, ne kaldı. Ayrı not dosyası tutma.
-- Diğer ajanın commit'lenmemiş değişikliğini silme/ezme; emin değilsen kullanıcıya sor.
-- Kişisel araç ayarları (`.codex/`, `.claude/*` — `settings.json` hariç) repoya girmez.
+## İki ajanla nöbetleşe çalışma (Codex ⇄ Claude Code)
+Kullanıcı birinin limiti bitince diğerine geçer. Limit **işin ortasında, haber vermeden** bitebilir; bu yüzden yarım iş her an devredilebilir olmalı.
+
+**Devralırken (oturumun ilk işi):**
+1. `DEVIR.md`'yi oku (yoksa yeni iş).
+2. `git status` + `git branch --show-current` + `git log --oneline main..HEAD` — commit'lenmemiş değişiklik diğer ajanın yarım işidir, silme/ezme.
+3. DEVIR.md'deki "Sıradaki adım"dan devam et; kullanıcıya bir satırla nereden devraldığını söyle.
+
+**Çalışırken:**
+- Her anlamlı adımdan sonra (dosya düzenledin, test koştun, karar verdin) `DEVIR.md`'yi güncelle. Sona bırakma.
+- Küçük ve sık commit at (`WIP:` öneki olabilir); push'u iş bitince yap.
+- Her iş kendi dalında. Kural değişikliği yalnız `AGENTS.md`'ye.
+
+**İş bitince:** PR aç (ya da kullanıcıya link ver), `DEVIR.md`'yi "Durum: bitti" yap.
+
+`DEVIR.md` yereldir (`.gitignore`'da), iki ajan aynı klasörü paylaşır. Biçim:
+```
+# DEVIR
+Durum: devam ediyor | bitti      Son yazan: Codex | Claude   Tarih: YYYY-AA-GG SS:DD
+Dal: <dal>
+Hedef: <kullanıcının istediği, tek cümle>
+Yapılan: - ...
+Test: <ne koşuldu, sonuç; koşulmadıysa "test edilmedi">
+Sıradaki adım: <tek, somut adım>
+Notlar/tuzaklar: - ...
+```
+
+**Ortak:** Kişisel araç ayarları (`.codex/`, `.claude/*` — `settings.json` hariç) repoya girmez.
 
 ## Şu anki odak
 Karakter geliştirme (yeni karakter, kare dizisi, imza hareket) **şimdilik yapılmıyor**. Kullanıcı açıkça isteyene kadar karakter işi önermeyin.
