@@ -4297,6 +4297,7 @@ function yy(e) {
     e.arena && e.arena.rain && AF_rain(t, 0),
     by(t, e.p1),
     by(t, e.p2),
+    AF_drawDust(t, e.dust),
     xy(t, e.p2),
     xy(t, e.p1));
   for (let n of e.projectiles) Ty(t, n);
@@ -4318,8 +4319,8 @@ function by(e, t) {
   let n = AF_PLAT && t.x > 387 && t.x < 990 && t.y <= 489,
     r = t.ground === `table` || n ? 429 : 704,
     i = Math.max(0, r - t.y),
-    a = 0.4 * pg(1 - i / 480, 0.12, 1),
-    o = t.halfW * (1.4 + i / 420 + (t.state === `ko` ? 1.8 * Math.min(1, t.koT / 450) : 0));
+    a = 0.5 * pg(1 - i / 440, 0.1, 1),
+    o = t.halfW * (1.3 + i / 360 + (t.state === `ko` ? 1.8 * Math.min(1, t.koT / 450) : 0));
   (e.save(),
     (e.fillStyle = `rgba(0,0,0,${a})`),
     e.beginPath(),
@@ -5662,6 +5663,21 @@ function Dy(e, t) {
   e.restore();
 }
 
+function AF_drawDust(e, t) {
+  // zemin tozu: mat, yumuşak kahve-bej daireler (kıvılcım gibi parlak değil)
+  if (!t || !t.length) return;
+  e.save();
+  for (let n of t) {
+    let k = n.life / n.max;
+    ((e.globalAlpha = k * 0.42),
+      (e.fillStyle = `#c6b69c`),
+      e.beginPath(),
+      e.arc(n.x, n.y, Math.max(0.5, n.size), 0, Math.PI * 2),
+      e.fill());
+  }
+  e.restore();
+}
+
 function Oy(e, t) {
   for (let n of t) {
     let t = n.life / n.max,
@@ -6836,6 +6852,7 @@ var Xy = class {
   flashA = 0;
   showBoxes = !1;
   sparks = [];
+  dust = []; // zemin tozu (iniş + adım) — kıvılcımdan ayrı, mat/yumuşak
   dmgs = [];
   projectiles = [];
   lensFlashes = [];
@@ -6922,6 +6939,7 @@ var Xy = class {
       (this.shakeT = 0),
       (this.flashA = 0),
       (this.sparks = []),
+      (this.dust = []),
       (this.dmgs = []),
       (this.projectiles = []),
       (this.lensFlashes = []),
@@ -6996,6 +7014,7 @@ var Xy = class {
       e.flipLandT > 0 &&
         ((e.flipLandT = Math.max(0, e.flipLandT - r)), e.flipLandT === 0 && (e.flipLandDir = 0)),
       AF_walkStep(e, r),
+      this.footDust(e),
       (e.comboPopT += r),
       e.comboT > 0 && ((e.comboT -= r), e.comboT <= 0 && (e.combo = 0)),
       e.hitFlash > 0 && (e.hitFlash -= r),
@@ -7220,8 +7239,8 @@ var Xy = class {
     ) {
       let t = AF_PLAT && e.x > 381 && e.x < 996;
       e.dropT <= 0 && t && o <= 429 && e.y >= 429
-        ? ((e.y = 429), (e.vy = 0), (e.ground = `table`), this.onLand(e))
-        : e.y >= 704 && ((e.y = 704), (e.vy = 0), (e.ground = `g1`), this.onLand(e));
+        ? ((e.landIv = e.vy), (e.y = 429), (e.vy = 0), (e.ground = `table`), this.onLand(e))
+        : e.y >= 704 && ((e.landIv = e.vy), (e.y = 704), (e.vy = 0), (e.ground = `g1`), this.onLand(e));
     }
     (e.tableLock &&
       (e.state === `hitstun` ? (e.x = pg(e.x, 387 + e.halfW, 990 - e.halfW)) : (e.tableLock = !1)),
@@ -7243,7 +7262,15 @@ var Xy = class {
       (e.airFlipT = 0),
       (e.airFlipDir = 0),
       (e.airFlipCrossed = !1),
-      e.state !== `ko` && (e.landT = 150),
+      e.state !== `ko` &&
+        ((e.landT = 150),
+        this.dustPuff(
+          e.x,
+          e.ground === `table` ? 429 : 704,
+          Math.round(Math.min(10, 3 + Math.abs(e.landIv || 0) / 160)),
+          180,
+          1,
+        )),
       e.state === `air` && ((e.state = `idle`), X.land()));
   }
   separateBodies(e, t) {
@@ -7731,6 +7758,14 @@ var Xy = class {
         (n.vy = n.vy * 0.96 + 500 * t),
         (n.rot += n.spin * t));
     this.sparks = this.sparks.filter((e) => e.life > 0);
+    for (let n of this.dust)
+      ((n.life -= e),
+        (n.x += n.vx * t),
+        (n.y += n.vy * t),
+        (n.vx *= 0.9),
+        (n.vy = n.vy * 0.9 + 120 * t),
+        (n.size += 16 * t));
+    this.dust = this.dust.filter((e) => e.life > 0);
     for (let t of this.dmgs) t.life -= e;
     this.dmgs = this.dmgs.filter((e) => e.life > 0);
   }
@@ -7756,6 +7791,30 @@ var Xy = class {
         spin: (Math.random() - 0.5) * 10,
       });
     }
+  }
+  dustPuff(x, y, n, spread, up) {
+    for (let i = 0; i < n; i++) {
+      let lf = 240 + Math.random() * 180;
+      this.dust.push({
+        x: x + (Math.random() - 0.5) * 14,
+        y: y - 2,
+        vx: (Math.random() - 0.5) * spread,
+        vy: -(10 + Math.random() * 40) * up,
+        size: 4 + Math.random() * 4,
+        life: lf,
+        max: lf,
+      });
+    }
+    this.dust.length > 120 && this.dust.splice(0, this.dust.length - 120);
+  }
+  footDust(e) {
+    // yürürken ayak her bastığında (walkP her π/2'yi geçince) küçük toz
+    if (!e.grounded || e.walkB < 0.5 || Math.abs(e.vx) < 5) return;
+    let ix = Math.floor(e.walkP / (Math.PI / 2));
+    if (e.stepIx === undefined) return void (e.stepIx = ix);
+    ix !== e.stepIx &&
+      ((e.stepIx = ix),
+      this.dustPuff(e.x - e.facing * e.halfW * 0.25, e.ground === `table` ? 429 : 704, 2, 70, 0.5));
   }
   dmgNum(e, t, n, r) {
     AF_S.dmgnum &&

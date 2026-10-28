@@ -26,6 +26,7 @@ function yy(e) {
     e.arena && e.arena.rain && AF_rain(t, 0),
     by(t, e.p1),
     by(t, e.p2),
+    AF_drawDust(t, e.dust),
     xy(t, e.p2),
     xy(t, e.p1));
   for (let n of e.projectiles) Ty(t, n);
@@ -47,8 +48,8 @@ function by(e, t) {
   let n = AF_PLAT && t.x > 387 && t.x < 990 && t.y <= 489,
     r = t.ground === `table` || n ? 429 : 704,
     i = Math.max(0, r - t.y),
-    a = 0.4 * pg(1 - i / 480, 0.12, 1),
-    o = t.halfW * (1.4 + i / 420 + (t.state === `ko` ? 1.8 * Math.min(1, t.koT / 450) : 0));
+    a = 0.5 * pg(1 - i / 440, 0.1, 1),
+    o = t.halfW * (1.3 + i / 360 + (t.state === `ko` ? 1.8 * Math.min(1, t.koT / 450) : 0));
   (e.save(),
     (e.fillStyle = `rgba(0,0,0,${a})`),
     e.beginPath(),
