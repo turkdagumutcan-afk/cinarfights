@@ -548,6 +548,21 @@ function Dy(e, t) {
   e.restore();
 }
 
+function AF_drawDust(e, t) {
+  // zemin tozu: mat, yumuşak kahve-bej daireler (kıvılcım gibi parlak değil)
+  if (!t || !t.length) return;
+  e.save();
+  for (let n of t) {
+    let k = n.life / n.max;
+    ((e.globalAlpha = k * 0.42),
+      (e.fillStyle = `#c6b69c`),
+      e.beginPath(),
+      e.arc(n.x, n.y, Math.max(0.5, n.size), 0, Math.PI * 2),
+      e.fill());
+  }
+  e.restore();
+}
+
 function Oy(e, t) {
   for (let n of t) {
     let t = n.life / n.max,

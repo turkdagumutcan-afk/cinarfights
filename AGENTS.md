@@ -71,7 +71,8 @@ Notlar/tuzaklar: - ...
 **Ortak:** Kişisel araç ayarları (`.codex/`, `.claude/*` — `settings.json` hariç) repoya girmez.
 
 ## Şu anki odak
-Karakter geliştirme (yeni karakter, kare dizisi, imza hareket) **şimdilik yapılmıyor**. Kullanıcı açıkça isteyene kadar karakter işi önermeyin.
+Oyunun **temeli** — **Faz 1: hareket hissi / zemine basma** (iniş & adım tozu, zemin gölgesi; kodla, yeni sprite'sız). Sonraki: Faz 2 kombo sistemi.
+Karakter geliştirme (yeni karakter, kare dizisi, imza hareket) bu faz bitene kadar **yapılmıyor**. Kullanıcı açıkça isteyene kadar karakter işi önermeyin.
 
 ## Token tasarrufu
 - Büyük dosyayı baştan sona okuma: önce ara (`rg`/`Grep`) → yalnız ilgili aralığı oku.
